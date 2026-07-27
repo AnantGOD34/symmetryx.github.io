@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Symmetryx</title>
+    
+    <link rel="icon" type="image/png" href="logo.png">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #1a1a1a;
+            font-family: sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            cursor: crosshair;
+            touch-action: none;
+            display: block;
+            z-index: 1;
+            transform-origin: center center;
+            transition: transform 0.05s linear;
+        }
+        /* SIDEBAR PANEL LAYOUT WITH MODERN GLASSMORPHISM */
+        .sidebar {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 300px;
+            height: calc(100% - 30px);
+            background: rgba(15, 15, 15, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 4px 4px 20px rgba(0,0,0,0.5);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            color: white;
+            transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.3s;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+        .sidebar.hidden {
+            transform: translateX(-340px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        .sidebar-header {
+            padding: 25px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sidebar-logo {
+            width: 90%;
+            height: auto;
+            max-height: 100px;
+            object-fit: contain;
+            display: block;
+            /* Neon Orange Glow Effect */
+            filter: drop-shadow(0 0 12px rgba(255, 149, 0, 0.85));
+        }
+        .sidebar-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        /* MODERN ACCORDION STYLING */
+        .accordion-item {
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            overflow: hidden;
+        }
+        .accordion-header {
+            padding: 12px;
+            background: rgba(255,255,255,0.04);
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        .accordion-header:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        .accordion-header::after {
+            content: '▼';
+            font-size: 10px;
+            transition: transform 0.2s;
+            color: #888;
+        }
+        .accordion-item.active .accordion-header::after {
+            transform: rotate(180deg);
+        }
+        .accordion-content {
+            padding: 12px;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .accordion-item.active .accordion-content {
+            display: flex;
+        }
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .control-group-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .description {
+            font-size: 11px;
+            color: #aaa;
+            line-height: 1.3;
+            margin-top: 2px;
+        }
+        .pro-tip {
+            color: #ff9500 !important;
+            font-weight: 500;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin-top: 5px;
+        }
+        button {
+            cursor: pointer;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.08);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: left;
+            transition: background 0.2s, border-color 0.2s, transform 0.1s;
+            width: 100%;
+            font-size: 12px;
+        }
+        button:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .action-grid button {
+            text-align: center;
+        }
+        #hideBtn {
+            background: rgba(192, 57, 43, 0.4);
+            border-color: rgba(231, 76, 60, 0.5);
+            text-align: center;
+            margin-top: 5px;
+        }
+        #hideBtn:hover {
+            background: rgba(231, 76, 60, 0.6);
+        }
+        #saveBtn {
+            background: rgba(41, 128, 185, 0.4);
+            border-color: rgba(52, 152, 219, 0.5);
+        }
+        #saveBtn:hover {
+            background: rgba(52, 152, 219, 0.6);
+        }
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        input[type="color"] {
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 50px;
+            height: 28px;
+        }
+        /* DYNAMIC GRADIENT PALETTE STYLING */
+        .gradient-palette-builder {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .palette-pickers-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .palette-color-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .remove-color-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 14px;
+            height: 14px;
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            font-size: 9px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 2;
+        }
+        #showUI {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(39, 174, 96, 0.8);
+            backdrop-filter: blur(5px);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: none;
+            z-index: 11;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            border: 1px solid #2ecc71;
+        }
+        #showUI:hover {
+            background: #2ecc71;
+        }
+        .keybind-hint {
+            float: right;
+            font-size: 10px;
+            color: #ccc;
+            background: rgba(0,0,0,0.4);
+            padding: 1px 5px;
+            border-radius: 3px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-transform: uppercase;
+        }
+        .keybind-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .keybind-row button {
+            width: auto;
+            padding: 2px 8px;
+            font-size: 10px;
+            text-align: center;
+            background: rgba(255, 149, 0, 0.2);
+            border-color: rgba(255, 149, 0, 0.4);
+        }
+        .keybind-row button.listening {
+            background: #e74c3c;
+            border-color: #ff6b6b;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        .credit-footer {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            letter-spacing: 0.5px;
+        }
+        .credit-footer span {
+            color: #ff9500;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="showUI" onclick="toggleUI()">Show Panel <span class="keybind-hint" data-action="toggleUI">H</span></div>
+
+    <div class="sidebar" id="controlPanel">
+        <div class="sidebar-header">
+            <img src="logo.png" alt="Symmetryx Logo" class="sidebar-logo">
+        </div>
+        
+        <div class="sidebar-scroll">
+            <div class="accordion-item active">
+                <div class="accordion-header" onclick="toggleAccordion(this)">Brush & Color</div>
+                <div class="accordion-content">
+                    <div class="control-item">
+                        <div class="control-group-row">
+                            <label for="brushSize">Brush Size:</label>
+                            <span id="brushSizeVal">6</span>
+                        </div>
+                        <input type="range" id="brushSize" min="2" max="50" value="6" oninput="document.getElementById('brushSizeVal').textContent=this.value">
+                        <div class="description">Sets the primary thickness of your drawing stroke.</div>
+                    </div>
+                    
+                    <div class="control-item" id="primaryColorContainer">
+                        <div class="color-picker-container">
+                            <label style="font-weight: bold; font-size: 13px;">Brush Color:</label>
+                            <input type="color" id="brushColor" value="#00ffcc">
+                        </div>
+                        <div class="description">Select a static color for the painting line.</div>
+                    </div>
+
+                    <div class="control-item">
+                        <button id="gradientBtn" onclick="toggleGradientMode(this)">Gradient Line: OFF <span class="keybind-hint" data-action="toggleGradient">K</span></button>
+                        <div class="description">Fuses up to 10 custom colors seamlessly along your stroke spectrum.</div>
+                    </div>
+
+                    <div class="control-item id-gradient-builder-item" id="gradientBuilderContainer" style="display: none;">
+                        <div class="gradient-palette-builder">
+                            <div class="control-group-row">
+                                <span style="font-size:12px; color:#ddd;">Gradient Map Colors (<span id="paletteCount text">2</span>/10):</span>
+                                <button id="addColorBtn" onclick="addPaletteColor()" style="width:auto; padding:2px 8px; font-size:11px;">+ Add</button>
+                            </div>
+                            <div class="palette-pickers-grid" id="paletteGrid">
+                                </div>
+                        </div>
+                    </div>
+
+                    <div class="control-item">
+                        <div class="control-group-row">
+                            <label for="slices">Slices:</label>
+                            <span id="slicesVal">8</span>
+                        </div>
+                        <input type="range" id="slices" min="2" max="100" value="8" oninput="document.getElementById('slicesVal').textContent=this.value">
+                        <div class="description">Changes the number of repeating segments mirrored around the pivot.</div>
+                    </div>
+
+                    <div class="control-item">
+                        <button id="eraserBtn" onclick="toggleEraser(this)">Eraser: OFF <span class="keybind-hint" data-action="toggleEraser">E</span></button>
+                        <div class="description">Switches brush behavior to wipe elements completely out.</div>
+                    </div>
+
+                    <div class="control-item">
+                        <button id="moveCenterBtn" onclick="toggleMoveCenter(this)">Move Center: OFF <span class="keybind-hint" data-action="toggleMoveCenter">Space</span></button>
+                        <div class="description">Click anywhere on canvas to relocate your symmetry center pivot point.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">Effects</div>
+                <div class="accordion-content">
+                    <div class="control-item">
+                        <button id="dynamicBtn" onclick="toggleDynamicBrush(this)">Dynamic Brush: OFF <span class="keybind-hint" data-action="toggleDynamic">D</span></button>
+                        <div class="description">Changes thickness according to movement speed.</div>
+                    </div>
+
+                    <div class="control-item">
+                        <button id="trailBtn" onclick="toggleTrail(this)">Trail: OFF <span class="keybind-hint" data-action="toggleTrail">T</span></button>
+                        <div class="description">When ON, lines slowly fade away into the dark background.</div>
+                    </div>
+
+                    <div class="control-item">
+                        <button id="glowBtn" onclick="toggleGlow(this)">Glow: OFF <span class="keybind-hint" data-action="toggleGlow">G</span></button>
+                        <div class="description">Adds a bright neon back-glow effect behind your brush strokes.</div>
+                    </div>
+
+                    <div class="control-item">
+                        <button id="rainbowBtn" onclick="toggleRainbow(this)">Rainbow: OFF <span class="keybind-hint" data-action="toggleRainbow">R</span></button>
+                        <div class="description">Continuously cycles your line colors through a shifting spectrum.</div>
+                    </div>
+
+                    <div class="control-item">
+                        <button id="mirrorBtn" onclick="toggleMirror(this)">Mirror: OFF <span class="keybind-hint" data-action="toggleMirror">M</span></button>
+                        <div class="description">Flips alternate slices symmetrically to produce complex kaleidoscopes.</div>
+                    </div>
+
+                    <div class="control-item">
+                        <button id="stringBtn" onclick="toggleStringArt(this)">String Art: OFF <span class="keybind-hint" data-action="toggleString">S</span></button>
+                        <div class="description">Generates fine webs connecting lines back to older tracked points.</div>
+                    </div>
+
+                    <div class="control-item">
+                        <button id="particlesBtn" onclick="toggleParticles(this)">Particles: OFF <span class="keybind-hint" data-action="toggleParticles">P</span></button>
+                        <div class="description">Sparks and stardust explode from your brush and mirror in real time!</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">Automation</div>
+                <div class="accordion-content">
+                    <div class="control-item">
+                        <button id="autoBtn" onclick="toggleAutoDraw(this)" style="text-align: center;">Auto Draw: OFF <span class="keybind-hint" data-action="toggleAuto">A</span></button>
+                        <div class="description">Triggers a complex, random mathematics loop that creates a mandala.</div>
+                    </div>
+
+                    <div class="control-item">
+                        <button id="audioBtn" onclick="toggleAudioDraw(this)" style="text-align: center;">Audio Draw: OFF <span class="keybind-hint" data-action="toggleAudio">V</span></button>
+                        <div class="description">Uses your microphone to capture music, animating layout to the beat!</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">System Operations</div>
+                <div class="accordion-content">
+                    <div class="action-grid">
+                        <button onclick="undo()">Undo <span class="keybind-hint" data-action="undo" style="float:none; margin-left:3px;">Z</span></button>
+                        <button onclick="redo()">Redo <span class="keybind-hint" data-action="redo" style="float:none; margin-left:3px;">Y</span></button>
+                    </div>
+
+                    <div class="control-item">
+                        <button onclick="clearCanvas()" style="text-align: center; background: rgba(255,255,255,0.05);">Clear Frame <span class="keybind-hint" data-action="clearCanvas">C</span></button>
+                        <div class="description">Wipes everything clean instantly. <span class="pro-tip">Pro-Tip: Hold 'C' during Auto Draw for particle strobe effects!</span></div>
+                    </div>
+
+                    <div class="control-item">
+                        <button id="saveBtn" onclick="saveCanvas()">Save Image</button>
+                        <div class="description">Downloads your complete canvas creation as a transparent PNG.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">Keybind Settings</div>
+                <div class="accordion-content">
+                    <div class="description" style="margin-bottom: 6px;">Click any rebind button below and press a new key on your keyboard to update shortcuts.</div>
+                    <div id="keybindsContainer" style="display: flex; flex-direction: column; gap: 6px;"></div>
+                    <button onclick="resetKeybinds()" style="text-align: center; background: rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.4); margin-top: 4px;">Reset Keybinds</button>
+                </div>
+            </div>
+
+            <button id="hideBtn" onclick="toggleUI()">Hide Panel <span class="keybind-hint" data-action="toggleUI">H</span></button>
+
+            <div class="credit-footer">Created by <span>Anant Patel</span></div>
+        </div>
+    </div>
+
+    <canvas id="paintCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('paintCanvas');
+        const ctx = canvas.getContext('2d');
+        const sliceInput = document.getElementById('slices');
+        const colorInput = document.getElementById('brushColor');
+        const sizeInput = document.getElementById('brushSize');
+        
+        const controlPanel = document.getElementById('controlPanel');
+        const showUIBtn = document.getElementById('showUI');
+        const primaryColorContainer = document.getElementById('primaryColorContainer');
+        const gradientBuilderContainer = document.getElementById('gradientBuilderContainer');
+        const paletteGrid = document.getElementById('paletteGrid');
+        const addColorBtn = document.getElementById('addColorBtn');
+        
+        let drawing = false;
+        let isAutoDrawing = false;
+        let isAudioDrawing = false;
+        let isRainbow = false; 
+        let isMirror = false;
+        let isStringArt = false;
+        let isDynamicBrush = false;
+        let isEraser = false;
+        let isGlow = false;
+        let isTrail = false; 
+        let isParticles = false;
+        let isMovingCenter = false;
+        let isGradientMode = false;
+        
+        let autoInterval;
+        let prevX = 0, prevY = 0;
+        let targetX = 0, targetY = 0;
+        let time = 0; 
+        let pointsQueue = []; 
+
+        let undoStack = [];
+        let redoStack = [];
+        const MAX_HISTORY = 20;
+
+        // Custom Pivot Center State
+        let pivotX = window.innerWidth / 2;
+        let pivotY = window.innerHeight / 2;
+
+        // Zoom state variables
+        let currentZoom = 1.0;
+        const MIN_ZOOM = 0.2;
+        const MAX_ZOOM = 5.0;
+
+        // Particle System State
+        let particles = [];
+
+        // Smooth Custom Gradient State
+        let gradientColors = ["#00ffcc", "#ff007f", "#3498db"];
+        let currentStrokeLength = 0;
+
+        let autoConfig = {
+            freqX1: 1, freqX2: 1, freqY1: 1, freqY2: 1, phaseX: 0, phaseY: 0
+        };
+
+        let trailLines = []; 
+
+        let audioCtx, analyser, dataArray, sourceStream;
+        let audioAngle = 0;
+
+        // Secret Redirection Multi-State
+        let lastTapTime = 0; // For detecting double click/tap on all devices
+
+        // Keybind System State
+        const defaultKeybinds = {
+            toggleMoveCenter: ' ',
+            toggleTrail: 't',
+            toggleGlow: 'g',
+            toggleRainbow: 'r',
+            toggleGradient: 'k',
+            toggleMirror: 'm',
+            toggleString: 's',
+            toggleDynamic: 'd',
+            toggleParticles: 'p',
+            toggleEraser: 'e',
+            toggleAuto: 'a',
+            toggleAudio: 'v',
+            clearCanvas: 'c',
+            undo: 'z',
+            redo: 'y',
+            toggleUI: 'h',
+            zoomIn: 'arrowup',
+            zoomOut: 'arrowdown'
+        };
+
+        let keybinds = {...defaultKeybinds};
+        let activeRebindAction = null;
+
+        const actionLabels = {
+            toggleMoveCenter: 'Move Center',
+            toggleTrail: 'Trail',
+            toggleGlow: 'Glow',
+            toggleRainbow: 'Rainbow',
+            toggleGradient: 'Gradient Line',
+            toggleMirror: 'Mirror',
+            toggleString: 'String Art',
+            toggleDynamic: 'Dynamic Brush',
+            toggleParticles: 'Particles',
+            toggleEraser: 'Eraser',
+            toggleAuto: 'Auto Draw',
+            toggleAudio: 'Audio Draw',
+            clearCanvas: 'Clear Frame',
+            undo: 'Undo',
+            redo: 'Redo',
+            toggleUI: 'Toggle UI Panel',
+            zoomIn: 'Zoom In',
+            zoomOut: 'Zoom Out'
+        };
+
+        function renderKeybindsUI() {
+            const container = document.getElementById('keybindsContainer');
+            container.innerHTML = '';
+            for (let action in keybinds) {
+                const row = document.createElement('div');
+                row.className = 'keybind-row';
+                
+                const label = document.createElement('span');
+                label.textContent = actionLabels[action] || action;
+                
+                const btn = document.createElement('button');
+                let keyText = keybinds[action];
+                if (keyText === ' ') keyText = 'SPACE';
+                else if (keyText.startsWith('arrow')) keyText = keyText.replace('arrow', 'ARROW ');
+                btn.textContent = keyText.toUpperCase();
+                
+                if (activeRebindAction === action) {
+                    btn.classList.add('listening');
+                    btn.textContent = 'PRESS KEY...';
+                }
+
+                btn.onclick = () => {
+                    activeRebindAction = action;
+                    renderKeybindsUI();
+                };
+
+                row.appendChild(label);
+                row.appendChild(btn);
+                container.appendChild(row);
+
+                // Update hints in UI
+                const hints = document.querySelectorAll(`.keybind-hint[data-action="${action}"]`);
+                hints.forEach(hint => {
+                    let displayKey = keybinds[action];
+                    if (displayKey === ' ') displayKey = 'Space';
+                    else if (displayKey.startsWith('arrow')) displayKey = displayKey.replace('arrow', '↑').replace('down', '↓').replace('up', '↑');
+                    hint.textContent = displayKey.toUpperCase();
+                });
+            }
+        }
+
+        function resetKeybinds() {
+            keybinds = {...defaultKeybinds};
+            activeRebindAction = null;
+            renderKeybindsUI();
+        }
+
+        function updateZoom(delta) {
+            currentZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, currentZoom + delta));
+            canvas.style.transform = `scale(${currentZoom})`;
+        }
+
+        function toggleAccordion(header) {
+            const item = header.parentElement;
+            item.classList.toggle('active');
+        }
+
+        function setRandomActiveStyle(btn) {
+            if (btn.id === 'rainbowBtn') return; 
+            const hue = Math.floor(Math.random() * 360);
+            btn.style.background = `hsl(${hue}, 60%, 40%)`;
+            btn.style.borderColor = `hsl(${hue}, 80%, 55%)`;
+        }
+
+        function resetButtonStyle(btn) {
+            btn.style.background = "";
+            btn.style.borderColor = "";
+        }
+
+        function getNeonBleedColor(colorHex, isRainbowMode) {
+            if (isRainbowMode) {
+                return `hsla(${(Date.now() / 10) % 360}, 100%, 75%, 0.4)`;
+            }
+            let r = parseInt(colorHex.slice(1, 3), 16);
+            let g = parseInt(colorHex.slice(3, 5), 16);
+            let b = parseInt(colorHex.slice(5, 7), 16);
+            r = Math.floor(r + (255 - r) * 0.5);
+            g = Math.floor(g + (255 - g) * 0.5);
+            b = Math.floor(b + (255 - b) * 0.5);
+            return `rgba(${r}, ${g}, ${b}, 0.35)`;
+        }
+
+        function resize() {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = canvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(canvas, 0, 0);
+
+            const oldW = canvas.width;
+            const oldH = canvas.height;
+
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(tempCanvas, 0, 0);
+            
+            if (!oldW) {
+                pivotX = canvas.width / 2;
+                pivotY = canvas.height / 2;
+            }
+            saveState();
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            trailLines = [];
+            particles = [];
+            saveState();
+        }
+
+        window.addEventListener('resize', resize);
+
+        function saveState() {
+            if (undoStack.length >= MAX_HISTORY) undoStack.shift();
+            undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+            redoStack = [];
+        }
+
+        function undo() {
+            if (undoStack.length > 1) {
+                redoStack.push(undoStack.pop());
+                const state = undoStack[undoStack.length - 1];
+                ctx.putImageData(state, 0, 0);
+            }
+        }
+
+        function redo() {
+            if (redoStack.length > 0) {
+                const state = redoStack.pop();
+                undoStack.push(state);
+                ctx.putImageData(state, 0, 0);
+            }
+        }
+
+        function getCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
+            // Adjust coordinates based on active zoom transformations
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rawX = clientX - rect.left;
+            const rawY = clientY - rect.top;
+            
+            const transformedX = centerX + (rawX - centerX) / currentZoom;
+            const transformedY = centerY + (rawY - centerY) / currentZoom;
+
+            return { x: transformedX, y: transformedY };
+        }
+
+        function createSparks(x, y, activeColor, count = 2) {
+            if (!isParticles || isEraser) return;
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 0.5 + Math.random() * 2.5;
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 1.0,
+                    decay: 0.02 + Math.random() * 0.03,
+                    color: activeColor,
+                    size: 1 + Math.random() * 3
+                });
+            }
+        }
+
+        // Palette UI management functions
+        function renderPaletteUI() {
+            paletteGrid.innerHTML = '';
+            gradientColors.forEach((color, idx) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'palette-color-wrapper';
+                
+                const input = document.createElement('input');
+                input.type = 'color';
+                input.value = color;
+                input.oninput = (e) => {
+                    gradientColors[idx] = e.target.value;
+                };
+                
+                wrapper.appendChild(input);
+                
+                if (gradientColors.length > 2) {
+                    const badge = document.createElement('div');
+                    badge.className = 'remove-color-badge';
+                    badge.textContent = '×';
+                    badge.onclick = () => removePaletteColor(idx);
+                    wrapper.appendChild(badge);
+                }
+                
+                paletteGrid.appendChild(wrapper);
+            });
+            document.getElementById('paletteCount text').textContent = gradientColors.length;
+            addColorBtn.style.display = gradientColors.length >= 10 ? 'none' : 'block';
+        }
+
+        function addPaletteColor() {
+            if (gradientColors.length >= 10) return;
+            const randomColors = ['#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6', '#e67e22', '#1abc9c'];
+            const nextColor = randomColors[Math.floor(Math.random() * randomColors.length)];
+            gradientColors.push(nextColor);
+            renderPaletteUI();
+        }
+
+        function removePaletteColor(idx) {
+            if (gradientColors.length <= 2) return;
+            gradientColors.splice(idx, 1);
+            renderPaletteUI();
+        }
+
+        // Helper function to check typed input word routes
+        function checkSecretRedirect(inputWord) {
+            const trimmedWord = inputWord.toLowerCase().trim();
+            if (trimmedWord === "love") {
+                window.location.href = "index2.html";
+                return true;
+            } else if (trimmedWord === "message") {
+                window.location.href = "index3.html";
+                return true;
+            }
+            return false;
+        }
+
+        // Universal Double Tap / Double Click Secret Detector
+        function handleUniversalDoubleTap() {
+            const now = Date.now();
+            if (now - lastTapTime < 300) {
+                drawing = false;
+                setTimeout(() => {
+                    const word = prompt("Enter the secret keyphrase:");
+                    if (word) checkSecretRedirect(word);
+                }, 50);
+                return true;
+            }
+            lastTapTime = now;
+            return false;
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (!controlPanel.classList.contains('hidden') && e.clientX < 320 && e.clientY < controlPanel.offsetHeight) return;
+            
+            // Trigger double-click check for all devices
+            if (handleUniversalDoubleTap()) return;
+
+            const coords = getCoords(e);
+
+            if (isMovingCenter) {
+                pivotX = coords.x;
+                pivotY = coords.y;
+                return;
+            }
+
+            if (isAutoDrawing || isAudioDrawing) return;
+            drawing = true;
+            prevX = coords.x; prevY = coords.y;
+            targetX = coords.x; targetY = coords.y;
+            pointsQueue = [{x: prevX, y: prevY}];
+            currentStrokeLength = 0;
+
+            let activeColor = isRainbow ? `hsl(${(Date.now() / 10) % 360}, 75%, 60%)` : colorInput.value;
+            createSparks(coords.x, coords.y, activeColor, 5);
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            const coords = getCoords(e);
+            targetX = coords.x; targetY = coords.y;
+            if (!drawing || isAutoDrawing || isAudioDrawing || isMovingCenter) return;
+            
+            if (isStringArt) {
+                pointsQueue.push({x: coords.x, y: coords.y});
+                if (pointsQueue.length > 25) pointsQueue.shift();
+            }
+
+            let activeColor = isRainbow ? `hsl(${(Date.now() / 10) % 360}, 75%, 60%)` : colorInput.value;
+            createSparks(coords.x, coords.y, activeColor, 2);
+
+            const segmentLen = Math.hypot(coords.x - prevX, coords.y - prevY);
+            currentStrokeLength += segmentLen;
+
+            if (!isTrail) {
+                renderSymmetryLines(coords.x, coords.y, prevX, prevY);
+            } else {
+                trailLines.push({
+                    x: coords.x, y: coords.y, pX: prevX, pY: prevY,
+                    age: 1.0, widthOverride: null, strokeLenOffset: currentStrokeLength
+                });
+            }
+            prevX = coords.x; prevY = coords.y;
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (drawing) {
+                drawing = false;
+                saveState();
+            }
+        });
+        
+        canvas.addEventListener('touchstart', (e) => {
+            if (!controlPanel.classList.contains('hidden') && e.touches[0].clientX < 320) return;
+            e.preventDefault();
+            
+            // Trigger double-tap check for touch devices
+            if (handleUniversalDoubleTap()) return;
+
+            const coords = getCoords(e);
+
+            if (isMovingCenter) {
+                pivotX = coords.x;
+                pivotY = coords.y;
+                return;
+            }
+
+            if (isAutoDrawing || isAudioDrawing) return;
+            drawing = true;
+            prevX = coords.x; prevY = coords.y;
+            targetX = coords.x; targetY = coords.y;
+            pointsQueue = [{x: prevX, y: prevY}];
+            currentStrokeLength = 0;
+        }, { passive: false });
+        
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            const coords = getCoords(e);
+            targetX = coords.x; targetY = coords.y;
+            if (!drawing || isAutoDrawing || isAudioDrawing || isMovingCenter) return;
+            
+            if (isStringArt) {
+                pointsQueue.push({x: coords.x, y: coords.y});
+                if (pointsQueue.length > 25) pointsQueue.shift();
+            }
+
+            const segmentLen = Math.hypot(coords.x - prevX, coords.y - prevY);
+            currentStrokeLength += segmentLen;
+
+            if (!isTrail) {
+                renderSymmetryLines(coords.x, coords.y, prevX, prevY);
+            } else {
+                trailLines.push({
+                    x: coords.x, y: coords.y, pX: prevX, pY: prevY,
+                    age: 1.0, widthOverride: null, strokeLenOffset: currentStrokeLength
+                });
+            }
+            prevX = coords.x; prevY = coords.y;
+        }, { passive: false });
+        
+        canvas.addEventListener('touchend', () => {
+            if (drawing) {
+                drawing = false;
+                saveState();
+            }
+        });
+
+                function getDynamicPaletteColor(offsetParam) {
+            const count = gradientColors.length;
+            const scaled = (offsetParam % 1) * (count - 1);
+            const idx = Math.floor(scaled);
+            const nextIdx = (idx + 1) % count;
+            const factor = scaled - idx;
+
+            const c1 = gradientColors[idx];
+            const c2 = gradientColors[nextIdx];
+
+            const r1 = parseInt(c1.slice(1, 3), 16), g1 = parseInt(c1.slice(3, 5), 16), b1 = parseInt(c1.slice(5, 7), 16);
+            const r2 = parseInt(c2.slice(1, 3), 16), g2 = parseInt(c2.slice(3, 5), 16), b2 = parseInt(c2.slice(5, 7), 16);
+
+            const r = Math.floor(r1 + (r2 - r1) * factor);
+            const g = Math.floor(g1 + (g2 - g1) * factor);
+            const b = Math.floor(b1 + (b2 - b1) * factor);
+
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function renderSymmetryLines(x, y, pX, pY, trailAlpha = 1, forceWidth = null, trailLenOffset = null) {
+            const slices = parseInt(sliceInput.value);
+            const baseSize = parseInt(sizeInput.value);
+
+            let computedLineWidth = baseSize;
+            if (forceWidth !== null) {
+                computedLineWidth = forceWidth;
+            } else if (isDynamicBrush && !isEraser) {
+                const distance = Math.hypot(x - pX, y - pY);
+                computedLineWidth = Math.max(2, Math.min(baseSize * 4, (baseSize * 10) / (distance + 1))); 
+            }
+
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            let activeColor, activeColorEnd;
+            if (isRainbow) {
+                activeColor = `hsl(${(Date.now() / 10) % 360}, 75%, 60%)`;
+            } else if (isGradientMode) {
+                const currentOffset = trailLenOffset !== null ? trailLenOffset : currentStrokeLength;
+                const valStart = (currentOffset / 400) % 1;
+                const valEnd = ((currentOffset + Math.hypot(x - pX, y - pY)) / 400) % 1;
+                activeColor = getDynamicPaletteColor(valStart);
+                activeColorEnd = getDynamicPaletteColor(valEnd);
+            } else {
+                activeColor = colorInput.value;
+            }
+
+            for (let i = 0; i < slices; i++) {
+                ctx.save();
+                ctx.translate(pivotX, pivotY);
+                
+                let angle = (i * 2 * Math.PI) / slices;
+                ctx.rotate(angle);
+                
+                if (isMirror && i % 2 !== 0) ctx.scale(1, -1);
+
+                const drawSegment = () => {
+                    if (isStringArt) {
+                        ctx.beginPath();
+                        ctx.arc(x - pivotX, y - pivotY, Math.max(1.5, ctx.lineWidth * 0.8), 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        const savedW = ctx.lineWidth;
+                        ctx.lineWidth = 0.4;
+                        ctx.globalAlpha = 0.2 * trailAlpha;
+                        for (let j = 0; j < pointsQueue.length; j++) {
+                            ctx.beginPath();
+                            ctx.moveTo(pointsQueue[j].x - pivotX, pointsQueue[j].y - pivotY);
+                            ctx.lineTo(x - pivotX, y - pivotY);
+                            ctx.stroke();
+                        }
+                        ctx.globalAlpha = 1.0;
+                        ctx.lineWidth = savedW;
+                    } else {
+                        if (isGradientMode && !isEraser) {
+                            let grad = ctx.createLinearGradient(pX - pivotX, pY - pivotY, x - pivotX, y - pivotY);
+                            grad.addColorStop(0, activeColor);
+                            grad.addColorStop(1, activeColorEnd);
+                            ctx.strokeStyle = grad;
+                            ctx.fillStyle = grad;
+                        }
+                        ctx.beginPath();
+                        ctx.moveTo(pX - pivotX, pY - pivotY);
+                        ctx.lineTo(x - pivotX, y - pivotY);
+                        ctx.stroke();
+                    }
+                };
+
+                if (isEraser) {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.strokeStyle = 'rgba(0,0,0,1)';
+                    ctx.lineWidth = computedLineWidth;
+                    ctx.shadowBlur = 0;
+                    drawSegment();
+                } else if (isGlow) {
+                    ctx.globalCompositeOperation = 'source-over';
+                    
+                    let baseHex = isGradientMode ? '#00ffcc' : colorInput.value;
+                    let neonColor = getNeonBleedColor(baseHex, isRainbow);
+                    
+                    if (isGradientMode) {
+                        neonColor = activeColor.replace('rgb', 'rgba').replace(')', ', 0.35)');
+                    }
+                    if (trailAlpha < 1) {
+                        neonColor = neonColor.replace(/[\d\.]+\)$/g, `${trailAlpha * 0.35})`);
+                    }
+                    ctx.strokeStyle = neonColor;
+                    ctx.fillStyle = ctx.strokeStyle;
+                    
+                    ctx.lineWidth = computedLineWidth * 2.2; 
+                    ctx.shadowBlur = (computedLineWidth * 1.5 + 12);
+                    ctx.shadowColor = ctx.strokeStyle;
+                    drawSegment();
+
+                    if (!isGradientMode) {
+                        ctx.strokeStyle = activeColor;
+                        ctx.fillStyle = activeColor;
+                    }
+                    if (trailAlpha < 1) ctx.globalAlpha = trailAlpha;
+                    ctx.lineWidth = computedLineWidth * 0.75; 
+                    ctx.shadowBlur = 0; 
+                    drawSegment();
+                    ctx.globalAlpha = 1.0;
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                    if (!isGradientMode) {
+                        ctx.strokeStyle = activeColor;
+                        ctx.fillStyle = activeColor;
+                    }
+                    if (trailAlpha < 1) ctx.globalAlpha = trailAlpha;
+                    ctx.lineWidth = computedLineWidth;
+                    ctx.shadowBlur = 0;
+                    drawSegment();
+                    ctx.globalAlpha = 1.0;
+                }
+                ctx.restore();
+            }
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.shadowBlur = 0;
+        }
+
+        function updateAndRenderParticles() {
+            if (particles.length === 0) return;
+
+            const slices = parseInt(sliceInput.value);
+
+            for (let p of particles) {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= p.decay;
+            }
+
+            particles = particles.filter(p => p.life > 0);
+
+            for (let i = 0; i < slices; i++) {
+                ctx.save();
+                ctx.translate(pivotX, pivotY);
+                let angle = (i * 2 * Math.PI) / slices;
+                ctx.rotate(angle);
+                if (isMirror && i % 2 !== 0) ctx.scale(1, -1);
+
+                for (let p of particles) {
+                    ctx.beginPath();
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.life;
+                    
+                    let relX = p.x - pivotX;
+                    let relY = p.y - pivotY;
+
+                    ctx.arc(relX, relY, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+            ctx.globalAlpha = 1.0;
+        }
+
+        function appLoop() {
+            requestAnimationFrame(appLoop);
+
+            if (isRainbow) {
+                const rainbowBtn = document.getElementById('rainbowBtn');
+                const hue = (Date.now() / 10) % 360;
+                rainbowBtn.style.background = `hsl(${hue}, 60%, 40%)`;
+                rainbowBtn.style.borderColor = `hsl(${hue}, 80%, 55%)`;
+            }
+
+            if (isAudioDrawing && analyser) {
+                analyser.getByteFrequencyData(dataArray);
+                
+                let sum = 0;
+                let maxFreqVal = 0;
+                let maxFreqIdx = 0;
+                for (let i = 0; i < dataArray.length; i++) {
+                    sum += dataArray[i];
+                    if (dataArray[i] > maxFreqVal) {
+                        maxFreqVal = dataArray[i];
+                        maxFreqIdx = i;
+                    }
+                }
+                let averageVolume = sum / dataArray.length;
+                
+                if (averageVolume > 2) {
+                    const maxRadius = Math.min(canvas.width, canvas.height) * 0.45;
+                    audioAngle += (averageVolume / 4500); 
+                    
+                    let volumeRatio = averageVolume / 255;
+                    let currentRadius = maxRadius * (0.1 + volumeRatio * 0.9);
+                    
+                    let nextX = pivotX + Math.cos(audioAngle * 1.5) * currentRadius;
+                    let nextY = pivotY + Math.sin(audioAngle * 0.8) * currentRadius;
+
+                    let dynamicAudioWidth = Math.max(2, (averageVolume / 255) * parseInt(sizeInput.value) * 6);
+                    currentStrokeLength += Math.hypot(nextX - prevX, nextY - prevY);
+
+                    if (isStringArt) {
+                        pointsQueue.push({x: nextX, y: nextY});
+                        if (pointsQueue.length > 25) pointsQueue.shift();
+                    }
+
+                    let activeColor = isRainbow ? `hsl(${(Date.now() / 10) % 360}, 75%, 60%)` : colorInput.value;
+                    if (isGradientMode) activeColor = getDynamicPaletteColor(currentStrokeLength / 400);
+                    createSparks(nextX, nextY, activeColor, 1);
+
+                    if (!isTrail) {
+                        renderSymmetryLines(nextX, nextY, prevX, prevY, 1, dynamicAudioWidth);
+                    } else {
+                        trailLines.push({
+                            x: nextX, y: nextY, pX: prevX, pY: prevY,
+                            age: 1.0, widthOverride: dynamicAudioWidth, strokeLenOffset: currentStrokeLength
+                        });
+                    }
+
+                    prevX = nextX;
+                    prevY = nextY;
+                }
+            }
+
+            if (isTrail && trailLines.length > 0) {
+                if (undoStack.length > 0) {
+                    ctx.putImageData(undoStack[undoStack.length - 1], 0, 0);
+                }
+
+                for (let i = trailLines.length - 1; i >= 0; i--) {
+                    let line = trailLines[i];
+                    line.age -= 0.012; 
+                    if (line.age <= 0) {
+                        trailLines.splice(i, 1);
+                    } else {
+                        renderSymmetryLines(line.x, line.y, line.pX, line.pY, line.age, line.widthOverride, line.strokeLenOffset);
+                    }
+                }
+            }
+
+            updateAndRenderParticles();
+        }
+
+        function toggleTrail(btn) {
+            isTrail = !isTrail;
+            btn.innerHTML = isTrail ? `Trail: ON <span class="keybind-hint" data-action="toggleTrail">${keybinds.toggleTrail.toUpperCase()}</span>` : `Trail: OFF <span class="keybind-hint" data-action="toggleTrail">${keybinds.toggleTrail.toUpperCase()}</span>`;
+            if (isTrail) {
+                setRandomActiveStyle(btn);
+            } else {
+                resetButtonStyle(btn);
+                trailLines = [];
+                if (undoStack.length > 0) ctx.putImageData(undoStack[undoStack.length - 1], 0, 0);
+            }
+        }
+
+        function toggleGlow(btn) {
+            isGlow = !isGlow;
+            if (isGlow && isEraser) toggleEraser(document.getElementById('eraserBtn'));
+            btn.innerHTML = isGlow ? `Glow: ON <span class="keybind-hint" data-action="toggleGlow">${keybinds.toggleGlow.toUpperCase()}</span>` : `Glow: OFF <span class="keybind-hint" data-action="toggleGlow">${keybinds.toggleGlow.toUpperCase()}</span>`;
+            if (isGlow) setRandomActiveStyle(btn); else resetButtonStyle(btn);
+        }
+
+        function toggleRainbow(btn) {
+            isRainbow = !isRainbow;
+            if (isRainbow && isEraser) toggleEraser(document.getElementById('eraserBtn')); 
+            btn.innerHTML = isRainbow ? `Rainbow: ON <span class="keybind-hint" data-action="toggleRainbow">${keybinds.toggleRainbow.toUpperCase()}</span>` : `Rainbow: OFF <span class="keybind-hint" data-action="toggleRainbow">${keybinds.toggleRainbow.toUpperCase()}</span>`;
+            if (isRainbow && isGradientMode) toggleGradientMode(document.getElementById('gradientBtn'));
+            if (!isRainbow) resetButtonStyle(btn);
+        }
+
+        colorInput.addEventListener('input', () => {
+            if (isEraser) toggleEraser(document.getElementById('eraserBtn'));
+        });
+
+        function toggleGradientMode(btn) {
+            isGradientMode = !isGradientMode;
+            btn.innerHTML = isGradientMode ? `Gradient Line: ON <span class="keybind-hint" data-action="toggleGradient">${keybinds.toggleGradient.toUpperCase()}</span>` : `Gradient Line: OFF <span class="keybind-hint" data-action="toggleGradient">${keybinds.toggleGradient.toUpperCase()}</span>`;
+            if (isGradientMode) {
+                setRandomActiveStyle(btn);
+                primaryColorContainer.style.display = 'none';
+                gradientBuilderContainer.style.display = 'flex';
+                if (isEraser) toggleEraser(document.getElementById('eraserBtn'));
+                if (isRainbow) toggleRainbow(document.getElementById('rainbowBtn'));
+            } else {
+                resetButtonStyle(btn);
+                primaryColorContainer.style.display = 'flex';
+                gradientBuilderContainer.style.display = 'none';
+            }
+        }
+
+        function toggleMirror(btn) {
+            isMirror = !isMirror;
+            btn.innerHTML = isMirror ? `Mirror: ON <span class="keybind-hint" data-action="toggleMirror">${keybinds.toggleMirror.toUpperCase()}</span>` : `Mirror: OFF <span class="keybind-hint" data-action="toggleMirror">${keybinds.toggleMirror.toUpperCase()}</span>`;
+            if (isMirror) setRandomActiveStyle(btn); else resetButtonStyle(btn);
+        }
+
+        function toggleStringArt(btn) {
+            isStringArt = !isStringArt;
+            btn.innerHTML = isStringArt ? `String Art: ON <span class="keybind-hint" data-action="toggleString">${keybinds.toggleString.toUpperCase()}</span>` : `String Art: OFF <span class="keybind-hint" data-action="toggleString">${keybinds.toggleString.toUpperCase()}</span>`;
+            if (isStringArt) setRandomActiveStyle(btn); else resetButtonStyle(btn);
+            pointsQueue = [];
+        }
+
+        function toggleDynamicBrush(btn) {
+            isDynamicBrush = !isDynamicBrush;
+            btn.innerHTML = isDynamicBrush ? `Dynamic Brush: ON <span class="keybind-hint" data-action="toggleDynamic">${keybinds.toggleDynamic.toUpperCase()}</span>` : `Dynamic Brush: OFF <span class="keybind-hint" data-action="toggleDynamic">${keybinds.toggleDynamic.toUpperCase()}</span>`;
+            if (isDynamicBrush) setRandomActiveStyle(btn); else resetButtonStyle(btn);
+        }
+
+        function toggleParticles(btn) {
+            isParticles = !isParticles;
+            btn.innerHTML = isParticles ? `Particles: ON <span class="keybind-hint" data-action="toggleParticles">${keybinds.toggleParticles.toUpperCase()}</span>` : `Particles: OFF <span class="keybind-hint" data-action="toggleParticles">${keybinds.toggleParticles.toUpperCase()}</span>`;
+            if (isParticles) setRandomActiveStyle(btn); else resetButtonStyle(btn);
+        }
+
+        function toggleMoveCenter(btn) {
+            isMovingCenter = !isMovingCenter;
+            btn.innerHTML = isMovingCenter ? `Move Center: ON <span class="keybind-hint" data-action="toggleMoveCenter">${keybinds.toggleMoveCenter === ' ' ? 'Space' : keybinds.toggleMoveCenter.toUpperCase()}</span>` : `Move Center: OFF <span class="keybind-hint" data-action="toggleMoveCenter">${keybinds.toggleMoveCenter === ' ' ? 'Space' : keybinds.toggleMoveCenter.toUpperCase()}</span>`;
+            if (isMovingCenter) {
+                setRandomActiveStyle(btn);
+                canvas.style.cursor = "move";
+            } else {
+                resetButtonStyle(btn);
+                canvas.style.cursor = "crosshair";
+            }
+        }
+
+        function toggleEraser(btn) {
+            isEraser = !isEraser;
+            btn.innerHTML = isEraser ? `Eraser: ON <span class="keybind-hint" data-action="toggleEraser">${keybinds.toggleEraser.toUpperCase()}</span>` : `Eraser: OFF <span class="keybind-hint" data-action="toggleEraser">${keybinds.toggleEraser.toUpperCase()}</span>`;
+            if (isEraser) {
+                setRandomActiveStyle(btn);
+                if (isRainbow) toggleRainbow(document.getElementById('rainbowBtn'));
+                if (isGlow) toggleGlow(document.getElementById('glowBtn'));
+                if (isGradientMode) toggleGradientMode(document.getElementById('gradientBtn'));
+            } else {
+                resetButtonStyle(btn);
+            }
+        }
+
+        function toggleUI() {
+            const isHidden = controlPanel.classList.toggle('hidden');
+            showUIBtn.style.display = isHidden ? 'block' : 'none';
+        }
+
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+
+            // Rebind handler
+            if (activeRebindAction) {
+                e.preventDefault();
+                keybinds[activeRebindAction] = key;
+                activeRebindAction = null;
+                renderKeybindsUI();
+                return;
+            }
+
+            // Keybind Execution Router
+            if (key === keybinds.toggleMoveCenter) {
+                e.preventDefault();
+                if(!isMovingCenter) toggleMoveCenter(document.getElementById('moveCenterBtn'));
+            }
+            else if (key === keybinds.zoomIn) {
+                e.preventDefault();
+                updateZoom(0.1);
+            }
+            else if (key === keybinds.zoomOut) {
+                e.preventDefault();
+                updateZoom(-0.1);
+            }
+            else if (key === keybinds.toggleTrail) toggleTrail(document.getElementById('trailBtn'));
+            else if (key === keybinds.toggleGlow) toggleGlow(document.getElementById('glowBtn'));
+            else if (key === keybinds.toggleRainbow) toggleRainbow(document.getElementById('rainbowBtn'));
+            else if (key === keybinds.toggleGradient) toggleGradientMode(document.getElementById('gradientBtn'));
+            else if (key === keybinds.toggleMirror) toggleMirror(document.getElementById('mirrorBtn'));
+            else if (key === keybinds.toggleString) toggleStringArt(document.getElementById('stringBtn'));
+            else if (key === keybinds.toggleDynamic) toggleDynamicBrush(document.getElementById('dynamicBtn'));
+            else if (key === keybinds.toggleParticles) toggleParticles(document.getElementById('particlesBtn'));
+            else if (key === keybinds.toggleEraser) toggleEraser(document.getElementById('eraserBtn'));
+            else if (key === keybinds.toggleAuto) toggleAutoDraw(document.getElementById('autoBtn'));
+            else if (key === keybinds.toggleAudio) toggleAudioDraw(document.getElementById('audioBtn'));
+            else if (key === keybinds.clearCanvas) clearCanvas();
+            else if (key === keybinds.undo) undo();
+            else if (key === keybinds.redo) redo();
+            else if (key === keybinds.toggleUI) toggleUI();
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key.toLowerCase() === keybinds.toggleMoveCenter) {
+                if(isMovingCenter) toggleMoveCenter(document.getElementById('moveCenterBtn'));
+            }
+        });
+
+        function saveCanvas() {
+            const link = document.createElement('a');
+            link.download =`symmetryx-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // Initialize UI & Canvas Systems
+        renderPaletteUI();
+        renderKeybindsUI();
+        resize();
+        requestAnimationFrame(appLoop); 
+
+        function toggleAutoDraw(btn) {
+            isAutoDrawing = !isAutoDrawing;
+            btn.innerHTML = isAutoDrawing ? `Auto Draw: ON <span class="keybind-hint" data-action="toggleAuto">${keybinds.toggleAuto.toUpperCase()}</span>` : `Auto Draw: OFF <span class="keybind-hint" data-action="toggleAuto">${keybinds.toggleAuto.toUpperCase()}</span>`;
+            
+            if (isAutoDrawing) {
+                if (isAudioDrawing) toggleAudioDraw(document.getElementById('audioBtn')); 
+                setRandomActiveStyle(btn);
+                drawing = false; 
+                if (isEraser) toggleEraser(document.getElementById('eraserBtn')); 
+                pointsQueue = [];
+                currentStrokeLength = 0;
+                
+                autoConfig.freqX1 = 0.5 + Math.random() * 1.5;
+                autoConfig.freqX2 = 0.3 + Math.random() * 1.2;
+                autoConfig.freqY1 = 0.5 + Math.random() * 1.5;
+                autoConfig.freqY2 = 0.3 + Math.random() * 1.2;
+                autoConfig.phaseX = Math.random() * Math.PI * 2;
+                autoConfig.phaseY = Math.random() * Math.PI * 2;
+
+                time = 0;
+                
+                const maxRadius = Math.min(canvas.width, canvas.height) * 0.42;
+                prevX = pivotX + Math.sin(time * autoConfig.freqX1 + autoConfig.phaseX) * Math.cos(time * autoConfig.freqX2) * maxRadius;
+                prevY = pivotY + Math.cos(time * autoConfig.freqY1 + autoConfig.phaseY) * Math.sin(time * autoConfig.freqY2) * maxRadius;
+                pointsQueue.push({x: prevX, y: prevY});
+
+                autoInterval = setInterval(() => {
+                    time += 0.02;
+                    const maxRadius = Math.min(canvas.width, canvas.height) * 0.42;
+                    
+                    const nextX = pivotX + Math.sin(time * autoConfig.freqX1 + autoConfig.phaseX) * Math.cos(time * autoConfig.freqX2) * maxRadius;
+                    const nextY = pivotY + Math.cos(time * autoConfig.freqY1 + autoConfig.phaseY) * Math.sin(time * autoConfig.freqY2) * maxRadius;
+
+                    targetX = nextX; targetY = nextY; 
+                    currentStrokeLength += Math.hypot(nextX - prevX, nextY - prevY);
+
+                    let activeColor = isRainbow ? `hsl(${(Date.now() / 10) % 360}, 75%, 60%)` : colorInput.value;
+                    if (isGradientMode) activeColor = getDynamicPaletteColor(currentStrokeLength / 400);
+                    createSparks(nextX, nextY, activeColor, 1);
+
+                    if (!isTrail) {
+                        renderSymmetryLines(nextX, nextY, prevX, prevY);
+                    } else {
+                        trailLines.push({
+                            x: nextX, y: nextY, pX: prevX, pY: prevY,
+                            age: 1.0, widthOverride: null, strokeLenOffset: currentStrokeLength
+                        });
+                    }
+                    
+                    prevX = nextX;
+                    prevY = nextY;
+                }, 16); 
+            } else {
+                resetButtonStyle(btn);
+                clearInterval(autoInterval);
+                saveState(); 
+            }
+        }
+
+        async function toggleAudioDraw(btn) {
+            isAudioDrawing = !isAudioDrawing;
+            btn.innerHTML = isAudioDrawing ? `Audio Draw: ON <span class="keybind-hint" data-action="toggleAudio">${keybinds.toggleAudio.toUpperCase()}</span>` : `Audio Draw: OFF <span class="keybind-hint" data-action="toggleAudio">${keybinds.toggleAudio.toUpperCase()}</span>`;
+
+            if (isAudioDrawing) {
+                if (isAutoDrawing) toggleAutoDraw(document.getElementById('autoBtn')); 
+                setRandomActiveStyle(btn);
+                drawing = false;
+                if (isEraser) toggleEraser(document.getElementById('eraserBtn'));
+                pointsQueue = [];
+                currentStrokeLength = 0;
+
+                if (!audioCtx) {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        analyser = audioCtx.createAnalyser();
+                        analyser.fftSize = 64; 
+                        sourceStream = audioCtx.createMediaStreamSource(stream);
+                        sourceStream.connect(analyser);
+                        
+                        const bufferLength = analyser.frequencyBinCount;
+                        dataArray = new Uint8Array(bufferLength);
+                    } catch (err) {
+                        alert("Microphone access denied or unsupported. Unable to activate Audio Draw.");
+                        isAudioDrawing = false;
+                        resetButtonStyle(btn);
+                        btn.innerHTML = `Audio Draw: OFF <span class="keybind-hint" data-action="toggleAudio">${keybinds.toggleAudio.toUpperCase()}</span>`;
+                        return;
+                    }
+                }
+                
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    await audioCtx.resume();
+                }
+
+                prevX = pivotX;
+                prevY = pivotY;
+
+            } else {
+                resetButtonStyle(btn);
+                saveState();
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Secret Room Chat 🔐</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <script src="/socket.io/socket.io.js" onerror="window.socketIoFailed = true;"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle at top right, #3c096c, #1a0033, #0d001a);
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Ambient Glow Spheres */
+        .glow-sphere-1 {
+            position: absolute;
+            top: -15%;
+            left: -10%;
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(255, 123, 0, 0.4), transparent 70%);
+            filter: blur(80px);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .glow-sphere-2 {
+            position: absolute;
+            bottom: -15%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.45), transparent 70%);
+            filter: blur(90px);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* GRADIENT BORDER UTILITY */
+        .gradient-box {
+            position: relative;
+            background: rgba(22, 8, 42, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 1px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 123, 0, 0.2);
+        }
+
+        .gradient-box::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            padding: 2px;
+            background: linear-gradient(135deg, #ff7b00, #a855f7, #ff2a85);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        /* JOIN CARD / LOGIN OVERLAY */
+        .login-card {
+            width: 90%;
+            max-width: 420px;
+            padding: 40px 32px;
+            text-align: center;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .login-card h2 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ff9e00, #ff6000, #c084fc, #e879f9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .login-card p {
+            font-size: 0.9rem;
+            color: #d8b4fe;
+            margin-bottom: 26px;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            background: linear-gradient(90deg, #ff9e00, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
+            font-weight: 800;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 13px 16px;
+            background: rgba(12, 3, 26, 0.7);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        .input-group input:focus {
+            border-color: transparent;
+            background: rgba(20, 6, 40, 0.9);
+            box-shadow: 0 0 0 2px #ff7b00, 0 0 15px rgba(255, 123, 0, 0.4);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #ff6000 0%, #ff9e00 50%, #9333ea 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.05rem;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 6px 20px rgba(255, 96, 0, 0.4), 0 0 15px rgba(147, 51, 234, 0.3);
+            transition: transform 0.2s ease, opacity 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.95;
+            box-shadow: 0 8px 25px rgba(255, 96, 0, 0.6), 0 0 20px rgba(147, 51, 234, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .error-msg {
+            color: #ff4d6d;
+            font-size: 0.85rem;
+            margin-top: 12px;
+            display: none;
+            font-weight: 600;
+        }
+
+        /* MAIN CHAT CONTAINER */
+        .chat-wrapper {
+            display: none;
+            width: 95%;
+            max-width: 950px;
+            height: 90vh;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        /* CHAT HEADER */
+        .chat-header {
+            padding: 18px 24px;
+            background: linear-gradient(90deg, rgba(30, 8, 55, 0.9), rgba(18, 4, 34, 0.95));
+            border-bottom: 1px solid rgba(255, 123, 0, 0.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top-left-radius: 22px;
+            border-top-right-radius: 22px;
+        }
+
+        .chat-header .room-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .room-badge {
+            background: linear-gradient(135deg, #ff6000, #a855f7);
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            box-shadow: 0 0 10px rgba(255, 96, 0, 0.4);
+        }
+
+        .chat-header h3 {
+            font-size: 1.2rem;
+            background: linear-gradient(90deg, #ffffff, #ffb703, #e879f9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .leave-btn {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(255, 96, 0, 0.2));
+            border: 1px solid rgba(255, 96, 0, 0.5);
+            color: #ffb703;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .leave-btn:hover {
+            background: linear-gradient(135deg, #ef4444, #ff6000);
+            color: white;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+
+        /* MESSAGES AREA */
+        .messages-box {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            scroll-behavior: smooth;
+            background: rgba(14, 3, 28, 0.6);
+        }
+
+        .messages-box::-webkit-scrollbar {
+            width: 7px;
+        }
+        .messages-box::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #ff7b00, #a855f7);
+            border-radius: 10px;
+        }
+
+        /* MESSAGE BUBBLES */
+        .message-row {
+            display: flex;
+            flex-direction: column;
+            max-width: 75%;
+            animation: fadeInMsg 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
+        }
+
+        @keyframes fadeInMsg {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-row.self {
+            align-self: flex-end;
+        }
+
+        .message-row.other {
+            align-self: flex-start;
+        }
+
+        .message-row.system {
+            align-self: center;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .system-pill {
+            background: linear-gradient(135deg, rgba(255, 123, 0, 0.15), rgba(168, 85, 247, 0.2));
+            border: 1px solid rgba(255, 157, 0, 0.4);
+            color: #f3e8ff;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+        }
+
+        .sender-name {
+            font-size: 0.75rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+            padding-left: 2px;
+            background: linear-gradient(90deg, #ff9e00, #ff6000);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .message-row.self .sender-name {
+            text-align: right;
+            padding-right: 2px;
+            background: linear-gradient(90deg, #e879f9, #ff7b00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .bubble {
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        .message-row.self .bubble {
+            background: linear-gradient(135deg, #ff6000 0%, #c084fc 60%, #9333ea 100%);
+            color: #ffffff;
+            border-bottom-right-radius: 2px;
+            box-shadow: 0 6px 18px rgba(255, 96, 0, 0.35);
+        }
+
+        .message-row.other .bubble {
+            background: linear-gradient(135deg, rgba(48, 14, 82, 0.95), rgba(28, 6, 52, 0.95));
+            border: 1px solid rgba(255, 123, 0, 0.35);
+            color: #f3e8ff;
+            border-bottom-left-radius: 2px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+        }
+
+        .time-stamp {
+            font-size: 0.68rem;
+            opacity: 0.8;
+            margin-top: 5px;
+            display: block;
+            text-align: right;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        /* FILE ATTACHMENT DISPLAY */
+        .file-attachment {
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .file-attachment img {
+            max-width: 100%;
+            max-height: 260px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid rgba(255, 157, 0, 0.4);
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .file-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, rgba(255, 123, 0, 0.2), rgba(168, 85, 247, 0.25));
+            padding: 10px 14px;
+            border-radius: 10px;
+            color: #ffb703;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border: 1px solid rgba(255, 157, 0, 0.4);
+            transition: all 0.2s;
+        }
+
+        .file-link:hover {
+            background: linear-gradient(135deg, rgba(255, 123, 0, 0.4), rgba(168, 85, 247, 0.45));
+            color: white;
+            box-shadow: 0 0 12px rgba(255, 123, 0, 0.3);
+        }
+
+        /* PREVIEW BAR FOR SELECTED FILE */
+        .file-preview-bar {
+            display: none;
+            background: linear-gradient(90deg, rgba(25, 6, 46, 0.95), rgba(40, 10, 70, 0.95));
+            padding: 10px 20px;
+            border-top: 1px solid rgba(255, 123, 0, 0.3);
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #ff9e00;
+            font-weight: 600;
+        }
+
+        .file-preview-bar span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 80%;
+        }
+
+        .cancel-file-btn {
+            background: linear-gradient(135deg, #ef4444, #ff6000);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+        }
+
+        /* INPUT FOOTER AREA */
+        .chat-input-area {
+            padding: 16px 20px;
+            background: linear-gradient(90deg, rgba(20, 5, 38, 0.95), rgba(12, 3, 24, 0.95));
+            border-top: 1px solid rgba(255, 123, 0, 0.25);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            border-bottom-left-radius: 22px;
+            border-bottom-right-radius: 22px;
+        }
+
+        .file-upload-label {
+            cursor: pointer;
+            background: linear-gradient(135deg, rgba(255, 96, 0, 0.25), rgba(147, 51, 234, 0.3));
+            border: 1px solid rgba(255, 157, 0, 0.5);
+            padding: 12px 14px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            color: #ff9e00;
+            font-size: 1.1rem;
+        }
+
+        .file-upload-label:hover {
+            background: linear-gradient(135deg, rgba(255, 96, 0, 0.45), rgba(147, 51, 234, 0.5));
+            box-shadow: 0 0 12px rgba(255, 123, 0, 0.4);
+            transform: scale(1.03);
+        }
+
+        .file-upload-label input {
+            display: none;
+        }
+
+        .chat-input-area input[type="text"] {
+            flex: 1;
+            padding: 13px 18px;
+            background: rgba(10, 2, 20, 0.8);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 12px;
+            color: white;
+            font-size: 0.98rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .chat-input-area input[type="text"]:focus {
+            border-color: transparent;
+            box-shadow: 0 0 0 2px #ff7b00, 0 0 15px rgba(255, 123, 0, 0.4);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, #ff6000 0%, #ff9e00 50%, #9333ea 100%);
+            border: none;
+            color: white;
+            padding: 13px 24px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 96, 0, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .send-btn:hover {
+            opacity: 0.95;
+            box-shadow: 0 6px 20px rgba(255, 96, 0, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .send-btn:active {
+            transform: scale(0.96);
+        }
+
+        @media (max-width: 600px) {
+            .chat-wrapper {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+            }
+            .chat-wrapper.gradient-box::before {
+                border-radius: 0;
+            }
+            .chat-header, .chat-input-area {
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glow-sphere-1"></div>
+    <div class="glow-sphere-2"></div>
+
+    <div class="login-card gradient-box" id="loginCard">
+        <h2>Secret Chat Vault</h2>
+        <p>Enter details to join or create a private room</p>
+
+        <form id="joinForm" onsubmit="handleJoinSubmit(event)">
+            <div class="input-group">
+                <label for="userName">Your Name</label>
+                <input type="text" id="userName" placeholder="e.g. Alex" maxlength="20" required>
+            </div>
+
+            <div class="input-group">
+                <label for="roomId">Room ID</label>
+                <input type="text" id="roomId" placeholder="e.g. SecretZone" maxlength="25" required>
+            </div>
+
+            <div class="input-group">
+                <label for="roomPass">Room Password</label>
+                <input type="password" id="roomPass" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-primary" id="joinBtn">Join Secret Room</button>
+            <div class="error-msg" id="loginError"></div>
+        </form>
+    </div>
+
+    <div class="chat-wrapper gradient-box" id="chatWrapper">
+        <div class="chat-header">
+            <div class="room-title">
+                <span class="room-badge">Secret Room</span>
+                <h3 id="displayRoomId">Room</h3>
+            </div>
+            <button class="leave-btn" onclick="leaveRoom()">Leave Room</button>
+        </div>
+
+        <div class="messages-box" id="messagesBox"></div>
+
+        <div class="file-preview-bar" id="filePreviewBar">
+            <span id="fileNamePreview">Attached: file.png</span>
+            <button class="cancel-file-btn" onclick="clearSelectedFile()">✕</button>
+        </div>
+
+        <div class="chat-input-area">
+            <label class="file-upload-label" title="Attach file or image">
+                📎
+                <input type="file" id="fileInput" onchange="handleFileSelect(this)">
+            </label>
+
+            <input type="text" id="messageInput" placeholder="Type a message..." onkeydown="handleKeyPress(event)" autocomplete="off">
+            <button class="send-btn" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let socket = null;
+
+        if (typeof io !== 'undefined') {
+            socket = io();
+        }
+
+        let currentUserName = '';
+        let currentRoomId = '';
+        let selectedFilePayload = null;
+
+        // UI References
+        const loginCard = document.getElementById('loginCard');
+        const chatWrapper = document.getElementById('chatWrapper');
+        const loginError = document.getElementById('loginError');
+        const displayRoomId = document.getElementById('displayRoomId');
+        const messagesBox = document.getElementById('messagesBox');
+        const messageInput = document.getElementById('messageInput');
+        const fileInput = document.getElementById('fileInput');
+        const filePreviewBar = document.getElementById('filePreviewBar');
+        const fileNamePreview = document.getElementById('fileNamePreview');
+
+        function handleJoinSubmit(e) {
+            e.preventDefault();
+            joinRoom();
+        }
+
+        function joinRoom() {
+            const name = document.getElementById('userName').value.trim();
+            const roomId = document.getElementById('roomId').value.trim();
+            const roomPass = document.getElementById('roomPass').value.trim();
+
+            if (!name || !roomId || !roomPass) {
+                showError('Please fill in all fields!');
+                return;
+            }
+
+            loginError.style.display = 'none';
+
+            if (socket) {
+                socket.emit('join-room', { name, roomId, roomPass });
+            } else {
+                showError('Could not connect to the server.');
+            }
+        }
+
+        if (socket) {
+            socket.on('join-response', (res) => {
+                if (!res.success) {
+                    showError(res.message);
+                    return;
+                }
+
+                currentUserName = document.getElementById('userName').value.trim();
+                currentRoomId = res.roomId;
+
+                displayRoomId.textContent = `#${currentRoomId}`;
+                loginCard.style.display = 'none';
+                chatWrapper.style.display = 'flex';
+                messagesBox.innerHTML = '';
+
+                // Load all past room messages
+                if (res.history && res.history.length > 0) {
+                    res.history.forEach(msg => renderMessage(msg));
+                    scrollToBottom();
+                }
+            });
+
+            socket.on('chat-message', (msgData) => {
+                renderMessage(msgData);
+                scrollToBottom();
+            });
+        }
+
+        function renderMessage(msg) {
+            const row = document.createElement('div');
+
+            if (msg.isSystem) {
+                row.className = 'message-row system';
+                row.innerHTML = `<div class="system-pill">🔒 ${formatMessageText(msg.message)}</div>`;
+            } else {
+                const isSelf = msg.name === currentUserName;
+                row.className = `message-row ${isSelf ? 'self' : 'other'}`;
+
+                let contentHtml = '';
+                if (msg.message) {
+                    contentHtml += `<div>${formatMessageText(msg.message)}</div>`;
+                }
+
+                if (msg.file) {
+                    const { fileName, fileType, fileData } = msg.file;
+                    contentHtml += `<div class="file-attachment">`;
+                    if (fileType && fileType.startsWith('image/')) {
+                        contentHtml += `<img src="${fileData}" alt="${escapeHTML(fileName)}" onclick="window.open('${fileData}', '_blank')">`;
+                    }
+                    contentHtml += `<a href="${fileData}" download="${escapeHTML(fileName)}" class="file-link">📁 Download ${escapeHTML(fileName)}</a>`;
+                    contentHtml += `</div>`;
+                }
+
+                row.innerHTML = `
+                    <div class="sender-name">${escapeHTML(msg.name)}</div>
+                    <div class="bubble">
+                        ${contentHtml}
+                        <span class="time-stamp">${msg.time || getCurrentTime()}</span>
+                    </div>
+                `;
+            }
+
+            messagesBox.appendChild(row);
+        }
+
+        function sendMessage() {
+            const text = messageInput.value.trim();
+
+            if (!text && !selectedFilePayload) return;
+
+            const payload = {
+                message: text,
+                file: selectedFilePayload
+            };
+
+            if (socket && socket.connected) {
+                socket.emit('chat-message', payload);
+            }
+
+            messageInput.value = '';
+            clearSelectedFile();
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+
+        function handleFileSelect(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            if (file.size > 8 * 1024 * 1024) {
+                alert('File size exceeds the 8MB limit!');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedFilePayload = {
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileSize: file.size,
+                    fileData: e.target.result
+                };
+
+                fileNamePreview.textContent = `Attached: ${file.name}`;
+                filePreviewBar.style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearSelectedFile() {
+            selectedFilePayload = null;
+            fileInput.value = '';
+            filePreviewBar.style.display = 'none';
+        }
+
+        function leaveRoom() {
+            location.reload();
+        }
+
+        function showError(msg) {
+            loginError.textContent = msg;
+            loginError.style.display = 'block';
+        }
+
+        function scrollToBottom() {
+            messagesBox.scrollTop = messagesBox.scrollHeight;
+        }
+
+        function getCurrentTime() {
+            return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        function formatMessageText(str) {
+            if (!str) return '';
+            const sanitized = escapeHTML(str);
+            const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
+
+            return sanitized.replace(urlRegex, (url) => {
+                const href = url.startsWith('www.') ? `http://${url}` : url;
+                return `<a href="${href}" target="_blank" rel="noopener noreferrer" style="color: #64dfdf; text-decoration: underline; word-break: break-all;">${url}</a>`;
+            });
+        }
+    </script>
+</body>
+</html>

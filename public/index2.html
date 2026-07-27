@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown till November 7 💜</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2e0854 0%, #6a1b9a 50%, #ab47bc 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 750px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.96);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #4a148c;
+            font-size: 3rem;
+            margin-bottom: 25px;
+        }
+
+        /* Purple Countdown Section */
+        .countdown-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 35px;
+        }
+
+        .time-box {
+            background: linear-gradient(135deg, #7b1fa2, #4a148c);
+            color: white;
+            padding: 15px;
+            border-radius: 16px;
+            min-width: 75px;
+            box-shadow: 0 4px 10px rgba(123, 31, 162, 0.3);
+        }
+
+        .time-box span {
+            display: block;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .time-box label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Birthday Content Hidden Initially */
+        .hidden-content {
+            display: none;
+            animation: fadeIn 1.2s ease-in-out forwards;
+        }
+
+        /* Letter Card */
+        .card {
+            background: #f3e5f5;
+            border: 2px dashed #8e24aa;
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 35px;
+            text-align: left;
+        }
+
+        .card h2 {
+            color: #4a148c;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .card p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #4a148c;
+            margin-bottom: 12px;
+        }
+
+        /* Reasons Section */
+        .memories {
+            margin-bottom: 35px;
+        }
+
+        .memories h3 {
+            color: #4a148c;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+        }
+
+        .memory-card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            border: 1px solid #e1bee7;
+        }
+
+        .memory-card h4 {
+            color: #7b1fa2;
+            margin-bottom: 8px;
+        }
+
+        .memory-card p {
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        .surprise-box {
+            padding: 25px;
+            background: #f3e5f5;
+            border-radius: 20px;
+            border: 2px solid #ab47bc;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            font-size: 0.95rem;
+            color: #e1bee7;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" src="music.mp3" loop></audio>
+
+    <div class="container">
+        <h1 id="main-header">Countdown till November 7</h1>
+
+        <div class="countdown-container">
+            <div class="time-box"><span id="days">0</span><label>Days</label></div>
+            <div class="time-box"><span id="hours">0</span><label>Hours</label></div>
+            <div class="time-box"><span id="minutes">0</span><label>Mins</label></div>
+            <div class="time-box"><span id="seconds">0</span><label>Secs</label></div>
+        </div>
+
+        <div id="birthday-content" class="hidden-content">
+            <div class="card">
+                <h2>To My Dearest Himadri,</h2>
+                <p>
+                    From the moment you came into my life, everything became brighter, warmer, and so much more meaningful. Your smile never fails to brighten up my world.
+                </p>
+                <p>
+                    November 7th is a celebration of you—the incredible person you are and all the happiness you bring to everyone around you. I hope your birthday is filled with endless love, laughter, and magical moments.
+                </p>
+                <p style="text-align: right; font-weight: bold; margin-top: 15px; color: #4a148c;">
+                    Forever & Always 💜
+                </p>
+            </div>
+
+            <div class="memories">
+                <h3>3 Things That Make You Special 👑</h3>
+                <div class="memory-grid">
+                    <div class="memory-card">
+                        <h4>Your Smile 😊</h4>
+                        <p>It instantly brightens up even the darkest days.</p>
+                    </div>
+                    <div class="memory-card">
+                        <h4>Your Kindness 💜</h4>
+                        <p>The way you care for people is truly inspiring.</p>
+                    </div>
+                    <div class="memory-card">
+                        <h4>Our Memories 📸</h4>
+                        <p>Every moment spent with you is my absolute favorite.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="surprise-box">
+                <h2 style="color: #4a148c;">✨ Happy Birthday, Himadri! ✨</h2>
+                <p style="margin-top: 10px; font-size: 1.15rem; color: #6a1b9a; line-height: 1.6;">
+                    May your day be as wonderful and extraordinary as you are! Wishing you a year filled with endless laughter, boundless happiness, peace, and all the success in the world. You deserve all the love in the universe today and every single day! 💜
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Crafted with love for Himadri | November 7th 💜
+    </footer>
+
+    <script>
+        let timerInterval;
+
+        // Auto-play audio handling
+        const music = document.getElementById('bg-music');
+        
+        // Attempt to play audio on load
+        window.addEventListener('DOMContentLoaded', () => {
+            music.play().catch(() => {
+                // Browsers often block autoplay without user interaction.
+                // This listener starts music on the user's first click anywhere on the page.
+                document.addEventListener('click', () => {
+                    music.play();
+                }, { once: true });
+            });
+        });
+
+        function updateCountdown() {
+            const now = new Date();
+            let targetYear = now.getFullYear();
+            let targetDate = new Date(targetYear, 10, 7); // November 7th
+
+            if (now > targetDate) {
+                targetDate = new Date(targetYear + 1, 10, 7);
+            }
+
+            const diff = targetDate - now;
+
+            if (diff <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('days').innerText = '0';
+                document.getElementById('hours').innerText = '0';
+                document.getElementById('minutes').innerText = '0';
+                document.getElementById('seconds').innerText = '0';
+
+                // Change main header and reveal messages
+                document.getElementById('main-header').innerText = "Happy Birthday Himadri! 💜";
+                document.getElementById('birthday-content').style.display = 'block';
+                return;
+            }
+
+            const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const m = Math.floor((diff / (1000 * 60)) % 60);
+            const s = Math.floor((diff / 1000) % 60);
+
+            document.getElementById('days').innerText = d;
+            document.getElementById('hours').innerText = h;
+            document.getElementById('minutes').innerText = m;
+            document.getElementById('seconds').innerText = s;
+        }
+
+        timerInterval = setInterval(updateCountdown, 1000);
+        updateCountdown();
+    </script>
+</body>
+</html>
