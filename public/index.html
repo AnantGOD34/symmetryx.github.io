@@ -360,7 +360,6 @@
 
     <div class="zoom-overlay-controls" id="zoomControls">
         <button onclick="updateZoom(0.1)" title="Zoom In (+)">🔍+</button>
-        <button onclick="resetZoom()" title="Reset Zoom">100%</button>
         <button onclick="updateZoom(-0.1)" title="Zoom Out (-)">🔍-</button>
     </div>
 
@@ -398,7 +397,7 @@
                     <div class="control-item id-gradient-builder-item" id="gradientBuilderContainer" style="display: none;">
                         <div class="gradient-palette-builder">
                             <div class="control-group-row">
-                                <span style="font-size:12px; color:#ddd;">Gradient Map Colors (<span id="paletteCount">2</span>/10):</span>
+                                <span style="font-size:12px; color:#ddd;">Gradient Map Colors (<span id="paletteCount">3</span>/10):</span>
                                 <button id="addColorBtn" onclick="addPaletteColor()" style="width:auto; padding:2px 8px; font-size:11px;">+ Add</button>
                             </div>
                             <div class="palette-pickers-grid" id="paletteGrid"></div>
@@ -488,9 +487,8 @@
                         <div class="control-group-row">
                             <label>Canvas Zoom: <span id="zoomValDisplay">100%</span></label>
                         </div>
-                        <div class="action-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                        <div class="action-grid" style="grid-template-columns: 1fr 1fr;">
                             <button onclick="updateZoom(0.1)">Zoom + <span class="keybind-hint" data-action="zoomIn">↑</span></button>
-                            <button onclick="resetZoom()">Reset</button>
                             <button onclick="updateZoom(-0.1)">Zoom - <span class="keybind-hint" data-action="zoomOut">↓</span></button>
                         </div>
                         <div class="description">Pinch screen, use Arrow Up/Down, Ctrl+Wheel, or buttons to zoom.</div>
@@ -545,6 +543,20 @@
         const paletteGrid = document.getElementById('paletteGrid');
         const addColorBtn = document.getElementById('addColorBtn');
         const zoomValDisplay = document.getElementById('zoomValDisplay');
+
+        // Button elements references
+        const btnGradient = document.getElementById('gradientBtn');
+        const btnEraser = document.getElementById('eraserBtn');
+        const btnMoveCenter = document.getElementById('moveCenterBtn');
+        const btnDynamic = document.getElementById('dynamicBtn');
+        const btnTrail = document.getElementById('trailBtn');
+        const btnGlow = document.getElementById('glowBtn');
+        const btnRainbow = document.getElementById('rainbowBtn');
+        const btnMirror = document.getElementById('mirrorBtn');
+        const btnString = document.getElementById('stringBtn');
+        const btnParticles = document.getElementById('particlesBtn');
+        const btnAuto = document.getElementById('autoBtn');
+        const btnAudio = document.getElementById('audioBtn');
         
         let drawing = false;
         let isAutoDrawing = false;
@@ -561,8 +573,8 @@
         let isGradientMode = false;
         
         let prevX = 0, prevY = 0;
-        let targetX = 0, targetY = 0;
         let hue = 0;
+        let strokeStep = 0;
         let autoAngle = 0;
         let historyStack = [];
         let undoStep = -1;
@@ -581,8 +593,37 @@
         let initialZoomOnPinch = 1.0;
         let isPinching = false;
 
-        // Smooth Custom Gradient State
-        let gradientColors = ["#00ffcc", "#ff007f", "#3498db"];
+        // High Quality Smooth Gradient Setup
+        let gradientColors = ["#00ffcc", "#ff007f", "#ffea00"];
+
+        // Color Helper Functions for Dynamic Interpolation
+        function hexToRgb(hex) {
+            hex = hex.replace(/^#/, '');
+            if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
+            const num = parseInt(hex, 16);
+            return [num >> 16, (num >> 8) & 255, num & 255];
+        }
+
+        function interpolateColor(color1, color2, factor) {
+            const rgb1 = hexToRgb(color1);
+            const rgb2 = hexToRgb(color2);
+            const r = Math.round(rgb1[0] + factor * (rgb2[0] - rgb1[0]));
+            const g = Math.round(rgb1[1] + factor * (rgb2[1] - rgb1[1]));
+            const b = Math.round(rgb1[2] + factor * (rgb2[2] - rgb1[2]));
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function getGradientColorAtProgress(progress) {
+            if (gradientColors.length === 0) return colorInput.value;
+            if (gradientColors.length === 1) return gradientColors[0];
+
+            progress = progress % 1; // Loop smoothly
+            const totalSegments = gradientColors.length - 1;
+            const segment = Math.min(Math.floor(progress * totalSegments), totalSegments - 1);
+            const segmentProgress = (progress * totalSegments) - segment;
+
+            return interpolateColor(gradientColors[segment], gradientColors[segment + 1], segmentProgress);
+        }
 
         // Keybind System State
         const defaultKeybinds = {
@@ -637,7 +678,7 @@
             if (temp && temp.width > 1) {
                 ctx.putImageData(temp, 0, 0);
             }
-            if (pivotX === window.innerWidth / 2 || pivotX === 0) {
+            if (!pivotX || pivotX === 0) {
                 pivotX = canvas.width / 2;
                 pivotY = canvas.height / 2;
             }
@@ -650,7 +691,7 @@
                 historyStack = historyStack.slice(0, undoStep + 1);
             }
             historyStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-            if (historyStack.length > 20) historyStack.shift();
+            if (historyStack.length > 25) historyStack.shift();
             else undoStep++;
         }
         saveState();
@@ -683,6 +724,10 @@
 
         function getBrushColor() {
             if (isEraser) return '#1a1a1a';
+            if (isGradientMode) {
+                strokeStep += 0.015;
+                return getGradientColorAtProgress(strokeStep);
+            }
             if (isRainbow) {
                 hue = (hue + 2) % 360;
                 return `hsl(${hue}, 100%, 50%)`;
@@ -706,7 +751,7 @@
             ctx.translate(pivotX, pivotY);
 
             if (isGlow) {
-                ctx.shadowBlur = 15;
+                ctx.shadowBlur = 18;
                 ctx.shadowColor = strokeColor;
             } else {
                 ctx.shadowBlur = 0;
@@ -727,12 +772,6 @@
                 if (isEraser) {
                     ctx.globalCompositeOperation = 'destination-out';
                     ctx.strokeStyle = 'rgba(0,0,0,1)';
-                } else if (isGradientMode && gradientColors.length >= 2) {
-                    const grad = ctx.createLinearGradient(x1 - pivotX, y1 - pivotY, x2 - pivotX, y2 - pivotY);
-                    gradientColors.forEach((col, idx) => {
-                        grad.addColorStop(idx / (gradientColors.length - 1), col);
-                    });
-                    ctx.strokeStyle = grad;
                 } else {
                     ctx.strokeStyle = strokeColor;
                 }
@@ -748,7 +787,20 @@
             ctx.restore();
         }
 
-        // --- DRAWING EVENT HANDLERS ---
+        // --- UNRESTRICTED INFINITE CANVAS COORDINATE MAPPING ---
+        function getPos(e) {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            const mappedX = centerX + (clientX - centerX) / currentZoom;
+            const mappedY = centerY + (clientY - centerY) / currentZoom;
+
+            return { x: mappedX, y: mappedY };
+        }
+
         function startDraw(e) {
             if (isPinching) return;
             const pos = getPos(e);
@@ -779,16 +831,6 @@
             }
         }
 
-        function getPos(e) {
-            const rect = canvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            return {
-                x: (clientX - rect.left) / currentZoom,
-                y: (clientY - rect.top) / currentZoom
-            };
-        }
-
         canvas.addEventListener('mousedown', startDraw);
         canvas.addEventListener('mousemove', moveDraw);
         canvas.addEventListener('mouseup', stopDraw);
@@ -798,25 +840,26 @@
         canvas.addEventListener('touchmove', moveDraw);
         canvas.addEventListener('touchend', stopDraw);
 
-        // --- UI TOGGLE HELPERS ---
+        // --- UI TOGGLE HELPERS WITH ACTIVE COLOR STYLING ---
         function updateToggleBtn(btn, state, name) {
+            if (!btn) return;
             btn.classList.toggle('active-toggle', state);
             const hint = btn.querySelector('.keybind-hint');
             const hintHTML = hint ? hint.outerHTML : '';
             btn.innerHTML = `${name}: ${state ? 'ON' : 'OFF'} ${hintHTML}`;
         }
 
-        function toggleEraser(btn) { isEraser = !isEraser; updateToggleBtn(btn, isEraser, 'Eraser'); }
-        function toggleMoveCenter(btn) { isMovingCenter = !isMovingCenter; updateToggleBtn(btn, isMovingCenter, 'Move Center'); }
-        function toggleDynamicBrush(btn) { isDynamicBrush = !isDynamicBrush; updateToggleBtn(btn, isDynamicBrush, 'Dynamic Brush'); }
-        function toggleTrail(btn) { isTrail = !isTrail; updateToggleBtn(btn, isTrail, 'Trail'); }
-        function toggleGlow(btn) { isGlow = !isGlow; updateToggleBtn(btn, isGlow, 'Glow'); }
-        function toggleRainbow(btn) { isRainbow = !isRainbow; updateToggleBtn(btn, isRainbow, 'Rainbow'); }
-        function toggleMirror(btn) { isMirror = !isMirror; updateToggleBtn(btn, isMirror, 'Mirror'); }
-        function toggleStringArt(btn) { isStringArt = !isStringArt; updateToggleBtn(btn, isStringArt, 'String Art'); }
-        function toggleParticles(btn) { isParticles = !isParticles; updateToggleBtn(btn, isParticles, 'Particles'); }
+        function toggleEraser(btn = btnEraser) { isEraser = !isEraser; updateToggleBtn(btn, isEraser, 'Eraser'); }
+        function toggleMoveCenter(btn = btnMoveCenter) { isMovingCenter = !isMovingCenter; updateToggleBtn(btn, isMovingCenter, 'Move Center'); }
+        function toggleDynamicBrush(btn = btnDynamic) { isDynamicBrush = !isDynamicBrush; updateToggleBtn(btn, isDynamicBrush, 'Dynamic Brush'); }
+        function toggleTrail(btn = btnTrail) { isTrail = !isTrail; updateToggleBtn(btn, isTrail, 'Trail'); }
+        function toggleGlow(btn = btnGlow) { isGlow = !isGlow; updateToggleBtn(btn, isGlow, 'Glow'); }
+        function toggleRainbow(btn = btnRainbow) { isRainbow = !isRainbow; updateToggleBtn(btn, isRainbow, 'Rainbow'); }
+        function toggleMirror(btn = btnMirror) { isMirror = !isMirror; updateToggleBtn(btn, isMirror, 'Mirror'); }
+        function toggleStringArt(btn = btnString) { isStringArt = !isStringArt; updateToggleBtn(btn, isStringArt, 'String Art'); }
+        function toggleParticles(btn = btnParticles) { isParticles = !isParticles; updateToggleBtn(btn, isParticles, 'Particles'); }
 
-        function toggleGradientMode(btn) {
+        function toggleGradientMode(btn = btnGradient) {
             isGradientMode = !isGradientMode;
             updateToggleBtn(btn, isGradientMode, 'Gradient Line');
             gradientBuilderContainer.style.display = isGradientMode ? 'block' : 'none';
@@ -862,7 +905,7 @@
             });
         }
 
-        function toggleAutoDraw(btn) {
+        function toggleAutoDraw(btn = btnAuto) {
             isAutoDrawing = !isAutoDrawing;
             updateToggleBtn(btn, isAutoDrawing, 'Auto Draw');
             if (isAutoDrawing) autoDrawLoop();
@@ -883,7 +926,7 @@
             requestAnimationFrame(autoDrawLoop);
         }
 
-        function toggleAudioDraw(btn) {
+        function toggleAudioDraw(btn = btnAudio) {
             isAudioDrawing = !isAudioDrawing;
             updateToggleBtn(btn, isAudioDrawing, 'Audio Draw');
         }
@@ -948,10 +991,6 @@
             }
         }
 
-        function resetZoom() {
-            setZoomLevel(1.0);
-        }
-
         function toggleAccordion(header) {
             const item = header.parentElement;
             item.classList.toggle('active');
@@ -1010,7 +1049,7 @@
             }
         }, { passive: false });
 
-        // Initialize Keyboard Listeners
+        // Initialize Keyboard Listeners for ALL Actions
         window.addEventListener('keydown', (e) => {
             if (activeRebindAction) {
                 keybinds[activeRebindAction] = e.key.toLowerCase();
@@ -1020,6 +1059,22 @@
             }
 
             const key = e.key.toLowerCase();
+
+            if (key === keybinds.toggleEraser) toggleEraser();
+            if (key === keybinds.toggleMoveCenter) toggleMoveCenter();
+            if (key === keybinds.toggleDynamic) toggleDynamicBrush();
+            if (key === keybinds.toggleTrail) toggleTrail();
+            if (key === keybinds.toggleGlow) toggleGlow();
+            if (key === keybinds.toggleRainbow) toggleRainbow();
+            if (key === keybinds.toggleMirror) toggleMirror();
+            if (key === keybinds.toggleString) toggleStringArt();
+            if (key === keybinds.toggleParticles) toggleParticles();
+            if (key === keybinds.toggleGradient) toggleGradientMode();
+            if (key === keybinds.toggleAuto) toggleAutoDraw();
+            if (key === keybinds.toggleAudio) toggleAudioDraw();
+            if (key === keybinds.clearCanvas) clearCanvas();
+            if (key === keybinds.undo) undo();
+            if (key === keybinds.redo) redo();
             if (key === keybinds.zoomIn) updateZoom(0.1);
             if (key === keybinds.zoomOut) updateZoom(-0.1);
             if (key === keybinds.toggleUI) toggleUI();
@@ -1028,6 +1083,7 @@
         // Initialize UI on window load
         window.addEventListener('DOMContentLoaded', () => {
             renderKeybindsUI();
+            renderPaletteGrid();
         });
     </script>
 </body>
