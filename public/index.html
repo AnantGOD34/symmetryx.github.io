@@ -168,6 +168,11 @@
         button:active {
             transform: scale(0.98);
         }
+        button.active-toggle {
+            background: rgba(255, 149, 0, 0.3) !important;
+            border-color: rgba(255, 149, 0, 0.7) !important;
+            color: #ff9500 !important;
+        }
         .action-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -557,6 +562,10 @@
         
         let prevX = 0, prevY = 0;
         let targetX = 0, targetY = 0;
+        let hue = 0;
+        let autoAngle = 0;
+        let historyStack = [];
+        let undoStep = -1;
 
         // Pivot Center State
         let pivotX = window.innerWidth / 2;
@@ -620,6 +629,264 @@
             zoomIn: 'Zoom In',
             zoomOut: 'Zoom Out'
         };
+
+        function resizeCanvas() {
+            const temp = ctx.getImageData(0, 0, canvas.width || 1, canvas.height || 1);
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            if (temp && temp.width > 1) {
+                ctx.putImageData(temp, 0, 0);
+            }
+            if (pivotX === window.innerWidth / 2 || pivotX === 0) {
+                pivotX = canvas.width / 2;
+                pivotY = canvas.height / 2;
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function saveState() {
+            if (undoStep < historyStack.length - 1) {
+                historyStack = historyStack.slice(0, undoStep + 1);
+            }
+            historyStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+            if (historyStack.length > 20) historyStack.shift();
+            else undoStep++;
+        }
+        saveState();
+
+        function undo() {
+            if (undoStep > 0) {
+                undoStep--;
+                ctx.putImageData(historyStack[undoStep], 0, 0);
+            }
+        }
+
+        function redo() {
+            if (undoStep < historyStack.length - 1) {
+                undoStep++;
+                ctx.putImageData(historyStack[undoStep], 0, 0);
+            }
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            saveState();
+        }
+
+        function saveCanvas() {
+            const link = document.createElement('a');
+            link.download = 'symmetryx-creation.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function getBrushColor() {
+            if (isEraser) return '#1a1a1a';
+            if (isRainbow) {
+                hue = (hue + 2) % 360;
+                return `hsl(${hue}, 100%, 50%)`;
+            }
+            return colorInput.value;
+        }
+
+        function drawSymmetry(x1, y1, x2, y2) {
+            const numSlices = parseInt(sliceInput.value, 10);
+            const angleStep = (Math.PI * 2) / numSlices;
+
+            let strokeColor = getBrushColor();
+            let strokeWidth = parseInt(sizeInput.value, 10);
+
+            if (isDynamicBrush) {
+                const dist = Math.hypot(x2 - x1, y2 - y1);
+                strokeWidth = Math.max(2, Math.min(50, dist * 1.2));
+            }
+
+            ctx.save();
+            ctx.translate(pivotX, pivotY);
+
+            if (isGlow) {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = strokeColor;
+            } else {
+                ctx.shadowBlur = 0;
+            }
+
+            for (let i = 0; i < numSlices; i++) {
+                ctx.save();
+                ctx.rotate(i * angleStep);
+
+                if (isMirror && i % 2 === 1) {
+                    ctx.scale(1, -1);
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(x1 - pivotX, y1 - pivotY);
+                ctx.lineTo(x2 - pivotX, y2 - pivotY);
+
+                if (isEraser) {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.strokeStyle = 'rgba(0,0,0,1)';
+                } else if (isGradientMode && gradientColors.length >= 2) {
+                    const grad = ctx.createLinearGradient(x1 - pivotX, y1 - pivotY, x2 - pivotX, y2 - pivotY);
+                    gradientColors.forEach((col, idx) => {
+                        grad.addColorStop(idx / (gradientColors.length - 1), col);
+                    });
+                    ctx.strokeStyle = grad;
+                } else {
+                    ctx.strokeStyle = strokeColor;
+                }
+
+                ctx.lineWidth = strokeWidth;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            ctx.restore();
+        }
+
+        // --- DRAWING EVENT HANDLERS ---
+        function startDraw(e) {
+            if (isPinching) return;
+            const pos = getPos(e);
+
+            if (isMovingCenter) {
+                pivotX = pos.x;
+                pivotY = pos.y;
+                return;
+            }
+
+            drawing = true;
+            prevX = pos.x;
+            prevY = pos.y;
+        }
+
+        function moveDraw(e) {
+            if (!drawing || isPinching) return;
+            const pos = getPos(e);
+            drawSymmetry(prevX, prevY, pos.x, pos.y);
+            prevX = pos.x;
+            prevY = pos.y;
+        }
+
+        function stopDraw() {
+            if (drawing) {
+                drawing = false;
+                saveState();
+            }
+        }
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: (clientX - rect.left) / currentZoom,
+                y: (clientY - rect.top) / currentZoom
+            };
+        }
+
+        canvas.addEventListener('mousedown', startDraw);
+        canvas.addEventListener('mousemove', moveDraw);
+        canvas.addEventListener('mouseup', stopDraw);
+        canvas.addEventListener('mouseleave', stopDraw);
+
+        canvas.addEventListener('touchstart', startDraw);
+        canvas.addEventListener('touchmove', moveDraw);
+        canvas.addEventListener('touchend', stopDraw);
+
+        // --- UI TOGGLE HELPERS ---
+        function updateToggleBtn(btn, state, name) {
+            btn.classList.toggle('active-toggle', state);
+            const hint = btn.querySelector('.keybind-hint');
+            const hintHTML = hint ? hint.outerHTML : '';
+            btn.innerHTML = `${name}: ${state ? 'ON' : 'OFF'} ${hintHTML}`;
+        }
+
+        function toggleEraser(btn) { isEraser = !isEraser; updateToggleBtn(btn, isEraser, 'Eraser'); }
+        function toggleMoveCenter(btn) { isMovingCenter = !isMovingCenter; updateToggleBtn(btn, isMovingCenter, 'Move Center'); }
+        function toggleDynamicBrush(btn) { isDynamicBrush = !isDynamicBrush; updateToggleBtn(btn, isDynamicBrush, 'Dynamic Brush'); }
+        function toggleTrail(btn) { isTrail = !isTrail; updateToggleBtn(btn, isTrail, 'Trail'); }
+        function toggleGlow(btn) { isGlow = !isGlow; updateToggleBtn(btn, isGlow, 'Glow'); }
+        function toggleRainbow(btn) { isRainbow = !isRainbow; updateToggleBtn(btn, isRainbow, 'Rainbow'); }
+        function toggleMirror(btn) { isMirror = !isMirror; updateToggleBtn(btn, isMirror, 'Mirror'); }
+        function toggleStringArt(btn) { isStringArt = !isStringArt; updateToggleBtn(btn, isStringArt, 'String Art'); }
+        function toggleParticles(btn) { isParticles = !isParticles; updateToggleBtn(btn, isParticles, 'Particles'); }
+
+        function toggleGradientMode(btn) {
+            isGradientMode = !isGradientMode;
+            updateToggleBtn(btn, isGradientMode, 'Gradient Line');
+            gradientBuilderContainer.style.display = isGradientMode ? 'block' : 'none';
+            renderPaletteGrid();
+        }
+
+        function addPaletteColor() {
+            if (gradientColors.length < 10) {
+                gradientColors.push('#ffffff');
+                renderPaletteGrid();
+            }
+        }
+
+        function removePaletteColor(idx) {
+            if (gradientColors.length > 2) {
+                gradientColors.splice(idx, 1);
+                renderPaletteGrid();
+            }
+        }
+
+        function renderPaletteGrid() {
+            paletteGrid.innerHTML = '';
+            document.getElementById('paletteCount').textContent = gradientColors.length;
+            gradientColors.forEach((color, idx) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'palette-color-wrapper';
+
+                const inp = document.createElement('input');
+                inp.type = 'color';
+                inp.value = color;
+                inp.oninput = (e) => { gradientColors[idx] = e.target.value; };
+
+                if (gradientColors.length > 2) {
+                    const badge = document.createElement('div');
+                    badge.className = 'remove-color-badge';
+                    badge.textContent = '×';
+                    badge.onclick = () => removePaletteColor(idx);
+                    wrap.appendChild(badge);
+                }
+
+                wrap.appendChild(inp);
+                paletteGrid.appendChild(wrap);
+            });
+        }
+
+        function toggleAutoDraw(btn) {
+            isAutoDrawing = !isAutoDrawing;
+            updateToggleBtn(btn, isAutoDrawing, 'Auto Draw');
+            if (isAutoDrawing) autoDrawLoop();
+        }
+
+        function autoDrawLoop() {
+            if (!isAutoDrawing) return;
+            autoAngle += 0.05;
+            const r = 150 * Math.sin(autoAngle * 2);
+            const x = pivotX + r * Math.cos(autoAngle);
+            const y = pivotY + r * Math.sin(autoAngle);
+
+            if (prevX && prevY) {
+                drawSymmetry(prevX, prevY, x, y);
+            }
+            prevX = x;
+            prevY = y;
+            requestAnimationFrame(autoDrawLoop);
+        }
+
+        function toggleAudioDraw(btn) {
+            isAudioDrawing = !isAudioDrawing;
+            updateToggleBtn(btn, isAudioDrawing, 'Audio Draw');
+        }
 
         function renderKeybindsUI() {
             const container = document.getElementById('keybindsContainer');
@@ -694,10 +961,10 @@
             controlPanel.classList.toggle('hidden');
             if (controlPanel.classList.contains('hidden')) {
                 showUIBtn.style.display = 'block';
-                zoomControls.classList.add('hidden');
+                if (zoomControls) zoomControls.classList.add('hidden');
             } else {
                 showUIBtn.style.display = 'none';
-                zoomControls.classList.remove('hidden');
+                if (zoomControls) zoomControls.classList.remove('hidden');
             }
         }
 
@@ -711,7 +978,7 @@
         window.addEventListener('touchstart', (e) => {
             if (e.touches.length === 2) {
                 isPinching = true;
-                drawing = false; // Cancel active drawing while pinching
+                drawing = false;
                 initialPinchDistance = getTouchDistance(e.touches);
                 initialZoomOnPinch = currentZoom;
             }
