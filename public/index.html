@@ -273,6 +273,12 @@
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.15);
             box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .zoom-overlay-controls.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
         }
         .zoom-overlay-controls button {
             width: 36px;
@@ -347,7 +353,7 @@
 
     <div id="showUI" onclick="toggleUI()">Show Panel <span class="keybind-hint" data-action="toggleUI">H</span></div>
 
-    <div class="zoom-overlay-controls">
+    <div class="zoom-overlay-controls" id="zoomControls">
         <button onclick="updateZoom(0.1)" title="Zoom In (+)">🔍+</button>
         <button onclick="resetZoom()" title="Reset Zoom">100%</button>
         <button onclick="updateZoom(-0.1)" title="Zoom Out (-)">🔍-</button>
@@ -528,6 +534,7 @@
         
         const controlPanel = document.getElementById('controlPanel');
         const showUIBtn = document.getElementById('showUI');
+        const zoomControls = document.getElementById('zoomControls');
         const primaryColorContainer = document.getElementById('primaryColorContainer');
         const gradientBuilderContainer = document.getElementById('gradientBuilderContainer');
         const paletteGrid = document.getElementById('paletteGrid');
@@ -687,8 +694,10 @@
             controlPanel.classList.toggle('hidden');
             if (controlPanel.classList.contains('hidden')) {
                 showUIBtn.style.display = 'block';
+                zoomControls.classList.add('hidden');
             } else {
                 showUIBtn.style.display = 'none';
+                zoomControls.classList.remove('hidden');
             }
         }
 
