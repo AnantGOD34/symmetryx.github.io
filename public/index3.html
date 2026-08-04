@@ -252,6 +252,21 @@
             border-radius: 10px;
         }
 
+        /* DATE SEPARATOR */
+        .date-separator {
+            align-self: center;
+            margin: 12px 0;
+            padding: 4px 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #d8b4fe;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
         /* MESSAGE BUBBLES */
         .message-row {
             display: flex;
@@ -574,6 +589,7 @@
         let currentUserName = '';
         let currentRoomId = '';
         let selectedFilePayload = null;
+        let lastRenderedDateString = ''; // Track the last date header printed
 
         // UI References
         const loginCard = document.getElementById('loginCard');
@@ -624,6 +640,7 @@
                 loginCard.style.display = 'none';
                 chatWrapper.style.display = 'flex';
                 messagesBox.innerHTML = '';
+                lastRenderedDateString = ''; // Reset date tracking for the new room session
 
                 // Load all past room messages
                 if (res.history && res.history.length > 0) {
@@ -639,6 +656,43 @@
         }
 
         function renderMessage(msg) {
+            // Parse message timestamp or create a new Date object
+            const msgDate = msg.timestamp ? new Date(msg.timestamp) : new Date();
+
+            // Format date for separator (e.g. "Monday, Oct 24, 2026")
+            const dateStr = msgDate.toLocaleDateString(undefined, {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+
+            // Insert Date Separator Header if this is the first message of the day
+            if (dateStr !== lastRenderedDateString) {
+                lastRenderedDateString = dateStr;
+                const dateDiv = document.createElement('div');
+                dateDiv.className = 'date-separator';
+
+                // Format friendly dynamic dates like "Today" / "Yesterday"
+                const todayStr = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+
+                if (dateStr === todayStr) {
+                    dateDiv.textContent = 'Today';
+                } else if (dateStr === yesterdayStr) {
+                    dateDiv.textContent = 'Yesterday';
+                } else {
+                    dateDiv.textContent = dateStr;
+                }
+
+                messagesBox.appendChild(dateDiv);
+            }
+
+            // Local user timezone formatted time (e.g. "03:45 PM")
+            const timeStr = msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
             const row = document.createElement('div');
 
             if (msg.isSystem) {
@@ -667,7 +721,7 @@
                     <div class="sender-name">${escapeHTML(msg.name)}</div>
                     <div class="bubble">
                         ${contentHtml}
-                        <span class="time-stamp">${msg.time || getCurrentTime()}</span>
+                        <span class="time-stamp">${timeStr}</span>
                     </div>
                 `;
             }
@@ -682,7 +736,8 @@
 
             const payload = {
                 message: text,
-                file: selectedFilePayload
+                file: selectedFilePayload,
+                timestamp: new Date().toISOString() // Pass ISO timestamp so server & clients can sync times
             };
 
             if (socket && socket.connected) {
@@ -742,10 +797,6 @@
 
         function scrollToBottom() {
             messagesBox.scrollTop = messagesBox.scrollHeight;
-        }
-
-        function getCurrentTime() {
-            return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
         function escapeHTML(str) {
