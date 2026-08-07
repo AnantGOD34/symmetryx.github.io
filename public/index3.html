@@ -349,7 +349,7 @@
 
         .time-stamp {
             font-size: 0.68rem;
-            opacity: 0.8;
+            opacity: 0.85;
             margin-top: 5px;
             display: block;
             text-align: right;
@@ -655,9 +655,19 @@
             });
         }
 
+        /**
+         * Safely parses timestamps sent from the server across different field names or formats.
+         */
+        function parseMessageDate(msg) {
+            const rawTime = msg.timestamp || msg.time || msg.createdAt || msg.date;
+            if (!rawTime) return new Date();
+            
+            const parsed = new Date(rawTime);
+            return isNaN(parsed.getTime()) ? new Date() : parsed;
+        }
+
         function renderMessage(msg) {
-            // Parse message timestamp or create a new Date object
-            const msgDate = msg.timestamp ? new Date(msg.timestamp) : new Date();
+            const msgDate = parseMessageDate(msg);
 
             // Format date for separator (e.g. "Monday, Oct 24, 2026")
             const dateStr = msgDate.toLocaleDateString(undefined, {
@@ -690,8 +700,9 @@
                 messagesBox.appendChild(dateDiv);
             }
 
-            // Local user timezone formatted time (e.g. "03:45 PM")
+            // Local user timezone formatted time and short date
             const timeStr = msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const formattedShortDate = msgDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
 
             const row = document.createElement('div');
 
@@ -721,7 +732,7 @@
                     <div class="sender-name">${escapeHTML(msg.name)}</div>
                     <div class="bubble">
                         ${contentHtml}
-                        <span class="time-stamp">${timeStr}</span>
+                        <span class="time-stamp">${formattedShortDate}, ${timeStr}</span>
                     </div>
                 `;
             }
