@@ -29,10 +29,7 @@
             touch-action: none;
             display: block;
             z-index: 1;
-            transform-origin: center center;
-            transition: transform 0.05s linear;
         }
-        /* SIDEBAR PANEL LAYOUT WITH MODERN GLASSMORPHISM */
         .sidebar {
             position: absolute;
             top: 15px;
@@ -58,11 +55,12 @@
             pointer-events: none;
         }
         .sidebar-header {
-            padding: 25px 15px;
+            padding: 20px 15px 15px 15px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             text-align: center;
             background: rgba(0, 0, 0, 0.3);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
         }
@@ -72,16 +70,25 @@
             max-height: 100px;
             object-fit: contain;
             display: block;
-            /* Top-Left Orange to Bottom-Right Purple Directional Glow */
             filter: drop-shadow(-6px -6px 14px rgba(255, 149, 0, 0.9)) 
                     drop-shadow(6px 6px 14px rgba(155, 89, 182, 0.9));
+        }
+        .version-badge {
+            font-size: 11px;
+            color: #ff9500;
+            font-weight: bold;
+            margin-top: 6px;
+            letter-spacing: 1px;
+            background: rgba(255, 149, 0, 0.15);
+            padding: 2px 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 149, 0, 0.3);
         }
         .sidebar-scroll {
             flex: 1;
             overflow-y: auto;
             padding: 10px;
         }
-        /* MODERN ACCORDION STYLING */
         .accordion-item {
             border: 1px solid rgba(255,255,255,0.05);
             border-radius: 8px;
@@ -143,15 +150,11 @@
             line-height: 1.3;
             margin-top: 2px;
         }
-        .pro-tip {
-            color: #ff9500 !important;
-            font-weight: 500;
-        }
         input[type="range"] {
             width: 100%;
             margin-top: 5px;
         }
-        button {
+        button, select {
             cursor: pointer;
             padding: 8px 12px;
             background: rgba(255,255,255,0.08);
@@ -164,11 +167,19 @@
             width: 100%;
             font-size: 12px;
         }
+        select option {
+            background: #111;
+            color: #fff;
+        }
         button:hover {
             background: rgba(255,255,255,0.15);
         }
         button:active {
             transform: scale(0.98);
+        }
+        button.active-tool {
+            background: rgba(255, 149, 0, 0.4) !important;
+            border-color: rgba(255, 149, 0, 0.8) !important;
         }
         .action-grid {
             display: grid;
@@ -206,7 +217,6 @@
             width: 50px;
             height: 28px;
         }
-        /* DYNAMIC GRADIENT PALETTE STYLING */
         .gradient-palette-builder {
             display: flex;
             flex-direction: column;
@@ -313,6 +323,9 @@
             color: #ff9500;
             font-weight: bold;
         }
+        input[type="file"] {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -322,6 +335,7 @@
     <div class="sidebar" id="controlPanel">
         <div class="sidebar-header">
             <img src="logo.png" alt="Symmetryx Logo" class="sidebar-logo">
+            <div class="version-badge">v16.5</div>
         </div>
         
         <div class="sidebar-scroll">
@@ -334,7 +348,7 @@
                             <span id="brushSizeVal">6</span>
                         </div>
                         <input type="range" id="brushSize" min="2" max="50" value="6" oninput="document.getElementById('brushSizeVal').textContent=this.value">
-                        <div class="description">Sets the primary thickness of your drawing stroke.</div>
+                        <div class="description">Sets primary line thickness.</div>
                     </div>
                     
                     <div class="control-item" id="primaryColorContainer">
@@ -342,22 +356,20 @@
                             <label style="font-weight: bold; font-size: 13px;">Brush Color:</label>
                             <input type="color" id="brushColor" value="#00ffcc">
                         </div>
-                        <div class="description">Select a static color for the painting line.</div>
+                        <div class="description">Select static color for drawing strokes.</div>
                     </div>
 
                     <div class="control-item">
                         <button id="gradientBtn" onclick="toggleGradientMode(this)">Gradient Line: OFF <span class="keybind-hint" data-action="toggleGradient">K</span></button>
-                        <div class="description">Fuses up to 10 custom colors seamlessly along your stroke spectrum.</div>
                     </div>
 
-                    <div class="control-item id-gradient-builder-item" id="gradientBuilderContainer" style="display: none;">
+                    <div class="control-item" id="gradientBuilderContainer" style="display: none;">
                         <div class="gradient-palette-builder">
                             <div class="control-group-row">
-                                <span style="font-size:12px; color:#ddd;">Gradient Map Colors (<span id="paletteCount text">2</span>/10):</span>
+                                <span style="font-size:12px; color:#ddd;">Gradient Map (<span id="paletteCount text">2</span>/10):</span>
                                 <button id="addColorBtn" onclick="addPaletteColor()" style="width:auto; padding:2px 8px; font-size:11px;">+ Add</button>
                             </div>
-                            <div class="palette-pickers-grid" id="paletteGrid">
-                                </div>
+                            <div class="palette-pickers-grid" id="paletteGrid"></div>
                         </div>
                     </div>
 
@@ -366,18 +378,92 @@
                             <label for="slices">Slices:</label>
                             <span id="slicesVal">8</span>
                         </div>
-                        <input type="range" id="slices" min="2" max="100" value="8" oninput="document.getElementById('slicesVal').textContent=this.value">
-                        <div class="description">Changes the number of repeating segments mirrored around the pivot.</div>
+                        <input type="range" id="slices" min="2" max="100" value="8" oninput="document.getElementById('slicesVal').textContent=this.value; drawVisualizer();">
                     </div>
 
                     <div class="control-item">
                         <button id="eraserBtn" onclick="toggleEraser(this)">Eraser: OFF <span class="keybind-hint" data-action="toggleEraser">E</span></button>
-                        <div class="description">Switches brush behavior to wipe elements completely out.</div>
                     </div>
 
                     <div class="control-item">
                         <button id="moveCenterBtn" onclick="toggleMoveCenter(this)">Move Center: OFF <span class="keybind-hint" data-action="toggleMoveCenter">Space</span></button>
-                        <div class="description">Click anywhere on canvas to relocate your symmetry center pivot point.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">Shape & Geometry</div>
+                <div class="accordion-content">
+                    <div class="action-grid">
+                        <button id="toolFreehand" class="active-tool" onclick="setDrawingTool('freehand')">Freehand</button>
+                        <button id="toolLine" onclick="setDrawingTool('line')">Line</button>
+                        <button id="toolCircle" onclick="setDrawingTool('circle')">Circle</button>
+                        <button id="toolEllipse" onclick="setDrawingTool('ellipse')">Ellipse</button>
+                    </div>
+                    <div class="control-item">
+                        <button id="toolPolygon" onclick="setDrawingTool('polygon')">Polygon</button>
+                        <div class="control-group-row" style="margin-top:5px;">
+                            <label for="polySides">Polygon Sides:</label>
+                            <span id="polySidesVal">5</span>
+                        </div>
+                        <input type="range" id="polySides" min="3" max="12" value="5" oninput="document.getElementById('polySidesVal').textContent=this.value">
+                    </div>
+                    <div class="description">Shapes will automatically replicate and inherit all active effects.</div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">Layer System</div>
+                <div class="accordion-content">
+                    <div class="control-item">
+                        <div class="control-group-row">
+                            <label for="layerSelect">Active Layer:</label>
+                            <select id="layerSelect" onchange="switchLayer(this.value)" style="width: 120px;">
+                                <option value="0">Layer 1 (Bg)</option>
+                                <option value="1" selected>Layer 2 (Mid)</option>
+                                <option value="2">Layer 3 (Fg)</option>
+                            </select>
+                        </div>
+                        <div class="description">Work on separate background and foreground drawings.</div>
+                    </div>
+                    <button onclick="clearActiveLayer()" style="text-align: center;">Clear Selected Layer</button>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">Canvas & Axis Setup</div>
+                <div class="accordion-content">
+                    <div class="control-item">
+                        <button id="visualizerBtn" onclick="toggleVisualizer(this)">Axis Visualizer: OFF</button>
+                        <div class="description">Displays faint axis guidelines and center pivot mark.</div>
+                    </div>
+
+                    <div class="control-item">
+                        <div class="color-picker-container">
+                            <label style="font-size: 13px;">Canvas Bg Color:</label>
+                            <input type="color" id="bgColorPicker" value="#1a1a1a" oninput="changeBgColor(this.value)">
+                        </div>
+                    </div>
+
+                    <div class="control-item">
+                        <div class="control-group-row">
+                            <label for="gridSelect">Grid Overlay:</label>
+                            <select id="gridSelect" onchange="changeGridOverlay(this.value)" style="width: 120px;">
+                                <option value="none">None</option>
+                                <option value="dark">Dark Grid</option>
+                                <option value="light">Light Grid</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-item">
+                        <button onclick="document.getElementById('bgFileInput').click()">Import Bg Image</button>
+                        <input type="file" id="bgFileInput" accept="image/*" onchange="importBgImage(event)">
+                        <button onclick="clearBgImage()" style="margin-top: 4px; background: rgba(231, 76, 60, 0.2);">Clear Bg Image</button>
+                    </div>
+                    
+                    <div class="control-item">
+                        <button onclick="resetView()" style="text-align:center;">Reset View / Center View</button>
                     </div>
                 </div>
             </div>
@@ -387,37 +473,30 @@
                 <div class="accordion-content">
                     <div class="control-item">
                         <button id="dynamicBtn" onclick="toggleDynamicBrush(this)">Dynamic Brush: OFF <span class="keybind-hint" data-action="toggleDynamic">D</span></button>
-                        <div class="description">Changes thickness according to movement speed.</div>
                     </div>
 
                     <div class="control-item">
                         <button id="trailBtn" onclick="toggleTrail(this)">Trail: OFF <span class="keybind-hint" data-action="toggleTrail">T</span></button>
-                        <div class="description">When ON, lines slowly fade away into the dark background.</div>
                     </div>
 
                     <div class="control-item">
                         <button id="glowBtn" onclick="toggleGlow(this)">Glow: OFF <span class="keybind-hint" data-action="toggleGlow">G</span></button>
-                        <div class="description">Adds a bright neon back-glow effect behind your brush strokes.</div>
                     </div>
 
                     <div class="control-item">
                         <button id="rainbowBtn" onclick="toggleRainbow(this)">Rainbow: OFF <span class="keybind-hint" data-action="toggleRainbow">R</span></button>
-                        <div class="description">Continuously cycles your line colors through a shifting spectrum.</div>
                     </div>
 
                     <div class="control-item">
                         <button id="mirrorBtn" onclick="toggleMirror(this)">Mirror: OFF <span class="keybind-hint" data-action="toggleMirror">M</span></button>
-                        <div class="description">Flips alternate slices symmetrically to produce complex kaleidoscopes.</div>
                     </div>
 
                     <div class="control-item">
                         <button id="stringBtn" onclick="toggleStringArt(this)">String Art: OFF <span class="keybind-hint" data-action="toggleString">S</span></button>
-                        <div class="description">Generates fine webs connecting lines back to older tracked points.</div>
                     </div>
 
                     <div class="control-item">
                         <button id="particlesBtn" onclick="toggleParticles(this)">Particles: OFF <span class="keybind-hint" data-action="toggleParticles">P</span></button>
-                        <div class="description">Sparks and stardust explode from your brush and mirror in real time!</div>
                     </div>
                 </div>
             </div>
@@ -427,12 +506,10 @@
                 <div class="accordion-content">
                     <div class="control-item">
                         <button id="autoBtn" onclick="toggleAutoDraw(this)" style="text-align: center;">Auto Draw: OFF <span class="keybind-hint" data-action="toggleAuto">A</span></button>
-                        <div class="description">Triggers a complex, random mathematics loop that creates a mandala.</div>
                     </div>
 
                     <div class="control-item">
                         <button id="audioBtn" onclick="toggleAudioDraw(this)" style="text-align: center;">Audio Draw: OFF <span class="keybind-hint" data-action="toggleAudio">V</span></button>
-                        <div class="description">Uses your microphone to capture music, animating layout to the beat!</div>
                     </div>
                 </div>
             </div>
@@ -446,13 +523,11 @@
                     </div>
 
                     <div class="control-item">
-                        <button onclick="clearCanvas()" style="text-align: center; background: rgba(255,255,255,0.05);">Clear Frame <span class="keybind-hint" data-action="clearCanvas">C</span></button>
-                        <div class="description">Wipes everything clean instantly. <span class="pro-tip">Pro-Tip: Hold 'C' during Auto Draw for particle strobe effects!</span></div>
+                        <button onclick="clearCanvas()" style="text-align: center; background: rgba(255,255,255,0.05);">Clear All Layers <span class="keybind-hint" data-action="clearCanvas">C</span></button>
                     </div>
 
                     <div class="control-item">
                         <button id="saveBtn" onclick="saveCanvas()">Save Image</button>
-                        <div class="description">Downloads your complete canvas creation as a transparent PNG.</div>
                     </div>
                 </div>
             </div>
@@ -460,7 +535,6 @@
             <div class="accordion-item">
                 <div class="accordion-header" onclick="toggleAccordion(this)">Keybind Settings</div>
                 <div class="accordion-content">
-                    <div class="description" style="margin-bottom: 6px;">Click any rebind button below and press a new key on your keyboard to update shortcuts.</div>
                     <div id="keybindsContainer" style="display: flex; flex-direction: column; gap: 6px;"></div>
                     <button onclick="resetKeybinds()" style="text-align: center; background: rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.4); margin-top: 4px;">Reset Keybinds</button>
                 </div>
@@ -472,23 +546,46 @@
         </div>
     </div>
 
-    <canvas id="paintCanvas"></canvas>
+    <div id="canvasContainer" style="position:fixed; top:0; left:0; width:100vw; height:100vh; transform-origin: 0 0;">
+        <canvas id="bgCanvas" style="z-index: 1;"></canvas>
+        <canvas id="layer0" style="z-index: 2;"></canvas>
+        <canvas id="layer1" style="z-index: 3;"></canvas>
+        <canvas id="layer2" style="z-index: 4;"></canvas>
+        <canvas id="previewCanvas" style="z-index: 5; pointer-events: none;"></canvas>
+        <canvas id="overlayCanvas" style="z-index: 6; pointer-events: none;"></canvas>
+    </div>
 
     <script>
-        const canvas = document.getElementById('paintCanvas');
-        const ctx = canvas.getContext('2d');
+        const bgCanvas = document.getElementById('bgCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const previewCtx = previewCanvas.getContext('2d');
+        const overlayCanvas = document.getElementById('overlayCanvas');
+        const overlayCtx = overlayCanvas.getContext('2d');
+
+        const layerCanvases = [
+            document.getElementById('layer0'),
+            document.getElementById('layer1'),
+            document.getElementById('layer2')
+        ];
+        const layerContexts = layerCanvases.map(c => c.getContext('2d'));
+        let activeLayerIndex = 1;
+        
+        let canvas = layerCanvases[activeLayerIndex];
+        let ctx = layerContexts[activeLayerIndex];
+
         const sliceInput = document.getElementById('slices');
         const colorInput = document.getElementById('brushColor');
         const sizeInput = document.getElementById('brushSize');
-        
         const controlPanel = document.getElementById('controlPanel');
         const showUIBtn = document.getElementById('showUI');
         const primaryColorContainer = document.getElementById('primaryColorContainer');
         const gradientBuilderContainer = document.getElementById('gradientBuilderContainer');
         const paletteGrid = document.getElementById('paletteGrid');
         const addColorBtn = document.getElementById('addColorBtn');
-        
+
         let drawing = false;
+        let activeTool = 'freehand'; 
         let isAutoDrawing = false;
         let isAudioDrawing = false;
         let isRainbow = false; 
@@ -501,90 +598,234 @@
         let isParticles = false;
         let isMovingCenter = false;
         let isGradientMode = false;
-        
+        let showVisualizer = false;
+
+        let canvasBgColor = '#1a1a1a';
+        let gridOverlayType = 'none';
+        let customBgImage = null;
+
+        let shapeStartX = 0, shapeStartY = 0;
         let autoInterval;
         let prevX = 0, prevY = 0;
         let targetX = 0, targetY = 0;
         let time = 0; 
         let pointsQueue = []; 
 
-        let undoStack = [];
-        let redoStack = [];
+        let undoStack = [[], [], []];
+        let redoStack = [[], [], []];
         const MAX_HISTORY = 20;
 
-        // Custom Pivot Center State
-        let pivotX = window.innerWidth / 2;
-        let pivotY = window.innerHeight / 2;
+        let pivotX = 0;
+        let pivotY = 0;
 
-        // Zoom state variables
         let currentZoom = 1.0;
-        const MIN_ZOOM = 0.2;
-        const MAX_ZOOM = 5.0;
+        let panX = 0, panY = 0;
+        let isGesturing = false;
+        let initialPinchDist = 0;
+        let startZoom = 1.0;
+        let panStartX = 0, panStartY = 0;
+        let initialPanX = 0, initialPanY = 0;
 
-        // Particle System State
         let particles = [];
-
-        // Smooth Custom Gradient State
         let gradientColors = ["#00ffcc", "#ff007f", "#3498db"];
         let currentStrokeLength = 0;
-
-        let autoConfig = {
-            freqX1: 1, freqX2: 1, freqY1: 1, freqY2: 1, phaseX: 0, phaseY: 0
-        };
-
         let trailLines = []; 
+        let trailShapes = [];
 
+        let autoConfig = { freqX1: 1, freqX2: 1, freqY1: 1, freqY2: 1, phaseX: 0, phaseY: 0 };
         let audioCtx, analyser, dataArray, sourceStream;
         let audioAngle = 0;
+        let lastTapTime = 0;
 
-        // Secret Redirection Multi-State
-        let lastTapTime = 0; // For detecting double click/tap on all devices
-
-        // Keybind System State
         const defaultKeybinds = {
-            toggleMoveCenter: ' ',
-            toggleTrail: 't',
-            toggleGlow: 'g',
-            toggleRainbow: 'r',
-            toggleGradient: 'k',
-            toggleMirror: 'm',
-            toggleString: 's',
-            toggleDynamic: 'd',
-            toggleParticles: 'p',
-            toggleEraser: 'e',
-            toggleAuto: 'a',
-            toggleAudio: 'v',
-            clearCanvas: 'c',
-            undo: 'z',
-            redo: 'y',
-            toggleUI: 'h',
-            zoomIn: 'arrowup',
-            zoomOut: 'arrowdown'
+            toggleMoveCenter: ' ', toggleTrail: 't', toggleGlow: 'g', toggleRainbow: 'r',
+            toggleGradient: 'k', toggleMirror: 'm', toggleString: 's', toggleDynamic: 'd',
+            toggleParticles: 'p', toggleEraser: 'e', toggleAuto: 'a', toggleAudio: 'v',
+            clearCanvas: 'c', undo: 'z', redo: 'y', toggleUI: 'h', zoomIn: 'arrowup', zoomOut: 'arrowdown'
         };
-
         let keybinds = {...defaultKeybinds};
         let activeRebindAction = null;
 
         const actionLabels = {
-            toggleMoveCenter: 'Move Center',
-            toggleTrail: 'Trail',
-            toggleGlow: 'Glow',
-            toggleRainbow: 'Rainbow',
-            toggleGradient: 'Gradient Line',
-            toggleMirror: 'Mirror',
-            toggleString: 'String Art',
-            toggleDynamic: 'Dynamic Brush',
-            toggleParticles: 'Particles',
-            toggleEraser: 'Eraser',
-            toggleAuto: 'Auto Draw',
-            toggleAudio: 'Audio Draw',
-            clearCanvas: 'Clear Frame',
-            undo: 'Undo',
-            redo: 'Redo',
-            toggleUI: 'Toggle UI Panel',
-            zoomIn: 'Zoom In',
-            zoomOut: 'Zoom Out'
+            toggleMoveCenter: 'Move Center', toggleTrail: 'Trail', toggleGlow: 'Glow',
+            toggleRainbow: 'Rainbow', toggleGradient: 'Gradient Line', toggleMirror: 'Mirror',
+            toggleString: 'String Art', toggleDynamic: 'Dynamic Brush', toggleParticles: 'Particles',
+            toggleEraser: 'Eraser', toggleAuto: 'Auto Draw', toggleAudio: 'Audio Draw',
+            clearCanvas: 'Clear Frame', undo: 'Undo', redo: 'Redo', toggleUI: 'Toggle UI Panel',
+            zoomIn: 'Zoom In', zoomOut: 'Zoom Out'
         };
+
+        function applyTransform() {
+            const container = document.getElementById('canvasContainer');
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
+            container.style.transform = `translate(${cx + panX}px, ${cy + panY}px) scale(${currentZoom}) translate(${-cx}px, ${-cy}px)`;
+        }
+
+        function resetView() {
+            currentZoom = 1.0;
+            panX = 0;
+            panY = 0;
+            applyTransform();
+        }
+
+        function updateZoomCentered(delta) {
+            const oldZoom = currentZoom;
+            const newZoom = Math.min(10.0, Math.max(0.1, currentZoom + delta));
+            currentZoom = newZoom;
+            applyTransform();
+        }
+
+        function getCoords(e) {
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
+            const transformedX = (clientX - (cx + panX)) / currentZoom + cx;
+            const transformedY = (clientY - (cy + panY)) / currentZoom + cy;
+            return { x: transformedX, y: transformedY };
+        }
+
+        window.addEventListener('wheel', (e) => {
+            if (e.ctrlKey || e.metaKey || true) {
+                e.preventDefault();
+                const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
+                const newZoom = Math.min(10.0, Math.max(0.1, currentZoom * zoomFactor));
+                
+                const cx = window.innerWidth / 2;
+                const cy = window.innerHeight / 2;
+                const mouseX = e.clientX;
+                const mouseY = e.clientY;
+
+                panX -= (mouseX - cx - panX) * (newZoom / currentZoom - 1);
+                panY -= (mouseY - cy - panY) * (newZoom / currentZoom - 1);
+                
+                currentZoom = newZoom;
+                applyTransform();
+            }
+        }, { passive: false });
+
+        function setDrawingTool(tool) {
+            activeTool = tool;
+            document.querySelectorAll('.accordion-content button').forEach(b => {
+                if (b.id && b.id.startsWith('tool')) b.classList.remove('active-tool');
+            });
+            const selectedBtn = document.getElementById('tool' + tool.charAt(0).toUpperCase() + tool.slice(1));
+            if (selectedBtn) selectedBtn.classList.add('active-tool');
+        }
+
+        function switchLayer(index) {
+            activeLayerIndex = parseInt(index);
+            canvas = layerCanvases[activeLayerIndex];
+            ctx = layerContexts[activeLayerIndex];
+        }
+
+        function clearActiveLayer() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            saveState();
+        }
+
+        function toggleVisualizer(btn) {
+            showVisualizer = !showVisualizer;
+            btn.textContent = showVisualizer ? "Axis Visualizer: ON" : "Axis Visualizer: OFF";
+            if (showVisualizer) setRandomActiveStyle(btn); else resetButtonStyle(btn);
+            drawVisualizer();
+        }
+
+        function changeBgColor(color) {
+            canvasBgColor = color;
+            renderBackground();
+        }
+
+        function changeGridOverlay(type) {
+            gridOverlayType = type;
+            renderBackground();
+        }
+
+        function importBgImage(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        customBgImage = img;
+                        renderBackground();
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearBgImage() {
+            customBgImage = null;
+            renderBackground();
+        }
+
+        function renderBackground() {
+            bgCtx.fillStyle = canvasBgColor;
+            bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+
+            if (customBgImage) {
+                bgCtx.drawImage(customBgImage, 0, 0, bgCanvas.width, bgCanvas.height);
+            }
+
+            if (gridOverlayType !== 'none') {
+                bgCtx.strokeStyle = gridOverlayType === 'dark' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.15)';
+                bgCtx.lineWidth = 1;
+                const step = 40;
+                bgCtx.beginPath();
+                for (let x = 0; x < bgCanvas.width; x += step) {
+                    bgCtx.moveTo(x, 0); bgCtx.lineTo(x, bgCanvas.height);
+                }
+                for (let y = 0; y < bgCanvas.height; y += step) {
+                    bgCtx.moveTo(0, y); bgCtx.lineTo(0, bgCanvas.width);
+                }
+                bgCtx.stroke();
+            }
+        }
+
+        function drawVisualizer() {
+            overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+            if (!showVisualizer && !isMovingCenter) return;
+
+            const slices = parseInt(sliceInput.value);
+            overlayCtx.save();
+            overlayCtx.translate(pivotX, pivotY);
+
+            if (showVisualizer) {
+                overlayCtx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+                overlayCtx.lineWidth = 1;
+                overlayCtx.setLineDash([6, 6]);
+
+                const r = Math.max(overlayCanvas.width, overlayCanvas.height) * 4; 
+                for (let i = 0; i < slices; i++) {
+                    const angle = (i * 2 * Math.PI) / slices;
+                    overlayCtx.beginPath();
+                    overlayCtx.moveTo(0, 0);
+                    overlayCtx.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+                    overlayCtx.stroke();
+                }
+            }
+
+            overlayCtx.setLineDash([]);
+            overlayCtx.strokeStyle = '#ff9500';
+            overlayCtx.lineWidth = 2;
+            overlayCtx.beginPath();
+            overlayCtx.arc(0, 0, 8, 0, Math.PI * 2);
+            overlayCtx.moveTo(-12, 0); overlayCtx.lineTo(12, 0);
+            overlayCtx.moveTo(0, -12); overlayCtx.lineTo(0, 12);
+            overlayCtx.stroke();
+
+            overlayCtx.restore();
+        }
 
         function renderKeybindsUI() {
             const container = document.getElementById('keybindsContainer');
@@ -592,7 +833,6 @@
             for (let action in keybinds) {
                 const row = document.createElement('div');
                 row.className = 'keybind-row';
-                
                 const label = document.createElement('span');
                 label.textContent = actionLabels[action] || action;
                 
@@ -607,16 +847,9 @@
                     btn.textContent = 'PRESS KEY...';
                 }
 
-                btn.onclick = () => {
-                    activeRebindAction = action;
-                    renderKeybindsUI();
-                };
+                btn.onclick = () => { activeRebindAction = action; renderKeybindsUI(); };
+                row.appendChild(label); row.appendChild(btn); container.appendChild(row);
 
-                row.appendChild(label);
-                row.appendChild(btn);
-                container.appendChild(row);
-
-                // Update hints in UI
                 const hints = document.querySelectorAll(`.keybind-hint[data-action="${action}"]`);
                 hints.forEach(hint => {
                     let displayKey = keybinds[action];
@@ -633,14 +866,8 @@
             renderKeybindsUI();
         }
 
-        function updateZoom(delta) {
-            currentZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, currentZoom + delta));
-            canvas.style.transform = `scale(${currentZoom})`;
-        }
-
         function toggleAccordion(header) {
-            const item = header.parentElement;
-            item.classList.toggle('active');
+            header.parentElement.classList.toggle('active');
         }
 
         function setRandomActiveStyle(btn) {
@@ -656,9 +883,7 @@
         }
 
         function getNeonBleedColor(colorHex, isRainbowMode) {
-            if (isRainbowMode) {
-                return `hsla(${(Date.now() / 10) % 360}, 100%, 75%, 0.4)`;
-            }
+            if (isRainbowMode) return `hsla(${(Date.now() / 10) % 360}, 100%, 75%, 0.4)`;
             let r = parseInt(colorHex.slice(1, 3), 16);
             let g = parseInt(colorHex.slice(3, 5), 16);
             let b = parseInt(colorHex.slice(5, 7), 16);
@@ -669,33 +894,34 @@
         }
 
         function resize() {
-            const tempCanvas = document.createElement('canvas');
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = canvas.height;
-            const tempCtx = tempCanvas.getContext('2d');
-            tempCtx.drawImage(canvas, 0, 0);
+            const width = window.innerWidth;
+            const height = window.innerHeight;
 
-            const oldW = canvas.width;
-            const oldH = canvas.height;
+            [bgCanvas, previewCanvas, overlayCanvas, ...layerCanvases].forEach(c => {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = c.width;
+                tempCanvas.height = c.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.drawImage(c, 0, 0);
 
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            
-            ctx.fillStyle = '#1a1a1a';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(tempCanvas, 0, 0);
-            
-            if (!oldW) {
-                pivotX = canvas.width / 2;
-                pivotY = canvas.height / 2;
+                c.width = width;
+                c.height = height;
+                c.getContext('2d').drawImage(tempCanvas, 0, 0);
+            });
+
+            if (pivotX === 0 && pivotY === 0) {
+                pivotX = width / 2;
+                pivotY = height / 2;
             }
+            renderBackground();
+            drawVisualizer();
             saveState();
         }
 
         function clearCanvas() {
-            ctx.fillStyle = '#1a1a1a';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            layerContexts.forEach(c => c.clearRect(0, 0, window.innerWidth, window.innerHeight));
             trailLines = [];
+            trailShapes = [];
             particles = [];
             saveState();
         }
@@ -703,48 +929,28 @@
         window.addEventListener('resize', resize);
 
         function saveState() {
-            if (undoStack.length >= MAX_HISTORY) undoStack.shift();
-            undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-            redoStack = [];
+            const stack = undoStack[activeLayerIndex];
+            if (stack.length >= MAX_HISTORY) stack.shift();
+            stack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+            redoStack[activeLayerIndex] = [];
         }
 
         function undo() {
-            if (undoStack.length > 1) {
-                redoStack.push(undoStack.pop());
-                const state = undoStack[undoStack.length - 1];
+            const stack = undoStack[activeLayerIndex];
+            if (stack.length > 1) {
+                redoStack[activeLayerIndex].push(stack.pop());
+                const state = stack[stack.length - 1];
                 ctx.putImageData(state, 0, 0);
             }
         }
 
         function redo() {
-            if (redoStack.length > 0) {
-                const state = redoStack.pop();
-                undoStack.push(state);
+            const stack = redoStack[activeLayerIndex];
+            if (stack.length > 0) {
+                const state = stack.pop();
+                undoStack[activeLayerIndex].push(state);
                 ctx.putImageData(state, 0, 0);
             }
-        }
-
-        function getCoords(e) {
-            const rect = canvas.getBoundingClientRect();
-            let clientX, clientY;
-            if (e.touches && e.touches.length > 0) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            } else {
-                clientX = e.clientX;
-                clientY = e.clientY;
-            }
-            
-            // Adjust coordinates based on active zoom transformations
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            const rawX = clientX - rect.left;
-            const rawY = clientY - rect.top;
-            
-            const transformedX = centerX + (rawX - centerX) / currentZoom;
-            const transformedY = centerY + (rawY - centerY) / currentZoom;
-
-            return { x: transformedX, y: transformedY };
         }
 
         function createSparks(x, y, activeColor, count = 2) {
@@ -753,34 +959,23 @@
                 const angle = Math.random() * Math.PI * 2;
                 const speed = 0.5 + Math.random() * 2.5;
                 particles.push({
-                    x: x,
-                    y: y,
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed,
-                    life: 1.0,
-                    decay: 0.02 + Math.random() * 0.03,
-                    color: activeColor,
-                    size: 1 + Math.random() * 3
+                    x: x, y: y,
+                    vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+                    life: 1.0, decay: 0.02 + Math.random() * 0.03,
+                    color: activeColor, size: 1 + Math.random() * 3
                 });
             }
         }
 
-        // Palette UI management functions
         function renderPaletteUI() {
             paletteGrid.innerHTML = '';
             gradientColors.forEach((color, idx) => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'palette-color-wrapper';
-                
                 const input = document.createElement('input');
-                input.type = 'color';
-                input.value = color;
-                input.oninput = (e) => {
-                    gradientColors[idx] = e.target.value;
-                };
-                
+                input.type = 'color'; input.value = color;
+                input.oninput = (e) => { gradientColors[idx] = e.target.value; };
                 wrapper.appendChild(input);
-                
                 if (gradientColors.length > 2) {
                     const badge = document.createElement('div');
                     badge.className = 'remove-color-badge';
@@ -788,7 +983,6 @@
                     badge.onclick = () => removePaletteColor(idx);
                     wrapper.appendChild(badge);
                 }
-                
                 paletteGrid.appendChild(wrapper);
             });
             document.getElementById('paletteCount text').textContent = gradientColors.length;
@@ -798,8 +992,7 @@
         function addPaletteColor() {
             if (gradientColors.length >= 10) return;
             const randomColors = ['#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6', '#e67e22', '#1abc9c'];
-            const nextColor = randomColors[Math.floor(Math.random() * randomColors.length)];
-            gradientColors.push(nextColor);
+            gradientColors.push(randomColors[Math.floor(Math.random() * randomColors.length)]);
             renderPaletteUI();
         }
 
@@ -809,45 +1002,24 @@
             renderPaletteUI();
         }
 
-        // Helper function to check typed input word routes
-        function checkSecretRedirect(inputWord) {
-            const trimmedWord = inputWord.toLowerCase().trim();
-            if (trimmedWord === "love") {
-                window.location.href = "index2.html";
-                return true;
-            } else if (trimmedWord === "message") {
-                window.location.href = "index3.html";
-                return true;
-            }
-            return false;
-        }
-
-        // Universal Double Tap / Double Click Secret Detector
         function handleUniversalDoubleTap() {
             const now = Date.now();
             if (now - lastTapTime < 300) {
                 drawing = false;
-                setTimeout(() => {
-                    const word = prompt("Enter the secret keyphrase:");
-                    if (word) checkSecretRedirect(word);
-                }, 50);
                 return true;
             }
             lastTapTime = now;
             return false;
         }
 
-        canvas.addEventListener('mousedown', (e) => {
+        window.addEventListener('mousedown', (e) => {
             if (!controlPanel.classList.contains('hidden') && e.clientX < 320 && e.clientY < controlPanel.offsetHeight) return;
-            
-            // Trigger double-click check for all devices
             if (handleUniversalDoubleTap()) return;
 
             const coords = getCoords(e);
-
             if (isMovingCenter) {
-                pivotX = coords.x;
-                pivotY = coords.y;
+                pivotX = coords.x; pivotY = coords.y;
+                drawVisualizer();
                 return;
             }
 
@@ -855,59 +1027,88 @@
             drawing = true;
             prevX = coords.x; prevY = coords.y;
             targetX = coords.x; targetY = coords.y;
+            shapeStartX = coords.x; shapeStartY = coords.y;
             pointsQueue = [{x: prevX, y: prevY}];
             currentStrokeLength = 0;
 
             let activeColor = isRainbow ? `hsl(${(Date.now() / 10) % 360}, 75%, 60%)` : colorInput.value;
             createSparks(coords.x, coords.y, activeColor, 5);
         });
-        
-        canvas.addEventListener('mousemove', (e) => {
+
+        window.addEventListener('mousemove', (e) => {
             const coords = getCoords(e);
             targetX = coords.x; targetY = coords.y;
             if (!drawing || isAutoDrawing || isAudioDrawing || isMovingCenter) return;
-            
-            if (isStringArt) {
-                pointsQueue.push({x: coords.x, y: coords.y});
-                if (pointsQueue.length > 25) pointsQueue.shift();
-            }
 
-            let activeColor = isRainbow ? `hsl(${(Date.now() / 10) % 360}, 75%, 60%)` : colorInput.value;
-            createSparks(coords.x, coords.y, activeColor, 2);
+            if (activeTool === 'freehand') {
+                if (isStringArt) {
+                    pointsQueue.push({x: coords.x, y: coords.y});
+                    if (pointsQueue.length > 25) pointsQueue.shift();
+                }
+                let activeColor = isRainbow ? `hsl(${(Date.now() / 10) % 360}, 75%, 60%)` : colorInput.value;
+                createSparks(coords.x, coords.y, activeColor, 2);
 
-            const segmentLen = Math.hypot(coords.x - prevX, coords.y - prevY);
-            currentStrokeLength += segmentLen;
+                const segmentLen = Math.hypot(coords.x - prevX, coords.y - prevY);
+                currentStrokeLength += segmentLen;
 
-            if (!isTrail) {
-                renderSymmetryLines(coords.x, coords.y, prevX, prevY);
+                if (!isTrail) {
+                    renderSymmetryLines(ctx, coords.x, coords.y, prevX, prevY);
+                } else {
+                    trailLines.push({
+                        x: coords.x, y: coords.y, pX: prevX, pY: prevY,
+                        age: 1.0, widthOverride: null, strokeLenOffset: currentStrokeLength
+                    });
+                }
+                prevX = coords.x; prevY = coords.y;
             } else {
-                trailLines.push({
-                    x: coords.x, y: coords.y, pX: prevX, pY: prevY,
-                    age: 1.0, widthOverride: null, strokeLenOffset: currentStrokeLength
-                });
+                previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+                renderSymmetryShape(previewCtx, activeTool, shapeStartX, shapeStartY, coords.x, coords.y);
             }
-            prevX = coords.x; prevY = coords.y;
         });
 
-        window.addEventListener('mouseup', () => {
+        window.addEventListener('mouseup', (e) => {
             if (drawing) {
                 drawing = false;
+                const coords = getCoords(e);
+                if (activeTool !== 'freehand') {
+                    previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+                    if (!isTrail) {
+                        renderSymmetryShape(ctx, activeTool, shapeStartX, shapeStartY, coords.x, coords.y);
+                    } else {
+                        trailShapes.push({
+                            tool: activeTool, x1: shapeStartX, y1: shapeStartY, x2: coords.x, y2: coords.y,
+                            sides: parseInt(document.getElementById('polySides').value), age: 1.0
+                        });
+                    }
+                }
                 saveState();
             }
         });
-        
-        canvas.addEventListener('touchstart', (e) => {
+
+        window.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                isGesturing = true;
+                drawing = false;
+                previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+                initialPinchDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                startZoom = currentZoom;
+                panStartX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                panStartY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                initialPanX = panX;
+                initialPanY = panY;
+                return;
+            }
+
             if (!controlPanel.classList.contains('hidden') && e.touches[0].clientX < 320) return;
-            e.preventDefault();
-            
-            // Trigger double-tap check for touch devices
             if (handleUniversalDoubleTap()) return;
 
             const coords = getCoords(e);
-
             if (isMovingCenter) {
-                pivotX = coords.x;
-                pivotY = coords.y;
+                pivotX = coords.x; pivotY = coords.y;
+                drawVisualizer();
                 return;
             }
 
@@ -915,38 +1116,71 @@
             drawing = true;
             prevX = coords.x; prevY = coords.y;
             targetX = coords.x; targetY = coords.y;
+            shapeStartX = coords.x; shapeStartY = coords.y;
             pointsQueue = [{x: prevX, y: prevY}];
             currentStrokeLength = 0;
         }, { passive: false });
-        
-        canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
+
+        window.addEventListener('touchmove', (e) => {
+            if (isGesturing && e.touches.length === 2) {
+                e.preventDefault();
+                const currentDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                const scale = currentDist / initialPinchDist;
+                currentZoom = Math.min(10.0, Math.max(0.1, startZoom * scale));
+
+                const currentPanX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                const currentPanY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                panX = initialPanX + (currentPanX - panStartX);
+                panY = initialPanY + (currentPanY - panStartY);
+                applyTransform();
+                return;
+            }
+
+            if (!drawing || isAutoDrawing || isAudioDrawing || isMovingCenter) return;
             const coords = getCoords(e);
             targetX = coords.x; targetY = coords.y;
-            if (!drawing || isAutoDrawing || isAudioDrawing || isMovingCenter) return;
-            
-            if (isStringArt) {
-                pointsQueue.push({x: coords.x, y: coords.y});
-                if (pointsQueue.length > 25) pointsQueue.shift();
-            }
 
-            const segmentLen = Math.hypot(coords.x - prevX, coords.y - prevY);
-            currentStrokeLength += segmentLen;
+            if (activeTool === 'freehand') {
+                const segmentLen = Math.hypot(coords.x - prevX, coords.y - prevY);
+                currentStrokeLength += segmentLen;
 
-            if (!isTrail) {
-                renderSymmetryLines(coords.x, coords.y, prevX, prevY);
+                if (!isTrail) {
+                    renderSymmetryLines(ctx, coords.x, coords.y, prevX, prevY);
+                } else {
+                    trailLines.push({
+                        x: coords.x, y: coords.y, pX: prevX, pY: prevY,
+                        age: 1.0, widthOverride: null, strokeLenOffset: currentStrokeLength
+                    });
+                }
+                prevX = coords.x; prevY = coords.y;
             } else {
-                trailLines.push({
-                    x: coords.x, y: coords.y, pX: prevX, pY: prevY,
-                    age: 1.0, widthOverride: null, strokeLenOffset: currentStrokeLength
-                });
+                previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+                renderSymmetryShape(previewCtx, activeTool, shapeStartX, shapeStartY, coords.x, coords.y);
             }
-            prevX = coords.x; prevY = coords.y;
         }, { passive: false });
-        
-        canvas.addEventListener('touchend', () => {
+
+        window.addEventListener('touchend', (e) => {
+            if (isGesturing) {
+                if (e.touches.length < 2) isGesturing = false;
+                return;
+            }
             if (drawing) {
                 drawing = false;
+                if (activeTool !== 'freehand' && e.changedTouches.length > 0) {
+                    const coords = getCoords(e.changedTouches[0]);
+                    previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+                    if (!isTrail) {
+                        renderSymmetryShape(ctx, activeTool, shapeStartX, shapeStartY, coords.x, coords.y);
+                    } else {
+                        trailShapes.push({
+                            tool: activeTool, x1: shapeStartX, y1: shapeStartY, x2: coords.x, y2: coords.y,
+                            sides: parseInt(document.getElementById('polySides').value), age: 1.0
+                        });
+                    }
+                }
                 saveState();
             }
         });
@@ -971,7 +1205,128 @@
             return `rgb(${r}, ${g}, ${b})`;
         }
 
-        function renderSymmetryLines(x, y, pX, pY, trailAlpha = 1, forceWidth = null, trailLenOffset = null) {
+        // Expanded shape path renderer with dynamic brush & string art effect support
+        function traceShapePath(targetCtx, tool, relX1, relY1, relX2, relY2, sidesVal) {
+            targetCtx.beginPath();
+            let pts = [];
+            if (tool === 'line') {
+                targetCtx.moveTo(relX1, relY1);
+                targetCtx.lineTo(relX2, relY2);
+                pts.push({x: relX1, y: relY1}, {x: relX2, y: relY2});
+            } else if (tool === 'circle') {
+                const radius = Math.hypot(relX2 - relX1, relY2 - relY1);
+                targetCtx.arc(relX1, relY1, radius, 0, Math.PI * 2);
+                for (let a = 0; a < Math.PI * 2; a += Math.PI / 6) {
+                    pts.push({x: relX1 + Math.cos(a) * radius, y: relY1 + Math.sin(a) * radius});
+                }
+            } else if (tool === 'ellipse') {
+                const radiusX = Math.abs(relX2 - relX1);
+                const radiusY = Math.abs(relY2 - relY1);
+                targetCtx.ellipse(relX1, relY1, radiusX, radiusY, 0, 0, Math.PI * 2);
+                for (let a = 0; a < Math.PI * 2; a += Math.PI / 6) {
+                    pts.push({x: relX1 + Math.cos(a) * radiusX, y: relY1 + Math.sin(a) * radiusY});
+                }
+            } else if (tool === 'polygon') {
+                const sides = sidesVal || parseInt(document.getElementById('polySides').value);
+                const radius = Math.hypot(relX2 - relX1, relY2 - relY1);
+                const polyAngle = Math.atan2(relY2 - relY1, relX2 - relX1);
+                for (let s = 0; s < sides; s++) {
+                    const a = polyAngle + (s * 2 * Math.PI) / sides;
+                    const px = relX1 + Math.cos(a) * radius;
+                    const py = relY1 + Math.sin(a) * radius;
+                    pts.push({x: px, y: py});
+                    if (s === 0) targetCtx.moveTo(px, py);
+                    else targetCtx.lineTo(px, py);
+                }
+                targetCtx.closePath();
+            }
+
+            if (isStringArt && pts.length > 1) {
+                const savedW = targetCtx.lineWidth;
+                targetCtx.lineWidth = 0.5;
+                for (let i = 0; i < pts.length; i++) {
+                    for (let j = i + 1; j < pts.length; j++) {
+                        targetCtx.moveTo(pts[i].x, pts[i].y);
+                        targetCtx.lineTo(pts[j].x, pts[j].y);
+                    }
+                }
+                targetCtx.lineWidth = savedW;
+            }
+        }
+
+        function renderSymmetryShape(targetCtx, tool, x1, y1, x2, y2, trailAlpha = 1, sidesVal = null) {
+            const slices = parseInt(sliceInput.value);
+            const baseSize = parseInt(sizeInput.value);
+
+            let computedLineWidth = baseSize;
+            if (isDynamicBrush && !isEraser) {
+                const dist = Math.hypot(x2 - x1, y2 - y1);
+                computedLineWidth = Math.max(2, Math.min(baseSize * 3, (baseSize * 8) / (dist * 0.05 + 1)));
+            }
+
+            targetCtx.lineCap = 'round';
+            targetCtx.lineJoin = 'round';
+
+            let activeColor = isRainbow ? `hsl(${(Date.now() / 10) % 360}, 75%, 60%)` : colorInput.value;
+            if (isGradientMode) activeColor = getDynamicPaletteColor(0.5);
+
+            for (let i = 0; i < slices; i++) {
+                targetCtx.save();
+                targetCtx.translate(pivotX, pivotY);
+                let angle = (i * 2 * Math.PI) / slices;
+                targetCtx.rotate(angle);
+                if (isMirror && i % 2 !== 0) targetCtx.scale(1, -1);
+
+                const relX1 = x1 - pivotX, relY1 = y1 - pivotY;
+                const relX2 = x2 - pivotX, relY2 = y2 - pivotY;
+
+                createSparks(relX2 + pivotX, relY2 + pivotY, activeColor, 1);
+
+                const drawShape = () => {
+                    traceShapePath(targetCtx, tool, relX1, relY1, relX2, relY2, sidesVal);
+                    targetCtx.stroke();
+                };
+
+                if (isEraser) {
+                    targetCtx.globalCompositeOperation = 'destination-out';
+                    targetCtx.strokeStyle = 'rgba(0,0,0,1)';
+                    targetCtx.lineWidth = computedLineWidth;
+                    drawShape();
+                } else if (isGlow) {
+                    targetCtx.globalCompositeOperation = 'source-over';
+                    let baseHex = isGradientMode ? '#00ffcc' : colorInput.value;
+                    let neonColor = getNeonBleedColor(baseHex, isRainbow);
+                    if (isGradientMode) neonColor = activeColor.replace('rgb', 'rgba').replace(')', ', 0.35)');
+                    if (trailAlpha < 1) neonColor = neonColor.replace(/[\d\.]+\)$/g, `${trailAlpha * 0.35})`);
+
+                    targetCtx.strokeStyle = neonColor;
+                    targetCtx.lineWidth = computedLineWidth * 2.2; 
+                    targetCtx.shadowBlur = (computedLineWidth * 1.5 + 12);
+                    targetCtx.shadowColor = targetCtx.strokeStyle;
+                    drawShape();
+
+                    targetCtx.strokeStyle = activeColor;
+                    if (trailAlpha < 1) targetCtx.globalAlpha = trailAlpha;
+                    targetCtx.lineWidth = computedLineWidth * 0.75; 
+                    targetCtx.shadowBlur = 0; 
+                    drawShape();
+                    targetCtx.globalAlpha = 1.0;
+                } else {
+                    targetCtx.globalCompositeOperation = 'source-over';
+                    targetCtx.strokeStyle = activeColor;
+                    if (trailAlpha < 1) targetCtx.globalAlpha = trailAlpha;
+                    targetCtx.lineWidth = computedLineWidth;
+                    targetCtx.shadowBlur = 0;
+                    drawShape();
+                    targetCtx.globalAlpha = 1.0;
+                }
+                targetCtx.restore();
+            }
+            targetCtx.globalCompositeOperation = 'source-over';
+            targetCtx.shadowBlur = 0;
+        }
+
+        function renderSymmetryLines(targetCtx, x, y, pX, pY, trailAlpha = 1, forceWidth = null, trailLenOffset = null) {
             const slices = parseInt(sliceInput.value);
             const baseSize = parseInt(sizeInput.value);
 
@@ -983,8 +1338,8 @@
                 computedLineWidth = Math.max(2, Math.min(baseSize * 4, (baseSize * 10) / (distance + 1))); 
             }
 
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
+            targetCtx.lineCap = 'round';
+            targetCtx.lineJoin = 'round';
 
             let activeColor, activeColorEnd;
             if (isRainbow) {
@@ -1000,133 +1355,118 @@
             }
 
             for (let i = 0; i < slices; i++) {
-                ctx.save();
-                ctx.translate(pivotX, pivotY);
-                
+                targetCtx.save();
+                targetCtx.translate(pivotX, pivotY);
                 let angle = (i * 2 * Math.PI) / slices;
-                ctx.rotate(angle);
-                
-                if (isMirror && i % 2 !== 0) ctx.scale(1, -1);
+                targetCtx.rotate(angle);
+                if (isMirror && i % 2 !== 0) targetCtx.scale(1, -1);
 
                 const drawSegment = () => {
                     if (isStringArt) {
-                        ctx.beginPath();
-                        ctx.arc(x - pivotX, y - pivotY, Math.max(1.5, ctx.lineWidth * 0.8), 0, Math.PI * 2);
-                        ctx.fill();
+                        targetCtx.beginPath();
+                        targetCtx.arc(x - pivotX, y - pivotY, Math.max(1.5, targetCtx.lineWidth * 0.8), 0, Math.PI * 2);
+                        targetCtx.fill();
                         
-                        const savedW = ctx.lineWidth;
-                        ctx.lineWidth = 0.4;
-                        ctx.globalAlpha = 0.2 * trailAlpha;
+                        const savedW = targetCtx.lineWidth;
+                        targetCtx.lineWidth = 0.4;
+                        targetCtx.globalAlpha = 0.2 * trailAlpha;
                         for (let j = 0; j < pointsQueue.length; j++) {
-                            ctx.beginPath();
-                            ctx.moveTo(pointsQueue[j].x - pivotX, pointsQueue[j].y - pivotY);
-                            ctx.lineTo(x - pivotX, y - pivotY);
-                            ctx.stroke();
+                            targetCtx.beginPath();
+                            targetCtx.moveTo(pointsQueue[j].x - pivotX, pointsQueue[j].y - pivotY);
+                            targetCtx.lineTo(x - pivotX, y - pivotY);
+                            targetCtx.stroke();
                         }
-                        ctx.globalAlpha = 1.0;
-                        ctx.lineWidth = savedW;
+                        targetCtx.globalAlpha = 1.0;
+                        targetCtx.lineWidth = savedW;
                     } else {
                         if (isGradientMode && !isEraser) {
-                            let grad = ctx.createLinearGradient(pX - pivotX, pY - pivotY, x - pivotX, y - pivotY);
+                            let grad = targetCtx.createLinearGradient(pX - pivotX, pY - pivotY, x - pivotX, y - pivotY);
                             grad.addColorStop(0, activeColor);
                             grad.addColorStop(1, activeColorEnd);
-                            ctx.strokeStyle = grad;
-                            ctx.fillStyle = grad;
+                            targetCtx.strokeStyle = grad;
+                            targetCtx.fillStyle = grad;
                         }
-                        ctx.beginPath();
-                        ctx.moveTo(pX - pivotX, pY - pivotY);
-                        ctx.lineTo(x - pivotX, y - pivotY);
-                        ctx.stroke();
+                        targetCtx.beginPath();
+                        targetCtx.moveTo(pX - pivotX, pY - pivotY);
+                        targetCtx.lineTo(x - pivotX, y - pivotY);
+                        targetCtx.stroke();
                     }
                 };
 
                 if (isEraser) {
-                    ctx.globalCompositeOperation = 'destination-out';
-                    ctx.strokeStyle = 'rgba(0,0,0,1)';
-                    ctx.lineWidth = computedLineWidth;
-                    ctx.shadowBlur = 0;
+                    targetCtx.globalCompositeOperation = 'destination-out';
+                    targetCtx.strokeStyle = 'rgba(0,0,0,1)';
+                    targetCtx.lineWidth = computedLineWidth;
+                    targetCtx.shadowBlur = 0;
                     drawSegment();
                 } else if (isGlow) {
-                    ctx.globalCompositeOperation = 'source-over';
-                    
+                    targetCtx.globalCompositeOperation = 'source-over';
                     let baseHex = isGradientMode ? '#00ffcc' : colorInput.value;
                     let neonColor = getNeonBleedColor(baseHex, isRainbow);
+                    if (isGradientMode) neonColor = activeColor.replace('rgb', 'rgba').replace(')', ', 0.35)');
+                    if (trailAlpha < 1) neonColor = neonColor.replace(/[\d\.]+\)$/g, `${trailAlpha * 0.35})`);
                     
-                    if (isGradientMode) {
-                        neonColor = activeColor.replace('rgb', 'rgba').replace(')', ', 0.35)');
-                    }
-                    if (trailAlpha < 1) {
-                        neonColor = neonColor.replace(/[\d\.]+\)$/g, `${trailAlpha * 0.35})`);
-                    }
-                    ctx.strokeStyle = neonColor;
-                    ctx.fillStyle = ctx.strokeStyle;
-                    
-                    ctx.lineWidth = computedLineWidth * 2.2; 
-                    ctx.shadowBlur = (computedLineWidth * 1.5 + 12);
-                    ctx.shadowColor = ctx.strokeStyle;
+                    targetCtx.strokeStyle = neonColor;
+                    targetCtx.fillStyle = targetCtx.strokeStyle;
+                    targetCtx.lineWidth = computedLineWidth * 2.2; 
+                    targetCtx.shadowBlur = (computedLineWidth * 1.5 + 12);
+                    targetCtx.shadowColor = targetCtx.strokeStyle;
                     drawSegment();
 
                     if (!isGradientMode) {
-                        ctx.strokeStyle = activeColor;
-                        ctx.fillStyle = activeColor;
+                        targetCtx.strokeStyle = activeColor;
+                        targetCtx.fillStyle = activeColor;
                     }
-                    if (trailAlpha < 1) ctx.globalAlpha = trailAlpha;
-                    ctx.lineWidth = computedLineWidth * 0.75; 
-                    ctx.shadowBlur = 0; 
+                    if (trailAlpha < 1) targetCtx.globalAlpha = trailAlpha;
+                    targetCtx.lineWidth = computedLineWidth * 0.75; 
+                    targetCtx.shadowBlur = 0; 
                     drawSegment();
-                    ctx.globalAlpha = 1.0;
+                    targetCtx.globalAlpha = 1.0;
                 } else {
-                    ctx.globalCompositeOperation = 'source-over';
+                    targetCtx.globalCompositeOperation = 'source-over';
                     if (!isGradientMode) {
-                        ctx.strokeStyle = activeColor;
-                        ctx.fillStyle = activeColor;
+                        targetCtx.strokeStyle = activeColor;
+                        targetCtx.fillStyle = activeColor;
                     }
-                    if (trailAlpha < 1) ctx.globalAlpha = trailAlpha;
-                    ctx.lineWidth = computedLineWidth;
-                    ctx.shadowBlur = 0;
+                    if (trailAlpha < 1) targetCtx.globalAlpha = trailAlpha;
+                    targetCtx.lineWidth = computedLineWidth;
+                    targetCtx.shadowBlur = 0;
                     drawSegment();
-                    ctx.globalAlpha = 1.0;
+                    targetCtx.globalAlpha = 1.0;
                 }
-                ctx.restore();
+                targetCtx.restore();
             }
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.shadowBlur = 0;
+            targetCtx.globalCompositeOperation = 'source-over';
+            targetCtx.shadowBlur = 0;
         }
 
         function updateAndRenderParticles() {
             if (particles.length === 0) return;
-
             const slices = parseInt(sliceInput.value);
 
             for (let p of particles) {
-                p.x += p.vx;
-                p.y += p.vy;
+                p.x += p.vx; p.y += p.vy;
                 p.life -= p.decay;
             }
-
             particles = particles.filter(p => p.life > 0);
 
             for (let i = 0; i < slices; i++) {
-                ctx.save();
-                ctx.translate(pivotX, pivotY);
+                previewCtx.save();
+                previewCtx.translate(pivotX, pivotY);
                 let angle = (i * 2 * Math.PI) / slices;
-                ctx.rotate(angle);
-                if (isMirror && i % 2 !== 0) ctx.scale(1, -1);
+                previewCtx.rotate(angle);
+                if (isMirror && i % 2 !== 0) previewCtx.scale(1, -1);
 
                 for (let p of particles) {
-                    ctx.beginPath();
-                    ctx.fillStyle = p.color;
-                    ctx.globalAlpha = p.life;
-                    
-                    let relX = p.x - pivotX;
-                    let relY = p.y - pivotY;
-
-                    ctx.arc(relX, relY, p.size, 0, Math.PI * 2);
-                    ctx.fill();
+                    previewCtx.beginPath();
+                    previewCtx.fillStyle = p.color;
+                    previewCtx.globalAlpha = p.life;
+                    previewCtx.arc(p.x - pivotX, p.y - pivotY, p.size, 0, Math.PI * 2);
+                    previewCtx.fill();
                 }
-                ctx.restore();
+                previewCtx.restore();
             }
-            ctx.globalAlpha = 1.0;
+            previewCtx.globalAlpha = 1.0;
         }
 
         function appLoop() {
@@ -1141,25 +1481,14 @@
 
             if (isAudioDrawing && analyser) {
                 analyser.getByteFrequencyData(dataArray);
-                
                 let sum = 0;
-                let maxFreqVal = 0;
-                let maxFreqIdx = 0;
-                for (let i = 0; i < dataArray.length; i++) {
-                    sum += dataArray[i];
-                    if (dataArray[i] > maxFreqVal) {
-                        maxFreqVal = dataArray[i];
-                        maxFreqIdx = i;
-                    }
-                }
+                for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
                 let averageVolume = sum / dataArray.length;
                 
                 if (averageVolume > 2) {
                     const maxRadius = Math.min(canvas.width, canvas.height) * 0.45;
                     audioAngle += (averageVolume / 4500); 
-                    
-                    let volumeRatio = averageVolume / 255;
-                    let currentRadius = maxRadius * (0.1 + volumeRatio * 0.9);
+                    let currentRadius = maxRadius * (0.1 + (averageVolume / 255) * 0.9);
                     
                     let nextX = pivotX + Math.cos(audioAngle * 1.5) * currentRadius;
                     let nextY = pivotY + Math.sin(audioAngle * 0.8) * currentRadius;
@@ -1167,33 +1496,25 @@
                     let dynamicAudioWidth = Math.max(2, (averageVolume / 255) * parseInt(sizeInput.value) * 6);
                     currentStrokeLength += Math.hypot(nextX - prevX, nextY - prevY);
 
-                    if (isStringArt) {
-                        pointsQueue.push({x: nextX, y: nextY});
-                        if (pointsQueue.length > 25) pointsQueue.shift();
-                    }
-
                     let activeColor = isRainbow ? `hsl(${(Date.now() / 10) % 360}, 75%, 60%)` : colorInput.value;
                     if (isGradientMode) activeColor = getDynamicPaletteColor(currentStrokeLength / 400);
                     createSparks(nextX, nextY, activeColor, 1);
 
                     if (!isTrail) {
-                        renderSymmetryLines(nextX, nextY, prevX, prevY, 1, dynamicAudioWidth);
+                        renderSymmetryLines(ctx, nextX, nextY, prevX, prevY, 1, dynamicAudioWidth);
                     } else {
                         trailLines.push({
                             x: nextX, y: nextY, pX: prevX, pY: prevY,
                             age: 1.0, widthOverride: dynamicAudioWidth, strokeLenOffset: currentStrokeLength
                         });
                     }
-
-                    prevX = nextX;
-                    prevY = nextY;
+                    prevX = nextX; prevY = nextY;
                 }
             }
 
-            if (isTrail && trailLines.length > 0) {
-                if (undoStack.length > 0) {
-                    ctx.putImageData(undoStack[undoStack.length - 1], 0, 0);
-                }
+            if (isTrail && (trailLines.length > 0 || trailShapes.length > 0)) {
+                const stack = undoStack[activeLayerIndex];
+                if (stack.length > 0) ctx.putImageData(stack[stack.length - 1], 0, 0);
 
                 for (let i = trailLines.length - 1; i >= 0; i--) {
                     let line = trailLines[i];
@@ -1201,7 +1522,17 @@
                     if (line.age <= 0) {
                         trailLines.splice(i, 1);
                     } else {
-                        renderSymmetryLines(line.x, line.y, line.pX, line.pY, line.age, line.widthOverride, line.strokeLenOffset);
+                        renderSymmetryLines(ctx, line.x, line.y, line.pX, line.pY, line.age, line.widthOverride, line.strokeLenOffset);
+                    }
+                }
+
+                for (let i = trailShapes.length - 1; i >= 0; i--) {
+                    let shape = trailShapes[i];
+                    shape.age -= 0.012;
+                    if (shape.age <= 0) {
+                        trailShapes.splice(i, 1);
+                    } else {
+                        renderSymmetryShape(ctx, shape.tool, shape.x1, shape.y1, shape.x2, shape.y2, shape.age, shape.sides);
                     }
                 }
             }
@@ -1212,13 +1543,7 @@
         function toggleTrail(btn) {
             isTrail = !isTrail;
             btn.innerHTML = isTrail ? `Trail: ON <span class="keybind-hint" data-action="toggleTrail">${keybinds.toggleTrail.toUpperCase()}</span>` : `Trail: OFF <span class="keybind-hint" data-action="toggleTrail">${keybinds.toggleTrail.toUpperCase()}</span>`;
-            if (isTrail) {
-                setRandomActiveStyle(btn);
-            } else {
-                resetButtonStyle(btn);
-                trailLines = [];
-                if (undoStack.length > 0) ctx.putImageData(undoStack[undoStack.length - 1], 0, 0);
-            }
+            if (isTrail) setRandomActiveStyle(btn); else { resetButtonStyle(btn); trailLines = []; trailShapes = []; }
         }
 
         function toggleGlow(btn) {
@@ -1284,13 +1609,7 @@
         function toggleMoveCenter(btn) {
             isMovingCenter = !isMovingCenter;
             btn.innerHTML = isMovingCenter ? `Move Center: ON <span class="keybind-hint" data-action="toggleMoveCenter">${keybinds.toggleMoveCenter === ' ' ? 'Space' : keybinds.toggleMoveCenter.toUpperCase()}</span>` : `Move Center: OFF <span class="keybind-hint" data-action="toggleMoveCenter">${keybinds.toggleMoveCenter === ' ' ? 'Space' : keybinds.toggleMoveCenter.toUpperCase()}</span>`;
-            if (isMovingCenter) {
-                setRandomActiveStyle(btn);
-                canvas.style.cursor = "move";
-            } else {
-                resetButtonStyle(btn);
-                canvas.style.cursor = "crosshair";
-            }
+            drawVisualizer();
         }
 
         function toggleEraser(btn) {
@@ -1313,8 +1632,6 @@
 
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
-
-            // Rebind handler
             if (activeRebindAction) {
                 e.preventDefault();
                 keybinds[activeRebindAction] = key;
@@ -1323,19 +1640,12 @@
                 return;
             }
 
-            // Keybind Execution Router
             if (key === keybinds.toggleMoveCenter) {
                 e.preventDefault();
                 if(!isMovingCenter) toggleMoveCenter(document.getElementById('moveCenterBtn'));
             }
-            else if (key === keybinds.zoomIn) {
-                e.preventDefault();
-                updateZoom(0.1);
-            }
-            else if (key === keybinds.zoomOut) {
-                e.preventDefault();
-                updateZoom(-0.1);
-            }
+            else if (key === keybinds.zoomIn) { e.preventDefault(); updateZoomCentered(0.1); }
+            else if (key === keybinds.zoomOut) { e.preventDefault(); updateZoomCentered(-0.1); }
             else if (key === keybinds.toggleTrail) toggleTrail(document.getElementById('trailBtn'));
             else if (key === keybinds.toggleGlow) toggleGlow(document.getElementById('glowBtn'));
             else if (key === keybinds.toggleRainbow) toggleRainbow(document.getElementById('rainbowBtn'));
@@ -1360,16 +1670,24 @@
         });
 
         function saveCanvas() {
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = bgCanvas.width;
+            exportCanvas.height = bgCanvas.height;
+            const exportCtx = exportCanvas.getContext('2d');
+
+            exportCtx.drawImage(bgCanvas, 0, 0);
+            layerCanvases.forEach(c => exportCtx.drawImage(c, 0, 0));
+
             const link = document.createElement('a');
-            link.download =`symmetryx-${Date.now()}.png`;
-            link.href = canvas.toDataURL('image/png');
+            link.download = `symmetryx-${Date.now()}.png`;
+            link.href = exportCanvas.toDataURL('image/png');
             link.click();
         }
 
-        // Initialize UI & Canvas Systems
         renderPaletteUI();
         renderKeybindsUI();
         resize();
+        applyTransform();
         requestAnimationFrame(appLoop); 
 
         function toggleAutoDraw(btn) {
@@ -1381,8 +1699,7 @@
                 setRandomActiveStyle(btn);
                 drawing = false; 
                 if (isEraser) toggleEraser(document.getElementById('eraserBtn')); 
-                pointsQueue = [];
-                currentStrokeLength = 0;
+                pointsQueue = []; currentStrokeLength = 0;
                 
                 autoConfig.freqX1 = 0.5 + Math.random() * 1.5;
                 autoConfig.freqX2 = 0.3 + Math.random() * 1.2;
@@ -1392,7 +1709,6 @@
                 autoConfig.phaseY = Math.random() * Math.PI * 2;
 
                 time = 0;
-                
                 const maxRadius = Math.min(canvas.width, canvas.height) * 0.42;
                 prevX = pivotX + Math.sin(time * autoConfig.freqX1 + autoConfig.phaseX) * Math.cos(time * autoConfig.freqX2) * maxRadius;
                 prevY = pivotY + Math.cos(time * autoConfig.freqY1 + autoConfig.phaseY) * Math.sin(time * autoConfig.freqY2) * maxRadius;
@@ -1400,10 +1716,9 @@
 
                 autoInterval = setInterval(() => {
                     time += 0.02;
-                    const maxRadius = Math.min(canvas.width, canvas.height) * 0.42;
-                    
-                    const nextX = pivotX + Math.sin(time * autoConfig.freqX1 + autoConfig.phaseX) * Math.cos(time * autoConfig.freqX2) * maxRadius;
-                    const nextY = pivotY + Math.cos(time * autoConfig.freqY1 + autoConfig.phaseY) * Math.sin(time * autoConfig.freqY2) * maxRadius;
+                    const maxR = Math.min(canvas.width, canvas.height) * 0.42;
+                    const nextX = pivotX + Math.sin(time * autoConfig.freqX1 + autoConfig.phaseX) * Math.cos(time * autoConfig.freqX2) * maxR;
+                    const nextY = pivotY + Math.cos(time * autoConfig.freqY1 + autoConfig.phaseY) * Math.sin(time * autoConfig.freqY2) * maxR;
 
                     targetX = nextX; targetY = nextY; 
                     currentStrokeLength += Math.hypot(nextX - prevX, nextY - prevY);
@@ -1413,16 +1728,14 @@
                     createSparks(nextX, nextY, activeColor, 1);
 
                     if (!isTrail) {
-                        renderSymmetryLines(nextX, nextY, prevX, prevY);
+                        renderSymmetryLines(ctx, nextX, nextY, prevX, prevY);
                     } else {
                         trailLines.push({
                             x: nextX, y: nextY, pX: prevX, pY: prevY,
                             age: 1.0, widthOverride: null, strokeLenOffset: currentStrokeLength
                         });
                     }
-                    
-                    prevX = nextX;
-                    prevY = nextY;
+                    prevX = nextX; prevY = nextY;
                 }, 16); 
             } else {
                 resetButtonStyle(btn);
@@ -1440,8 +1753,7 @@
                 setRandomActiveStyle(btn);
                 drawing = false;
                 if (isEraser) toggleEraser(document.getElementById('eraserBtn'));
-                pointsQueue = [];
-                currentStrokeLength = 0;
+                pointsQueue = []; currentStrokeLength = 0;
 
                 if (!audioCtx) {
                     try {
@@ -1451,25 +1763,17 @@
                         analyser.fftSize = 64; 
                         sourceStream = audioCtx.createMediaStreamSource(stream);
                         sourceStream.connect(analyser);
-                        
-                        const bufferLength = analyser.frequencyBinCount;
-                        dataArray = new Uint8Array(bufferLength);
+                        dataArray = new Uint8Array(analyser.frequencyBinCount);
                     } catch (err) {
-                        alert("Microphone access denied or unsupported. Unable to activate Audio Draw.");
+                        alert("Microphone access denied or unsupported.");
                         isAudioDrawing = false;
                         resetButtonStyle(btn);
                         btn.innerHTML = `Audio Draw: OFF <span class="keybind-hint" data-action="toggleAudio">${keybinds.toggleAudio.toUpperCase()}</span>`;
                         return;
                     }
                 }
-                
-                if (audioCtx && audioCtx.state === 'suspended') {
-                    await audioCtx.resume();
-                }
-
-                prevX = pivotX;
-                prevY = pivotY;
-
+                if (audioCtx && audioCtx.state === 'suspended') await audioCtx.resume();
+                prevX = pivotX; prevY = pivotY;
             } else {
                 resetButtonStyle(btn);
                 saveState();
