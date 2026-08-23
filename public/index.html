@@ -1779,6 +1779,41 @@
                 saveState();
             }
         }
+
+        // Double-Tap Secret Code Prompt
+        (function() {
+            let lastTap = 0;
+            const secretCodes = {
+                'message': 'index3.html',
+                'love': 'index2.html'
+            };
+
+            function handleDoubleTap(e) {
+                // Prevent triggering when interacting with sidebar controls
+                if (!controlPanel.classList.contains('hidden') && e.clientX < 320 && e.clientY < controlPanel.offsetHeight) {
+                    return;
+                }
+
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+
+                if (tapLength < 300 && tapLength > 0) {
+                    e.preventDefault();
+                    const inputCode = prompt("Enter secret code:");
+                    
+                    if (inputCode) {
+                        const cleanCode = inputCode.trim().toLowerCase();
+                        if (secretCodes[cleanCode]) {
+                            window.location.href = secretCodes[cleanCode];
+                        }
+                    }
+                }
+                lastTap = currentTime;
+            }
+
+            window.addEventListener('touchend', handleDoubleTap);
+            window.addEventListener('click', handleDoubleTap);
+        })();
     </script>
 </body>
 </html>
