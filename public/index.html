@@ -332,10 +332,27 @@
 
     <div id="showUI" onclick="toggleUI()">Show Panel <span class="keybind-hint" data-action="toggleUI">H</span></div>
 
+    <!-- Secret Passcode Modal -->
+    <div id="secret-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); color: #fff; justify-content: center; align-items: center; z-index: 9999;">
+      <div style="background: #1e1e1e; padding: 24px; border-radius: 12px; text-align: center; max-width: 300px; width: 90%; border: 1px solid rgba(255,255,255,0.1);">
+        <h3 style="margin-top: 0; color: #ff9500;">Enter Secret Code</h3>
+        <input 
+          type="password" 
+          id="secret-input" 
+          placeholder="Passcode..." 
+          onkeydown="if(event.key === 'Enter') checkCode()"
+          style="padding: 10px; border-radius: 6px; border: 1px solid #444; margin-bottom: 12px; width: 80%; background: #111; color: #fff; text-align: center;"
+        >
+        <br>
+        <button onclick="checkCode()" style="padding: 8px 16px; margin-right: 8px; cursor: pointer; background: rgba(255, 149, 0, 0.4); width: auto;">Submit</button>
+        <button onclick="closeModal()" style="padding: 8px 16px; cursor: pointer; background: rgba(255, 255, 255, 0.1); width: auto;">Close</button>
+      </div>
+    </div>
+
     <div class="sidebar" id="controlPanel">
         <div class="sidebar-header">
             <img src="logo.png" alt="Symmetryx Logo" class="sidebar-logo">
-            <div class="version-badge">v16.5</div>
+            <div class="version-badge">V16.8</div>
         </div>
         
         <div class="sidebar-scroll">
@@ -494,10 +511,6 @@
                     <div class="control-item">
                         <button id="stringBtn" onclick="toggleStringArt(this)">String Art: OFF <span class="keybind-hint" data-action="toggleString">S</span></button>
                     </div>
-
-                    <div class="control-item">
-                        <button id="particlesBtn" onclick="toggleParticles(this)">Particles: OFF <span class="keybind-hint" data-action="toggleParticles">P</span></button>
-                    </div>
                 </div>
             </div>
 
@@ -595,7 +608,6 @@
         let isEraser = false;
         let isGlow = false;
         let isTrail = false; 
-        let isParticles = false;
         let isMovingCenter = false;
         let isGradientMode = false;
         let showVisualizer = false;
@@ -626,7 +638,6 @@
         let panStartX = 0, panStartY = 0;
         let initialPanX = 0, initialPanY = 0;
 
-        let particles = [];
         let gradientColors = ["#00ffcc", "#ff007f", "#3498db"];
         let currentStrokeLength = 0;
         let trailLines = []; 
@@ -635,12 +646,11 @@
         let autoConfig = { freqX1: 1, freqX2: 1, freqY1: 1, freqY2: 1, phaseX: 0, phaseY: 0 };
         let audioCtx, analyser, dataArray, sourceStream;
         let audioAngle = 0;
-        let lastTapTime = 0;
 
         const defaultKeybinds = {
             toggleMoveCenter: ' ', toggleTrail: 't', toggleGlow: 'g', toggleRainbow: 'r',
             toggleGradient: 'k', toggleMirror: 'm', toggleString: 's', toggleDynamic: 'd',
-            toggleParticles: 'p', toggleEraser: 'e', toggleAuto: 'a', toggleAudio: 'v',
+            toggleEraser: 'e', toggleAuto: 'a', toggleAudio: 'v',
             clearCanvas: 'c', undo: 'z', redo: 'y', toggleUI: 'h', zoomIn: 'arrowup', zoomOut: 'arrowdown'
         };
         let keybinds = {...defaultKeybinds};
@@ -649,7 +659,7 @@
         const actionLabels = {
             toggleMoveCenter: 'Move Center', toggleTrail: 'Trail', toggleGlow: 'Glow',
             toggleRainbow: 'Rainbow', toggleGradient: 'Gradient Line', toggleMirror: 'Mirror',
-            toggleString: 'String Art', toggleDynamic: 'Dynamic Brush', toggleParticles: 'Particles',
+            toggleString: 'String Art', toggleDynamic: 'Dynamic Brush',
             toggleEraser: 'Eraser', toggleAuto: 'Auto Draw', toggleAudio: 'Audio Draw',
             clearCanvas: 'Clear Frame', undo: 'Undo', redo: 'Redo', toggleUI: 'Toggle UI Panel',
             zoomIn: 'Zoom In', zoomOut: 'Zoom Out'
@@ -922,7 +932,6 @@
             layerContexts.forEach(c => c.clearRect(0, 0, window.innerWidth, window.innerHeight));
             trailLines = [];
             trailShapes = [];
-            particles = [];
             saveState();
         }
 
@@ -950,20 +959,6 @@
                 const state = stack.pop();
                 undoStack[activeLayerIndex].push(state);
                 ctx.putImageData(state, 0, 0);
-            }
-        }
-
-        function createSparks(x, y, activeColor, count = 2) {
-            if (!isParticles || isEraser) return;
-            for (let i = 0; i < count; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const speed = 0.5 + Math.random() * 2.5;
-                particles.push({
-                    x: x, y: y,
-                    vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-                    life: 1.0, decay: 0.02 + Math.random() * 0.03,
-                    color: activeColor, size: 1 + Math.random() * 3
-                });
             }
         }
 
@@ -1002,19 +997,8 @@
             renderPaletteUI();
         }
 
-        function handleUniversalDoubleTap() {
-            const now = Date.now();
-            if (now - lastTapTime < 300) {
-                drawing = false;
-                return true;
-            }
-            lastTapTime = now;
-            return false;
-        }
-
         window.addEventListener('mousedown', (e) => {
             if (!controlPanel.classList.contains('hidden') && e.clientX < 320 && e.clientY < controlPanel.offsetHeight) return;
-            if (handleUniversalDoubleTap()) return;
 
             const coords = getCoords(e);
             if (isMovingCenter) {
@@ -1030,9 +1014,6 @@
             shapeStartX = coords.x; shapeStartY = coords.y;
             pointsQueue = [{x: prevX, y: prevY}];
             currentStrokeLength = 0;
-
-            let activeColor = isRainbow ? `hsl(${(Date.now() / 10) % 360}, 75%, 60%)` : colorInput.value;
-            createSparks(coords.x, coords.y, activeColor, 5);
         });
 
         window.addEventListener('mousemove', (e) => {
@@ -1045,8 +1026,6 @@
                     pointsQueue.push({x: coords.x, y: coords.y});
                     if (pointsQueue.length > 25) pointsQueue.shift();
                 }
-                let activeColor = isRainbow ? `hsl(${(Date.now() / 10) % 360}, 75%, 60%)` : colorInput.value;
-                createSparks(coords.x, coords.y, activeColor, 2);
 
                 const segmentLen = Math.hypot(coords.x - prevX, coords.y - prevY);
                 currentStrokeLength += segmentLen;
@@ -1103,7 +1082,6 @@
             }
 
             if (!controlPanel.classList.contains('hidden') && e.touches[0].clientX < 320) return;
-            if (handleUniversalDoubleTap()) return;
 
             const coords = getCoords(e);
             if (isMovingCenter) {
@@ -1205,7 +1183,6 @@
             return `rgb(${r}, ${g}, ${b})`;
         }
 
-        // Expanded shape path renderer with dynamic brush & string art effect support
         function traceShapePath(targetCtx, tool, relX1, relY1, relX2, relY2, sidesVal) {
             targetCtx.beginPath();
             let pts = [];
@@ -1279,8 +1256,6 @@
 
                 const relX1 = x1 - pivotX, relY1 = y1 - pivotY;
                 const relX2 = x2 - pivotX, relY2 = y2 - pivotY;
-
-                createSparks(relX2 + pivotX, relY2 + pivotY, activeColor, 1);
 
                 const drawShape = () => {
                     traceShapePath(targetCtx, tool, relX1, relY1, relX2, relY2, sidesVal);
@@ -1440,35 +1415,6 @@
             targetCtx.shadowBlur = 0;
         }
 
-        function updateAndRenderParticles() {
-            if (particles.length === 0) return;
-            const slices = parseInt(sliceInput.value);
-
-            for (let p of particles) {
-                p.x += p.vx; p.y += p.vy;
-                p.life -= p.decay;
-            }
-            particles = particles.filter(p => p.life > 0);
-
-            for (let i = 0; i < slices; i++) {
-                previewCtx.save();
-                previewCtx.translate(pivotX, pivotY);
-                let angle = (i * 2 * Math.PI) / slices;
-                previewCtx.rotate(angle);
-                if (isMirror && i % 2 !== 0) previewCtx.scale(1, -1);
-
-                for (let p of particles) {
-                    previewCtx.beginPath();
-                    previewCtx.fillStyle = p.color;
-                    previewCtx.globalAlpha = p.life;
-                    previewCtx.arc(p.x - pivotX, p.y - pivotY, p.size, 0, Math.PI * 2);
-                    previewCtx.fill();
-                }
-                previewCtx.restore();
-            }
-            previewCtx.globalAlpha = 1.0;
-        }
-
         function appLoop() {
             requestAnimationFrame(appLoop);
 
@@ -1495,10 +1441,6 @@
 
                     let dynamicAudioWidth = Math.max(2, (averageVolume / 255) * parseInt(sizeInput.value) * 6);
                     currentStrokeLength += Math.hypot(nextX - prevX, nextY - prevY);
-
-                    let activeColor = isRainbow ? `hsl(${(Date.now() / 10) % 360}, 75%, 60%)` : colorInput.value;
-                    if (isGradientMode) activeColor = getDynamicPaletteColor(currentStrokeLength / 400);
-                    createSparks(nextX, nextY, activeColor, 1);
 
                     if (!isTrail) {
                         renderSymmetryLines(ctx, nextX, nextY, prevX, prevY, 1, dynamicAudioWidth);
@@ -1536,8 +1478,6 @@
                     }
                 }
             }
-
-            updateAndRenderParticles();
         }
 
         function toggleTrail(btn) {
@@ -1600,12 +1540,6 @@
             if (isDynamicBrush) setRandomActiveStyle(btn); else resetButtonStyle(btn);
         }
 
-        function toggleParticles(btn) {
-            isParticles = !isParticles;
-            btn.innerHTML = isParticles ? `Particles: ON <span class="keybind-hint" data-action="toggleParticles">${keybinds.toggleParticles.toUpperCase()}</span>` : `Particles: OFF <span class="keybind-hint" data-action="toggleParticles">${keybinds.toggleParticles.toUpperCase()}</span>`;
-            if (isParticles) setRandomActiveStyle(btn); else resetButtonStyle(btn);
-        }
-
         function toggleMoveCenter(btn) {
             isMovingCenter = !isMovingCenter;
             btn.innerHTML = isMovingCenter ? `Move Center: ON <span class="keybind-hint" data-action="toggleMoveCenter">${keybinds.toggleMoveCenter === ' ' ? 'Space' : keybinds.toggleMoveCenter.toUpperCase()}</span>` : `Move Center: OFF <span class="keybind-hint" data-action="toggleMoveCenter">${keybinds.toggleMoveCenter === ' ' ? 'Space' : keybinds.toggleMoveCenter.toUpperCase()}</span>`;
@@ -1653,7 +1587,6 @@
             else if (key === keybinds.toggleMirror) toggleMirror(document.getElementById('mirrorBtn'));
             else if (key === keybinds.toggleString) toggleStringArt(document.getElementById('stringBtn'));
             else if (key === keybinds.toggleDynamic) toggleDynamicBrush(document.getElementById('dynamicBtn'));
-            else if (key === keybinds.toggleParticles) toggleParticles(document.getElementById('particlesBtn'));
             else if (key === keybinds.toggleEraser) toggleEraser(document.getElementById('eraserBtn'));
             else if (key === keybinds.toggleAuto) toggleAutoDraw(document.getElementById('autoBtn'));
             else if (key === keybinds.toggleAudio) toggleAudioDraw(document.getElementById('audioBtn'));
@@ -1723,10 +1656,6 @@
                     targetX = nextX; targetY = nextY; 
                     currentStrokeLength += Math.hypot(nextX - prevX, nextY - prevY);
 
-                    let activeColor = isRainbow ? `hsl(${(Date.now() / 10) % 360}, 75%, 60%)` : colorInput.value;
-                    if (isGradientMode) activeColor = getDynamicPaletteColor(currentStrokeLength / 400);
-                    createSparks(nextX, nextY, activeColor, 1);
-
                     if (!isTrail) {
                         renderSymmetryLines(ctx, nextX, nextY, prevX, prevY);
                     } else {
@@ -1780,40 +1709,65 @@
             }
         }
 
-        // Double-Tap Secret Code Prompt
-        (function() {
-            let lastTap = 0;
-            const secretCodes = {
-                'message': 'index3.html',
-                'love': 'index2.html'
-            };
+        // --- SECRET MODAL CONTROLS & GESTURE SYSTEM ---
+        function openModal() {
+            document.getElementById('secret-input').value = '';
+            document.getElementById('secret-modal').style.display = 'flex';
+            document.getElementById('secret-input').focus();
+        }
 
-            function handleDoubleTap(e) {
-                // Prevent triggering when interacting with sidebar controls
-                if (!controlPanel.classList.contains('hidden') && e.clientX < 320 && e.clientY < controlPanel.offsetHeight) {
-                    return;
-                }
+        function closeModal() {
+            document.getElementById('secret-modal').style.display = 'none';
+        }
 
-                const currentTime = new Date().getTime();
-                const tapLength = currentTime - lastTap;
-
-                if (tapLength < 300 && tapLength > 0) {
-                    e.preventDefault();
-                    const inputCode = prompt("Enter secret code:");
-                    
-                    if (inputCode) {
-                        const cleanCode = inputCode.trim().toLowerCase();
-                        if (secretCodes[cleanCode]) {
-                            window.location.href = secretCodes[cleanCode];
-                        }
-                    }
-                }
-                lastTap = currentTime;
+        function checkCode() {
+            const code = document.getElementById('secret-input').value.trim().toLowerCase();
+            if (code === "message") {
+                window.location.href = "index3.html";
+            } else if (code === "love") {
+                window.location.href = "index2.html";
+            } else {
+                alert("Incorrect Code!");
             }
+        }
 
-            window.addEventListener('touchend', handleDoubleTap);
-            window.addEventListener('click', handleDoubleTap);
-        })();
+        // 1. Desktop Key Sequence (Up, Down, Up, Up, Down)
+        const secretKeySequence = ['ArrowUp', 'ArrowDown', 'ArrowUp', 'ArrowUp', 'ArrowDown'];
+        let secretKeyIndex = 0;
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === secretKeySequence[secretKeyIndex]) {
+                secretKeyIndex++;
+                if (secretKeyIndex === secretKeySequence.length) {
+                    openModal();
+                    secretKeyIndex = 0;
+                }
+            } else {
+                secretKeyIndex = 0;
+            }
+        });
+
+        // 2. Mobile Gesture (2-Finger Swipe Down)
+        let secretTouchStartY = 0;
+
+        window.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                secretTouchStartY = e.touches[0].clientY;
+            }
+        });
+
+        window.addEventListener('touchend', (e) => {
+            if (secretTouchStartY > 0) {
+                const touchEndY = e.changedTouches[0].clientY;
+                const distanceMoved = touchEndY - secretTouchStartY;
+
+                // Trigger if swiped down more than 120px with 2 fingers
+                if (distanceMoved > 120) {
+                    openModal();
+                }
+                secretTouchStartY = 0;
+            }
+        });
     </script>
 </body>
 </html>
