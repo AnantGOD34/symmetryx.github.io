@@ -359,20 +359,22 @@
         }
         #discoBall {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            background: radial-gradient(circle, #fff, #ccc, #555);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 180px;
+            height: 180px;
+            background: url('ball.gif') no-repeat center center;
+            background-size: contain;
             border-radius: 50%;
             z-index: 998;
             display: none;
-            animation: spinDisco 2s linear infinite;
-            box-shadow: 0 0 15px #fff;
+            animation: spinDisco 4s linear infinite;
+            box-shadow: 0 0 35px rgba(255, 255, 255, 0.7);
         }
         @keyframes spinDisco {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
         /* --- Notification Styles --- */
@@ -407,6 +409,11 @@
     <div id="hint-notification">
         Try swiping down with 2 fingers (for touchscreen devices) / Try pressing ↑↓↑↑↓ arrow keys (for devices with a physical keyboard)
     </div>
+
+    <!-- Background Video for Disco Easter Egg -->
+    <video id="discoBackgroundVideo" autoplay muted loop style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; z-index: -1; display: none;">
+        <source src="disco.mp4" type="video/mp4">
+    </video>
 
     <canvas id="matrixCanvas" style="display:none;"></canvas>
     <canvas id="fxCanvas" style="display:none;"></canvas>
@@ -1775,6 +1782,12 @@
             dBall.style.display = "none";
             if (discoInterval) clearInterval(discoInterval);
 
+            const dVideo = document.getElementById("discoBackgroundVideo");
+            if (dVideo) {
+                dVideo.style.display = "none";
+                dVideo.pause();
+            }
+
             document.querySelectorAll(".sidebar, #showUI").forEach(el => {
                 el.classList.remove("gravity-drop-active");
             });
@@ -1882,14 +1895,21 @@
                     break;
                 case "disco":
                     const dBall = document.getElementById("discoBall");
+                    const dVideo = document.getElementById("discoBackgroundVideo");
+                    
                     if(dBall.style.display === "none" || !dBall.style.display) {
                         dBall.style.display = "block";
+                        dVideo.style.display = "block";
+                        dVideo.currentTime = 0;
+                        dVideo.play();
+                        
                         discoInterval = setInterval(() => {
                             const neonHue = Math.floor(Math.random() * 360);
-                            document.body.style.backgroundColor = `hsl(${neonHue}, 100%, 50%)`;
                         }, 120);
                     } else {
                         dBall.style.display = "none";
+                        dVideo.style.display = "none";
+                        dVideo.pause();
                         clearInterval(discoInterval);
                         document.body.style.backgroundColor = canvasBgColor;
                     }
