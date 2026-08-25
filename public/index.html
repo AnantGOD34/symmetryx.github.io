@@ -18,6 +18,7 @@
             user-select: none;
             -webkit-user-select: none;
             touch-action: none;
+            transition: opacity 0.3s, transform 0.3s, background-color 0.1s;
         }
         canvas {
             position: fixed;
@@ -282,34 +283,6 @@
             border: 1px solid rgba(255,255,255,0.1);
             text-transform: uppercase;
         }
-        .keybind-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            background: rgba(255, 255, 255, 0.03);
-            padding: 6px;
-            border-radius: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .keybind-row button {
-            width: auto;
-            padding: 2px 8px;
-            font-size: 10px;
-            text-align: center;
-            background: rgba(255, 149, 0, 0.2);
-            border-color: rgba(255, 149, 0, 0.4);
-        }
-        .keybind-row button.listening {
-            background: #e74c3c;
-            border-color: #ff6b6b;
-            animation: pulse 1s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-        }
         .credit-footer {
             text-align: center;
             font-size: 12px;
@@ -326,18 +299,127 @@
         input[type="file"] {
             display: none;
         }
+
+        /* --- Easter Egg FX Styles --- */
+        body.pixel-mode {
+            image-rendering: pixelated;
+            filter: contrast(150%) steps(8);
+        }
+        body.upside-down-mode {
+            transform: rotate(180deg);
+        }
+        body.ghost-mode {
+            opacity: 0.2;
+        }
+        body.giant-cursor-mode, body.giant-cursor-mode * {
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="%23ff9500"><path d="M7 2l12 11.2-5.8.5 3.3 7.3-2.2 1-3.2-7.4L7 19.3V2z"/></svg>'), auto !important;
+        }
+        .rainbow-btn-bg {
+            background: linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #8b00ff) !important;
+            border-color: #ffffff !important;
+        }
+        @keyframes earthquakeAnim {
+            0% { transform: translate(0, 0); }
+            10% { transform: translate(-25px, 15px); }
+            20% { transform: translate(25px, -15px); }
+            30% { transform: translate(-20px, -10px); }
+            40% { transform: translate(20px, 10px); }
+            50% { transform: translate(-10px, 20px); }
+            60% { transform: translate(10px, -20px); }
+            70% { transform: translate(-15px, 5px); }
+            80% { transform: translate(15px, -5px); }
+            90% { transform: translate(-5px, 10px); }
+            100% { transform: translate(0, 0); }
+        }
+        .earthquake-active {
+            animation: earthquakeAnim 0.08s infinite alternate;
+        }
+        @keyframes gravityDropAnim {
+            0% { transform: translateY(0); }
+            60% { transform: translateY(85vh); }
+            75% { transform: translateY(75vh); }
+            90% { transform: translateY(85vh); }
+            100% { transform: translateY(85vh); }
+        }
+        .gravity-drop-active {
+            animation: gravityDropAnim 1.2s forwards ease-in;
+        }
+        @keyframes floatGhost {
+            0% { transform: translate(-50%, -50%) translateY(0px) scale(1); }
+            100% { transform: translate(-50%, -50%) translateY(-30px) scale(1.1); }
+        }
+        #matrixCanvas, #fxCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 999;
+        }
+        #discoBall {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, #fff, #ccc, #555);
+            border-radius: 50%;
+            z-index: 998;
+            display: none;
+            animation: spinDisco 2s linear infinite;
+            box-shadow: 0 0 15px #fff;
+        }
+        @keyframes spinDisco {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- Notification Styles --- */
+        #hint-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(30, 30, 30, 0.95);
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 8px;
+            border: 1px solid #ff9500;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            font-size: 13px;
+            max-width: 280px;
+            line-height: 1.4;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+        }
+        #hint-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
+
+    <!-- Notification Container -->
+    <div id="hint-notification">
+        Try swiping down with 2 fingers (for touchscreen devices) / Try pressing ↑↓↑↑↓ arrow keys (for devices with a physical keyboard)
+    </div>
+
+    <canvas id="matrixCanvas" style="display:none;"></canvas>
+    <canvas id="fxCanvas" style="display:none;"></canvas>
+    <div id="discoBall"></div>
 
     <div id="showUI" onclick="toggleUI()">Show Panel <span class="keybind-hint" data-action="toggleUI">H</span></div>
 
     <!-- Secret Passcode Modal -->
     <div id="secret-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); color: #fff; justify-content: center; align-items: center; z-index: 9999;">
-      <div style="background: #1e1e1e; padding: 24px; border-radius: 12px; text-align: center; max-width: 300px; width: 90%; border: 1px solid rgba(255,255,255,0.1);">
+      <div style="background: #1e1e1e; padding: 24px; border-radius: 12px; text-align: center; max-width: 320px; width: 90%; border: 1px solid rgba(255,255,255,0.1);">
         <h3 style="margin-top: 0; color: #ff9500;">Enter Secret Code</h3>
         <input 
-          type="password" 
+          type="text" 
           id="secret-input" 
           placeholder="Passcode..." 
           onkeydown="if(event.key === 'Enter') checkCode()"
@@ -346,13 +428,30 @@
         <br>
         <button onclick="checkCode()" style="padding: 8px 16px; margin-right: 8px; cursor: pointer; background: rgba(255, 149, 0, 0.4); width: auto;">Submit</button>
         <button onclick="closeModal()" style="padding: 8px 16px; cursor: pointer; background: rgba(255, 255, 255, 0.1); width: auto;">Close</button>
+
+        <!-- Available Codes Section -->
+        <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: #aaa; text-align: left; max-height: 120px; overflow-y: auto;">
+          <div style="color: #ff9500; font-weight: bold; margin-bottom: 6px; text-align: center;">Available Codes:</div>
+          <ul style="margin: 0; padding-left: 20px; line-height: 1.5;">
+            <li><b>pixel</b> - Retro 8-bit mode</li>
+            <li><b>matrix</b> - Digital rain FX</li>
+            <li><b>confetti</b> - Rainbow celebration</li>
+            <li><b>disco</b> - Flashing party lights</li>
+            <li><b>drop</b> - UI gravity drop</li>
+            <li><b>upside-down</b> - Invert screen</li>
+            <li><b>earthquake</b> - Screen shake</li>
+            <li><b>ghost</b> - Spooky floating ghost</li>
+            <li><b>giant</b> - Enormous cursor</li>
+            <li><b>reset</b> - Clear Easter Eggs</li>
+          </ul>
+        </div>
       </div>
     </div>
 
     <div class="sidebar" id="controlPanel">
         <div class="sidebar-header">
             <img src="logo.png" alt="Symmetryx Logo" class="sidebar-logo">
-            <div class="version-badge">V16.8</div>
+            <div class="version-badge">V16.9</div>
         </div>
         
         <div class="sidebar-scroll">
@@ -545,14 +644,6 @@
                 </div>
             </div>
 
-            <div class="accordion-item">
-                <div class="accordion-header" onclick="toggleAccordion(this)">Keybind Settings</div>
-                <div class="accordion-content">
-                    <div id="keybindsContainer" style="display: flex; flex-direction: column; gap: 6px;"></div>
-                    <button onclick="resetKeybinds()" style="text-align: center; background: rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.4); margin-top: 4px;">Reset Keybinds</button>
-                </div>
-            </div>
-
             <button id="hideBtn" onclick="toggleUI()">Hide Panel <span class="keybind-hint" data-action="toggleUI">H</span></button>
 
             <div class="credit-footer">Created by <span>Anant Patel</span></div>
@@ -654,16 +745,20 @@
             clearCanvas: 'c', undo: 'z', redo: 'y', toggleUI: 'h', zoomIn: 'arrowup', zoomOut: 'arrowdown'
         };
         let keybinds = {...defaultKeybinds};
-        let activeRebindAction = null;
 
-        const actionLabels = {
-            toggleMoveCenter: 'Move Center', toggleTrail: 'Trail', toggleGlow: 'Glow',
-            toggleRainbow: 'Rainbow', toggleGradient: 'Gradient Line', toggleMirror: 'Mirror',
-            toggleString: 'String Art', toggleDynamic: 'Dynamic Brush',
-            toggleEraser: 'Eraser', toggleAuto: 'Auto Draw', toggleAudio: 'Audio Draw',
-            clearCanvas: 'Clear Frame', undo: 'Undo', redo: 'Redo', toggleUI: 'Toggle UI Panel',
-            zoomIn: 'Zoom In', zoomOut: 'Zoom Out'
-        };
+        // --- Notification Logic ---
+        function showTimedNotification() {
+            const notif = document.getElementById('hint-notification');
+            notif.classList.add('show');
+            setTimeout(() => {
+                notif.classList.remove('show');
+            }, 5000);
+        }
+
+        setTimeout(() => {
+            showTimedNotification();
+            setInterval(showTimedNotification, 60000);
+        }, 2000);
 
         function applyTransform() {
             const container = document.getElementById('canvasContainer');
@@ -835,45 +930,6 @@
             overlayCtx.stroke();
 
             overlayCtx.restore();
-        }
-
-        function renderKeybindsUI() {
-            const container = document.getElementById('keybindsContainer');
-            container.innerHTML = '';
-            for (let action in keybinds) {
-                const row = document.createElement('div');
-                row.className = 'keybind-row';
-                const label = document.createElement('span');
-                label.textContent = actionLabels[action] || action;
-                
-                const btn = document.createElement('button');
-                let keyText = keybinds[action];
-                if (keyText === ' ') keyText = 'SPACE';
-                else if (keyText.startsWith('arrow')) keyText = keyText.replace('arrow', 'ARROW ');
-                btn.textContent = keyText.toUpperCase();
-                
-                if (activeRebindAction === action) {
-                    btn.classList.add('listening');
-                    btn.textContent = 'PRESS KEY...';
-                }
-
-                btn.onclick = () => { activeRebindAction = action; renderKeybindsUI(); };
-                row.appendChild(label); row.appendChild(btn); container.appendChild(row);
-
-                const hints = document.querySelectorAll(`.keybind-hint[data-action="${action}"]`);
-                hints.forEach(hint => {
-                    let displayKey = keybinds[action];
-                    if (displayKey === ' ') displayKey = 'Space';
-                    else if (displayKey.startsWith('arrow')) displayKey = displayKey.replace('arrow', '↑').replace('down', '↓').replace('up', '↑');
-                    hint.textContent = displayKey.toUpperCase();
-                });
-            }
-        }
-
-        function resetKeybinds() {
-            keybinds = {...defaultKeybinds};
-            activeRebindAction = null;
-            renderKeybindsUI();
         }
 
         function toggleAccordion(header) {
@@ -1566,13 +1622,6 @@
 
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
-            if (activeRebindAction) {
-                e.preventDefault();
-                keybinds[activeRebindAction] = key;
-                activeRebindAction = null;
-                renderKeybindsUI();
-                return;
-            }
 
             if (key === keybinds.toggleMoveCenter) {
                 e.preventDefault();
@@ -1618,7 +1667,6 @@
         }
 
         renderPaletteUI();
-        renderKeybindsUI();
         resize();
         applyTransform();
         requestAnimationFrame(appLoop); 
@@ -1709,6 +1757,185 @@
             }
         }
 
+        // --- EASTER EGG IMPLEMENTATIONS ---
+        let matrixInterval = null;
+        let discoInterval = null;
+
+        function resetAllEasterEggs() {
+            document.body.classList.remove("pixel-mode", "upside-down-mode", "ghost-mode", "giant-cursor-mode", "earthquake-active");
+            
+            const mCanvas = document.getElementById("matrixCanvas");
+            mCanvas.style.display = "none";
+            if (matrixInterval) clearInterval(matrixInterval);
+
+            const fCanvas = document.getElementById("fxCanvas");
+            fCanvas.style.display = "none";
+
+            const dBall = document.getElementById("discoBall");
+            dBall.style.display = "none";
+            if (discoInterval) clearInterval(discoInterval);
+
+            document.querySelectorAll(".sidebar, #showUI").forEach(el => {
+                el.classList.remove("gravity-drop-active");
+            });
+
+            document.querySelectorAll("button").forEach(btn => btn.classList.remove("rainbow-btn-bg"));
+
+            const ghostEl = document.getElementById("canvasGhostOverlay");
+            if (ghostEl) ghostEl.remove();
+
+            document.body.style.backgroundColor = canvasBgColor;
+        }
+
+        function playPixelAudio() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
+                osc.frequency.exponentialRampToValueAtTime(220, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } catch(e) {}
+        }
+
+        function triggerEasterEgg(code) {
+            switch(code) {
+                case "reset":
+                case "off":
+                case "clear":
+                    resetAllEasterEggs();
+                    break;
+                case "pixel":
+                    document.body.classList.toggle("pixel-mode");
+                    playPixelAudio();
+                    break;
+                case "matrix":
+                    const mCanvas = document.getElementById("matrixCanvas");
+                    if (mCanvas.style.display === "none") {
+                        mCanvas.style.display = "block";
+                        const mCtx = mCanvas.getContext("2d");
+                        mCanvas.width = window.innerWidth;
+                        mCanvas.height = window.innerHeight;
+                        const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                        const fontSize = 14;
+                        const cols = Math.floor(mCanvas.width / fontSize);
+                        const drops = Array(cols).fill(1);
+                        matrixInterval = setInterval(() => {
+                            mCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
+                            mCtx.fillRect(0, 0, mCanvas.width, mCanvas.height);
+                            mCtx.fillStyle = "#0f0";
+                            mCtx.font = fontSize + "px monospace";
+                            for (let i = 0; i < drops.length; i++) {
+                                const text = chars[Math.floor(Math.random() * chars.length)];
+                                mCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+                                if (drops[i] * fontSize > mCanvas.height && Math.random() > 0.975) drops[i] = 0;
+                                drops[i]++;
+                            }
+                        }, 33);
+                    } else {
+                        mCanvas.style.display = "none";
+                        clearInterval(matrixInterval);
+                    }
+                    break;
+                case "confetti":
+                    const fCanvas = document.getElementById("fxCanvas");
+                    fCanvas.style.display = "block";
+                    const fCtx = fCanvas.getContext("2d");
+                    fCanvas.width = window.innerWidth;
+                    fCanvas.height = window.innerHeight;
+                    const particles = [];
+                    for(let i=0; i<100; i++) {
+                        particles.push({
+                            x: Math.random() * fCanvas.width,
+                            y: Math.random() * fCanvas.height - fCanvas.height,
+                            vx: (Math.random() - 0.5) * 6,
+                            vy: Math.random() * 6 + 4,
+                            color: `hsl(${Math.random()*360}, 100%, 50%)`,
+                            size: Math.random() * 8 + 4
+                        });
+                    }
+                    let frames = 0;
+                    function animConfetti() {
+                        fCtx.clearRect(0, 0, fCanvas.width, fCanvas.height);
+                        particles.forEach(p => {
+                            p.x += p.vx;
+                            p.y += p.vy;
+                            fCtx.fillStyle = p.color;
+                            fCtx.fillRect(p.x, p.y, p.size, p.size);
+                        });
+                        frames++;
+                        if(frames < 180) requestAnimationFrame(animConfetti);
+                        else {
+                            fCtx.clearRect(0, 0, fCanvas.width, fCanvas.height);
+                            fCanvas.style.display = "none";
+                        }
+                    }
+                    animConfetti();
+                    document.querySelectorAll("button").forEach(btn => btn.classList.toggle("rainbow-btn-bg"));
+                    break;
+                case "disco":
+                    const dBall = document.getElementById("discoBall");
+                    if(dBall.style.display === "none" || !dBall.style.display) {
+                        dBall.style.display = "block";
+                        discoInterval = setInterval(() => {
+                            const neonHue = Math.floor(Math.random() * 360);
+                            document.body.style.backgroundColor = `hsl(${neonHue}, 100%, 50%)`;
+                        }, 120);
+                    } else {
+                        dBall.style.display = "none";
+                        clearInterval(discoInterval);
+                        document.body.style.backgroundColor = canvasBgColor;
+                    }
+                    break;
+                case "drop":
+                    document.querySelectorAll(".sidebar, #showUI").forEach(el => {
+                        el.classList.toggle("gravity-drop-active");
+                    });
+                    break;
+                case "upside-down":
+                    document.body.classList.toggle("upside-down-mode");
+                    break;
+                case "earthquake":
+                    document.body.classList.add("earthquake-active");
+                    setTimeout(() => document.body.classList.remove("earthquake-active"), 2000);
+                    break;
+                case "ghost":
+                    document.body.classList.toggle("ghost-mode");
+                    let ghostEl = document.getElementById("canvasGhostOverlay");
+                    if (!ghostEl) {
+                        ghostEl = document.createElement("div");
+                        ghostEl.id = "canvasGhostOverlay";
+                        ghostEl.innerHTML = "👻";
+                        ghostEl.style.cssText = `
+                            position: fixed;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            font-size: 130px;
+                            pointer-events: none;
+                            z-index: 9999;
+                            opacity: 0.85;
+                            filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.9));
+                            animation: floatGhost 3s ease-in-out infinite alternate;
+                        `;
+                        document.body.appendChild(ghostEl);
+                    } else {
+                        ghostEl.remove();
+                    }
+                    break;
+                case "giant":
+                    document.body.classList.toggle("giant-cursor-mode");
+                    break;
+            }
+        }
+
         // --- SECRET MODAL CONTROLS & GESTURE SYSTEM ---
         function openModal() {
             document.getElementById('secret-input').value = '';
@@ -1722,10 +1949,15 @@
 
         function checkCode() {
             const code = document.getElementById('secret-input').value.trim().toLowerCase();
+            const easterEggCodes = ["pixel", "matrix", "confetti", "disco", "drop", "upside-down", "earthquake", "ghost", "giant", "reset", "off", "clear"];
+            
             if (code === "message") {
                 window.location.href = "index3.html";
             } else if (code === "love") {
                 window.location.href = "index2.html";
+            } else if (easterEggCodes.includes(code)) {
+                triggerEasterEgg(code);
+                closeModal();
             } else {
                 alert("Incorrect Code!");
             }
@@ -1761,7 +1993,6 @@
                 const touchEndY = e.changedTouches[0].clientY;
                 const distanceMoved = touchEndY - secretTouchStartY;
 
-                // Trigger if swiped down more than 120px with 2 fingers
                 if (distanceMoved > 120) {
                     openModal();
                 }
