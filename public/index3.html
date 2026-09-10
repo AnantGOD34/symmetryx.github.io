@@ -1,3 +1,4 @@
+name=public/index.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -351,13 +352,30 @@
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
         }
 
+        .footer-info {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 6px;
+            margin-top: 5px;
+        }
+
         .time-stamp {
             font-size: 0.68rem;
             opacity: 0.85;
-            margin-top: 5px;
-            display: block;
-            text-align: right;
             color: rgba(255, 255, 255, 0.85);
+        }
+
+        .ticks {
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: -2px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .ticks.read {
+            color: #38bdf8; /* Bright Blue Ticks */
+            text-shadow: 0 0 6px rgba(56, 189, 248, 0.6);
         }
 
         /* INPUT FOOTER AREA */
@@ -536,71 +554,55 @@
                     res.history.forEach(msg => renderMessage(msg));
                     scrollToBottom();
                 }
+
+                // Notify server messages are read upon joining/opening
+                socket.emit('mark-read');
             });
 
             socket.on('chat-message', (msgData) => {
                 renderMessage(msgData);
                 scrollToBottom();
+
+                // If message is from someone else, automatically trigger mark-read
+                if (msgData.name !== currentUserName && !msgData.isSystem) {
+                    socket.emit('mark-read');
+                }
             });
-        }
 
-        function parseMessageDate(msg) {
-            const rawTime = msg.timestamp || msg.time || msg.createdAt || msg.date;
-            if (!rawTime) return new Date();
-            
-            const parsed = new Date(rawTime);
-            return isNaN(parsed.getTime()) ? new Date() : parsed;
-        }
-
-        function formatCustomTimestamp(dateObj) {
-            const dd = String(dateObj.getDate()).padStart(2, '0');
-            const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
-            const yy = String(dateObj.getFullYear()).slice(-2);
-            const hh = String(dateObj.getHours()).padStart(2, '0');
-            const min = String(dateObj.getMinutes()).padStart(2, '0');
-            return `${dd}-${mm}-${yy} ${hh}-${min}`;
+            socket.on('messages-read', ({ reader }) => {
+                if (reader !== currentUserName) {
+                    // Update all ticks of self messages to read status in UI
+                    document.querySelectorAll('.message-row.self .ticks').forEach(el => {
+                        el.textContent = '✓✓';
+                        el.classList.add('read');
+                    });
+                }
+            });
         }
 
         function renderMessage(msg) {
-            const msgDate = parseMessageDate(msg);
-            const formattedTimestamp = formatCustomTimestamp(msgDate);
-
-            const dateStr = msgDate.toLocaleDateString(undefined, {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-
+            const rawTime = msg.timestamp; 
+            const datePart = rawTime ? rawTime.split(' ')[0] : ''; // DD-MM-YY
+            
+            // Generate a grouping day string for separation headers if needed
+            let dateStr = datePart;
             if (dateStr !== lastRenderedDateString) {
                 lastRenderedDateString = dateStr;
                 const dateDiv = document.createElement('div');
                 dateDiv.className = 'date-separator';
-
-                const todayStr = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayStr = yesterday.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
-
-                if (dateStr === todayStr) {
-                    dateDiv.textContent = 'Today';
-                } else if (dateStr === yesterdayStr) {
-                    dateDiv.textContent = 'Yesterday';
-                } else {
-                    dateDiv.textContent = dateStr;
-                }
-
+                dateDiv.textContent = dateStr || 'Recent';
                 messagesBox.appendChild(dateDiv);
             }
 
             const row = document.createElement('div');
+            row.setAttribute('data-id', msg.id || '');
 
             if (msg.isSystem) {
                 row.className = 'message-row system';
                 row.innerHTML = `
                     <div class="system-pill">
                         <span>🔒 ${formatMessageText(msg.message)}</span>
-                        <span style="font-size: 0.68rem; opacity: 0.75;">${formattedTimestamp}</span>
+                        <span style="font-size: 0.68rem; opacity: 0.75;">${msg.timestamp}</span>
                     </div>
                 `;
             } else {
@@ -612,11 +614,20 @@
                     contentHtml += `<div>${formatMessageText(msg.message)}</div>`;
                 }
 
+                let ticksHtml = '';
+                if (isSelf) {
+                    const isRead = msg.status === 'read';
+                    ticksHtml = `<span class="ticks ${isRead ? 'read' : ''}">✓✓</span>`;
+                }
+
                 row.innerHTML = `
                     <div class="sender-name">${escapeHTML(msg.name)}</div>
                     <div class="bubble">
                         ${contentHtml}
-                        <span class="time-stamp">${formattedTimestamp}</span>
+                        <div class="footer-info">
+                            <span class="time-stamp">${msg.timestamp}</span>
+                            ${ticksHtml}
+                        </div>
                     </div>
                 `;
             }
