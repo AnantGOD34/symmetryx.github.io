@@ -1,3 +1,4 @@
+name=server.js
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -13,14 +14,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.get('/index2', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index2.html'));
-});
-
-app.get('/index3', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index3.html'));
 });
 
 // Store active rooms and their passwords in memory
@@ -63,39 +56,33 @@ io.on('connection', (socket) => {
       history: roomHistory[cleanRoomId] || [] 
     });
 
-    // Notify room of new user
+    // Notify room of new user with timestamp
     const systemMessage = {
       name: 'System',
       message: `${name} joined the room.`,
       isSystem: true,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
     if (roomHistory[cleanRoomId]) {
       roomHistory[cleanRoomId].push(systemMessage);
     }
 
-    // Send the join message to other users in the room
-    socket.to(cleanRoomId).emit('chat-message', systemMessage);
+    // Send the join message to users in the room
+    io.to(cleanRoomId).emit('chat-message', systemMessage);
   });
 
-  // Handler supporting both text & file payloads
-  socket.on('chat-message', (data) => {
+  // Handler for chat messages
+  socket.on('chat-message', (messageText) => {
     const user = socket.userData;
     if (!user || !user.roomId) return;
 
-    let messageText = typeof data === 'string' ? data : data.message;
-    let fileData = typeof data === 'object' ? data.file : null;
-
-    if ((messageText && messageText.trim() !== '') || fileData) {
+    if (messageText && messageText.trim() !== '') {
       const msgData = {
         name: user.name,
-        message: messageText ? messageText.trim() : '',
-        file: fileData,
+        message: messageText.trim(),
         isSystem: false,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        timestamp: (typeof data === 'object' && data && data.timestamp) ? data.timestamp : new Date().toISOString() // <-- Add this line
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
       // Store message in room history
@@ -114,10 +101,9 @@ io.on('connection', (socket) => {
 
       const disconnectMessage = {
         name: 'System',
-        message: `${name} disconnected.`,
+        message: `${name} left the room.`,
         isSystem: true,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
       if (roomHistory[roomId]) {
@@ -125,9 +111,8 @@ io.on('connection', (socket) => {
       }
 
       io.to(roomId).emit('chat-message', disconnectMessage);
-      
-      // Note: History and room passwords are kept in memory so messages remain available when users re-join.
     }
+    console.log('User disconnected:', socket.id);
   });
 });
 
