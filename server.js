@@ -16,16 +16,6 @@ app.get('/', (req, res) => {
 const roomPasswords = {};
 const roomHistory = {};
 
-function getFormattedTimestamp() {
-  const now = new Date();
-  const dd = String(now.getDate()).padStart(2, '0');
-  const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const yy = String(now.getFullYear()).slice(-2);
-  const hh = String(now.getHours()).padStart(2, '0');
-  const min = String(now.getMinutes()).padStart(2, '0');
-  return `${dd}-${mm}-${yy} ${hh}-${min}`;
-}
-
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
@@ -59,7 +49,7 @@ io.on('connection', (socket) => {
       name: 'System',
       message: `${name} joined the room.`,
       isSystem: true,
-      timestamp: getFormattedTimestamp()
+      timestamp: new Date().toISOString()
     };
 
     if (roomHistory[cleanRoomId]) {
@@ -78,7 +68,7 @@ io.on('connection', (socket) => {
         name: user.name,
         message: messageText.trim(),
         isSystem: false,
-        timestamp: getFormattedTimestamp()
+        timestamp: new Date().toISOString()
       };
 
       if (roomHistory[user.roomId]) {
@@ -97,7 +87,7 @@ io.on('connection', (socket) => {
         name: 'System',
         message: `${name} left the room.`,
         isSystem: true,
-        timestamp: getFormattedTimestamp()
+        timestamp: new Date().toISOString()
       };
 
       if (roomHistory[roomId]) {
