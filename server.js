@@ -68,7 +68,8 @@ io.on('connection', (socket) => {
       name: 'System',
       message: `${name} joined the room.`,
       isSystem: true,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: new Date().toISOString(),
     };
 
     if (roomHistory[cleanRoomId]) {
@@ -93,7 +94,8 @@ io.on('connection', (socket) => {
         message: messageText ? messageText.trim() : '',
         file: fileData,
         isSystem: false,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: (typeof data === 'object' && data && data.timestamp) ? data.timestamp : new Date().toISOString() // <-- Add this line
       };
 
       // Store message in room history
@@ -114,7 +116,8 @@ io.on('connection', (socket) => {
         name: 'System',
         message: `${name} disconnected.`,
         isSystem: true,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: new Date().toISOString()
       };
 
       if (roomHistory[roomId]) {
