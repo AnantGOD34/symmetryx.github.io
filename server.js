@@ -22,6 +22,16 @@ const roomPasswords = {};
 // Store chat history per room in memory
 const roomHistory = {};
 
+// Helper function for date and time formatting
+function getFormattedTimestamp() {
+  return new Date().toLocaleString([], { 
+    month: 'short', 
+    day: 'numeric', 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  });
+}
+
 // Socket.io setup
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
@@ -56,12 +66,12 @@ io.on('connection', (socket) => {
       history: roomHistory[cleanRoomId] || [] 
     });
 
-    // Notify room of new user with timestamp
+    // Notify room of new user with date and time timestamp
     const systemMessage = {
       name: 'System',
       message: `${name} joined the room.`,
       isSystem: true,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      timestamp: getFormattedTimestamp()
     };
 
     if (roomHistory[cleanRoomId]) {
@@ -82,7 +92,7 @@ io.on('connection', (socket) => {
         name: user.name,
         message: messageText.trim(),
         isSystem: false,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        timestamp: getFormattedTimestamp()
       };
 
       // Store message in room history
@@ -103,7 +113,7 @@ io.on('connection', (socket) => {
         name: 'System',
         message: `${name} left the room.`,
         isSystem: true,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        timestamp: getFormattedTimestamp()
       };
 
       if (roomHistory[roomId]) {
