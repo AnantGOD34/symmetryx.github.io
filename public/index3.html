@@ -1,3 +1,4 @@
+name=public/index.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -196,6 +197,7 @@
             font-size: 13px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             animation: fadeIn 0.3s ease;
+            position: relative;
         }
 
         .message.system {
@@ -204,7 +206,10 @@
             font-size: 11px;
             color: rgba(255, 255, 255, 0.8);
             border-radius: 20px;
-            padding: 4px 12px;
+            padding: 6px 14px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
         .message.self {
@@ -218,6 +223,14 @@
             color: rgba(255, 255, 255, 0.7);
             margin-bottom: 2px;
             display: block;
+        }
+
+        .msg-time {
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.6);
+            float: right;
+            margin-left: 10px;
+            margin-top: 4px;
         }
 
         .chat-input-area {
@@ -309,7 +322,7 @@
             ["#d299c2", "#fef9d7"], // Hour 9
             ["#89f7fe", "#66a6ff"], // Hour 10
             ["#f093fb", "#f5576c"], // Hour 11
-            ["#em0000", "#4facfe"], // Hour 12 (Fallback neutral)
+            ["#ff758c", "#ff7eb3"], // Hour 12 (Fallback neutral)
             ["#fa709a", "#fee140"], // Hour 13
             ["#ff9a9e", "#fecfef"], // Hour 14
             ["#ffecd2", "#fcb69f"], // Hour 15
@@ -330,7 +343,6 @@
             document.documentElement.style.setProperty('--gradient-2', palette[1]);
         }
 
-        // Apply immediately and check every minute for changes
         applyHourlyGradient();
         setInterval(applyHourlyGradient, 60000);
 
@@ -362,11 +374,9 @@
             document.getElementById('displayRoomName').textContent = `Room: ${myRoomId}`;
             document.getElementById('badgeRoomId').textContent = myRoomId;
 
-            // Switch screens
             document.getElementById('login-screen').classList.remove('active');
             document.getElementById('chat-screen').classList.add('active');
 
-            // Load history
             const chatMessages = document.getElementById('chatMessages');
             chatMessages.innerHTML = '';
             
@@ -396,7 +406,17 @@
 
             if (msg.isSystem) {
                 div.classList.add('system');
-                div.textContent = msg.message;
+                
+                const textSpan = document.createElement('span');
+                textSpan.textContent = msg.message;
+                div.appendChild(textSpan);
+
+                if (msg.timestamp) {
+                    const timeSpan = document.createElement('span');
+                    timeSpan.className = 'msg-time';
+                    timeSpan.textContent = msg.timestamp;
+                    div.appendChild(timeSpan);
+                }
             } else {
                 if (msg.name === myName) {
                     div.classList.add('self');
@@ -409,6 +429,13 @@
 
                 const textNode = document.createTextNode(msg.message);
                 div.appendChild(textNode);
+
+                if (msg.timestamp) {
+                    const timeSpan = document.createElement('span');
+                    timeSpan.className = 'msg-time';
+                    timeSpan.textContent = msg.timestamp;
+                    div.appendChild(timeSpan);
+                }
             }
 
             chatMessages.appendChild(div);
