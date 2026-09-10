@@ -3,223 +3,417 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Secret Room Chat 🔐</title>
-    <link rel="icon" type="image/png" href="logo.png">
-    <script src="/socket.io/socket.io.js" onerror="window.socketIoFailed = true;"></script>
+    <title>Secret Messaging Room</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --gradient-1: #ff758c;
+            --gradient-2: #ff7eb3;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: radial-gradient(circle at top right, #3c096c, #1a0033, #0d001a);
-            color: #ffffff;
-            height: 100vh;
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: hidden;
+            transition: background 2s ease;
         }
-        .glow-sphere-1 {
-            position: absolute;
-            top: -15%;
-            left: -10%;
-            width: 450px;
-            height: 450px;
-            background: radial-gradient(circle, rgba(255, 123, 0, 0.4), transparent 70%);
-            filter: blur(80px);
-            border-radius: 50%;
-            pointer-events: none;
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        .glow-sphere-2 {
-            position: absolute;
-            bottom: -15%;
-            right: -10%;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(168, 85, 247, 0.45), transparent 70%);
-            filter: blur(90px);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-        .gradient-box {
-            position: relative;
-            background: rgba(22, 8, 42, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 1px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 123, 0, 0.2);
-        }
-        .gradient-box::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 24px;
-            padding: 2px;
-            background: linear-gradient(135deg, #ff7b00, #a855f7, #ff2a85);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-        }
-        .login-card {
+
+        /* Glassmorphism Container */
+        .glass-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
             width: 90%;
             max-width: 420px;
-            padding: 40px 32px;
-            text-align: center;
-            z-index: 10;
+            padding: 30px;
+            color: #fff;
+            transition: all 0.4s ease;
         }
-        .login-card h2 {
-            font-size: 2rem;
-            margin-bottom: 8px;
-            background: linear-gradient(135deg, #ff9e00, #ff6000, #c084fc, #e879f9);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 800;
-        }
-        .login-card p {
-            font-size: 0.9rem;
-            color: #d8b4fe;
-            margin-bottom: 26px;
-        }
-        .input-group {
-            margin-bottom: 18px;
-            text-align: left;
-        }
-        .input-group label {
-            display: block;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            color: #ff9e00;
-            margin-bottom: 6px;
-            font-weight: 800;
-        }
-        .input-group input {
-            width: 100%;
-            padding: 13px 16px;
-            background: rgba(12, 3, 26, 0.7);
-            border: 1px solid rgba(168, 85, 247, 0.4);
-            border-radius: 12px;
-            color: #ffffff;
-            font-size: 0.95rem;
-            outline: none;
-        }
-        .btn-primary {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #ff6000 0%, #ff9e00 50%, #9333ea 100%);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-size: 1.05rem;
-            font-weight: 800;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .chat-wrapper {
+
+        /* Screens */
+        .screen {
             display: none;
-            width: 95%;
-            max-width: 950px;
-            height: 90vh;
             flex-direction: column;
-            z-index: 10;
+            gap: 20px;
         }
+
+        .screen.active {
+            display: flex;
+        }
+
+        h2 {
+            text-align: center;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: -15px;
+            margin-bottom: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 500;
+            padding-left: 4px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        input:focus {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: #fff;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        button {
+            cursor: pointer;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+            margin-top: 5px;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.45);
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .error-msg {
+            color: #ff4d4d;
+            font-size: 12px;
+            text-align: center;
+            font-weight: 500;
+            min-height: 16px;
+        }
+
+        /* Chat Room UI Layout */
+        #chat-screen {
+            max-width: 600px;
+            height: 85vh;
+            padding: 20px;
+        }
+
         .chat-header {
-            padding: 18px 24px;
-            background: linear-gradient(90deg, rgba(30, 8, 55, 0.9), rgba(18, 4, 34, 0.95));
-            border-bottom: 1px solid rgba(255, 123, 0, 0.25);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top-left-radius: 22px;
-            border-top-right-radius: 22px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 12px;
+            margin-bottom: 10px;
         }
+
+        .room-badge {
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
         .chat-messages {
             flex: 1;
-            padding: 20px;
             overflow-y: auto;
-            background: rgba(12, 3, 26, 0.6);
-        }
-        .chat-input-area {
-            padding: 16px;
-            background: rgba(18, 4, 34, 0.9);
             display: flex;
-            gap: 12px;
-            border-bottom-left-radius: 22px;
-            border-bottom-right-radius: 22px;
+            flex-direction: column;
+            gap: 10px;
+            padding-right: 4px;
+            max-height: calc(85vh - 130px);
         }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 5px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .message {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-break: break-word;
+            font-size: 13px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.system {
+            align-self: center;
+            background: rgba(0, 0, 0, 0.2);
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            padding: 4px 12px;
+        }
+
+        .message.self {
+            align-self: flex-end;
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .msg-user {
+            font-size: 10px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
         .chat-input-area input {
             flex: 1;
-            padding: 12px 16px;
-            background: rgba(12, 3, 26, 0.7);
-            border: 1px solid rgba(168, 85, 247, 0.4);
-            border-radius: 10px;
-            color: #fff;
-            outline: none;
+            margin: 0;
         }
+
         .chat-input-area button {
+            margin: 0;
             padding: 0 20px;
-            background: linear-gradient(135deg, #ff6000, #9333ea);
-            border: none;
-            border-radius: 10px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
-    <div class="glow-sphere-1"></div>
-    <div class="glow-sphere-2"></div>
 
-    <!-- Login Card -->
-    <div id="loginCard" class="gradient-box login-card">
-        <h2>Secret Room</h2>
-        <p>Enter your details to join the secure chat.</p>
-        <form id="loginForm">
+    <div class="glass-container">
+        <!-- LOGIN / JOIN SCREEN -->
+        <div id="login-screen" class="screen active">
+            <h2>Secret Room</h2>
+            <div class="subtitle">Secure encrypted messaging</div>
+            
             <div class="input-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" placeholder="Your name..." required autocomplete="off">
+                <label for="nameInput">Your Name</label>
+                <input type="text" id="nameInput" placeholder="Enter your alias..." autocomplete="off">
             </div>
-            <div class="input-group">
-                <label for="room">Room Code</label>
-                <input type="text" id="room" placeholder="Room name..." required autocomplete="off">
-            </div>
-            <button type="submit" class="btn-primary">Join Room</button>
-        </form>
-    </div>
 
-    <!-- Chat Wrapper -->
-    <div id="chatWrapper" class="gradient-box chat-wrapper">
-        <div class="chat-header">
-            <div class="room-title"><span>Secure Chat Room</span></div>
+            <div class="input-group">
+                <label for="roomInput">Room ID</label>
+                <input type="text" id="roomInput" placeholder="e.g. ALPHA123" autocomplete="off">
+            </div>
+
+            <div class="input-group">
+                <label for="passInput">Room Password</label>
+                <input type="password" id="passInput" placeholder="Enter room password..." autocomplete="off">
+            </div>
+
+            <div class="error-msg" id="errorMsg"></div>
+
+            <button onclick="joinRoom()">Enter Room</button>
         </div>
-        <div id="chatMessages" class="chat-messages"></div>
-        <div class="chat-input-area">
-            <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off">
-            <button id="sendBtn">Send</button>
+
+        <!-- CHAT SCREEN -->
+        <div id="chat-screen" class="screen">
+            <div class="chat-header">
+                <div>
+                    <h3 id="displayRoomName" style="font-size: 16px; font-weight: 600;">Room</h3>
+                    <span style="font-size: 11px; color: rgba(255,255,255,0.8);" id="displayName">Alias</span>
+                </div>
+                <div class="room-badge" id="badgeRoomId">ID</div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages"></div>
+
+            <div class="chat-input-area">
+                <input type="text" id="messageInput" placeholder="Type a secure message..." onkeydown="if(event.key === 'Enter') sendMessage()" autocomplete="off">
+                <button onclick="sendMessage()">Send</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const loginForm = document.getElementById('loginForm');
-        const loginCard = document.getElementById('loginCard');
-        const chatWrapper = document.getElementById('chatWrapper');
+        const socket = io();
 
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault(); // Prevents page reload
-            const username = document.getElementById('username').value.trim();
-            const room = document.getElementById('room').value.trim();
+        let myName = '';
+        let myRoomId = '';
 
-            if (username && room) {
-                loginCard.style.display = 'none';
-                chatWrapper.style.display = 'flex';
+        // Preset hourly gradient pairs for dynamic time shifts
+        const gradientPalettes = [
+            ["#ff758c", "#ff7eb3"], // Hour 0
+            ["#6a11cb", "#2575fc"], // Hour 1
+            ["#f857a6", "#ff5858"], // Hour 2
+            ["#4facfe", "#00f2fe"], // Hour 3
+            ["#43e97b", "#38f9d7"], // Hour 4
+            ["#fa709a", "#fee140"], // Hour 5
+            ["#30cfd0", "#330867"], // Hour 6
+            ["#a8ede0", "#fed6e3"], // Hour 7
+            ["#5ee7df", "#b490ca"], // Hour 8
+            ["#d299c2", "#fef9d7"], // Hour 9
+            ["#89f7fe", "#66a6ff"], // Hour 10
+            ["#f093fb", "#f5576c"], // Hour 11
+            ["#em0000", "#4facfe"], // Hour 12 (Fallback neutral)
+            ["#fa709a", "#fee140"], // Hour 13
+            ["#ff9a9e", "#fecfef"], // Hour 14
+            ["#ffecd2", "#fcb69f"], // Hour 15
+            ["#ff758c", "#ff7eb3"], // Hour 16
+            ["#6a11cb", "#2575fc"], // Hour 17
+            ["#b721ff", "#21d4fd"], // Hour 18
+            ["#ea5455", "#feb692"], // Hour 19
+            ["#3df5a7", "#0072ff"], // Hour 20
+            ["#7f00ff", "#e100ff"], // Hour 21
+            ["#0ba360", "#3cba92"], // Hour 22
+            ["#4e54c8", "#8f94fb"]  // Hour 23
+        ];
+
+        function applyHourlyGradient() {
+            const currentHour = new Date().getHours();
+            const palette = gradientPalettes[currentHour] || ["#ff758c", "#ff7eb3"];
+            document.documentElement.style.setProperty('--gradient-1', palette[0]);
+            document.documentElement.style.setProperty('--gradient-2', palette[1]);
+        }
+
+        // Apply immediately and check every minute for changes
+        applyHourlyGradient();
+        setInterval(applyHourlyGradient, 60000);
+
+        function joinRoom() {
+            const name = document.getElementById('nameInput').value.trim();
+            const roomId = document.getElementById('roomInput').value.trim();
+            const roomPass = document.getElementById('passInput').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (!name || !roomId || !roomPass) {
+                errorMsg.textContent = "All fields are required.";
+                return;
             }
+
+            errorMsg.textContent = "";
+            socket.emit('join-room', { name, roomId, roomPass });
+        }
+
+        socket.on('join-response', (data) => {
+            if (!data.success) {
+                document.getElementById('errorMsg').textContent = data.message;
+                return;
+            }
+
+            myName = data.name;
+            myRoomId = data.roomId;
+
+            document.getElementById('displayName').textContent = `Logged in as: ${myName}`;
+            document.getElementById('displayRoomName').textContent = `Room: ${myRoomId}`;
+            document.getElementById('badgeRoomId').textContent = myRoomId;
+
+            // Switch screens
+            document.getElementById('login-screen').classList.remove('active');
+            document.getElementById('chat-screen').classList.add('active');
+
+            // Load history
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+            
+            data.history.forEach(msg => {
+                appendMessageToDOM(msg);
+            });
         });
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (message !== '') {
+                socket.emit('chat-message', message);
+                input.value = '';
+            }
+        }
+
+        socket.on('chat-message', (msgData) => {
+            appendMessageToDOM(msgData);
+        });
+
+        function appendMessageToDOM(msg) {
+            const chatMessages = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = 'message';
+
+            if (msg.isSystem) {
+                div.classList.add('system');
+                div.textContent = msg.message;
+            } else {
+                if (msg.name === myName) {
+                    div.classList.add('self');
+                }
+                
+                const userSpan = document.createElement('span');
+                userSpan.className = 'msg-user';
+                userSpan.textContent = msg.name;
+                div.appendChild(userSpan);
+
+                const textNode = document.createTextNode(msg.message);
+                div.appendChild(textNode);
+            }
+
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
     </script>
 </body>
 </html>
