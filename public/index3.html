@@ -1,3 +1,4 @@
+name=public/index.html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -552,8 +553,18 @@
             return isNaN(parsed.getTime()) ? new Date() : parsed;
         }
 
+        function formatCustomTimestamp(dateObj) {
+            const dd = String(dateObj.getDate()).padStart(2, '0');
+            const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const yy = String(dateObj.getFullYear()).slice(-2);
+            const hh = String(dateObj.getHours()).padStart(2, '0');
+            const min = String(dateObj.getMinutes()).padStart(2, '0');
+            return `${dd}-${mm}-${yy} ${hh}-${min}`;
+        }
+
         function renderMessage(msg) {
             const msgDate = parseMessageDate(msg);
+            const formattedTimestamp = formatCustomTimestamp(msgDate);
 
             const dateStr = msgDate.toLocaleDateString(undefined, {
                 weekday: 'long',
@@ -583,9 +594,6 @@
                 messagesBox.appendChild(dateDiv);
             }
 
-            const timeStr = msgDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const formattedShortDate = msgDate.toLocaleDateString([], { month: 'short', day: 'numeric' });
-
             const row = document.createElement('div');
 
             if (msg.isSystem) {
@@ -593,7 +601,7 @@
                 row.innerHTML = `
                     <div class="system-pill">
                         <span>🔒 ${formatMessageText(msg.message)}</span>
-                        <span style="font-size: 0.68rem; opacity: 0.75;">${formattedShortDate}, ${timeStr}</span>
+                        <span style="font-size: 0.68rem; opacity: 0.75;">${formattedTimestamp}</span>
                     </div>
                 `;
             } else {
@@ -609,7 +617,7 @@
                     <div class="sender-name">${escapeHTML(msg.name)}</div>
                     <div class="bubble">
                         ${contentHtml}
-                        <span class="time-stamp">${formattedShortDate}, ${timeStr}</span>
+                        <span class="time-stamp">${formattedTimestamp}</span>
                     </div>
                 `;
             }
