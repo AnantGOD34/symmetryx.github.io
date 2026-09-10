@@ -13,15 +13,27 @@
             padding: 0;
         }
 
+        :root {
+            --bg-gradient: radial-gradient(circle at top right, #3c096c, #1a0033, #0d001a);
+            --sphere-1-color: rgba(255, 123, 0, 0.4);
+            --sphere-2-color: rgba(168, 85, 247, 0.45);
+            --border-gradient: linear-gradient(135deg, #ff7b00, #a855f7, #ff2a85);
+            --box-bg: rgba(22, 8, 42, 0.85);
+            --btn-bg: linear-gradient(135deg, #ff6000 0%, #ff9e00 50%, #9333ea 100%);
+            --self-bubble: linear-gradient(135deg, #ff6000 0%, #c084fc 60%, #9333ea 100%);
+            --sender-gradient: linear-gradient(90deg, #e879f9, #ff7b00);
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: radial-gradient(circle at top right, #3c096c, #1a0033, #0d001a);
+            background: var(--bg-gradient);
             color: #ffffff;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: hidden;
+            transition: background 2s ease;
         }
 
         /* Ambient Glow Spheres */
@@ -31,10 +43,11 @@
             left: -10%;
             width: 450px;
             height: 450px;
-            background: radial-gradient(circle, rgba(255, 123, 0, 0.4), transparent 70%);
+            background: radial-gradient(circle, var(--sphere-1-color), transparent 70%);
             filter: blur(80px);
             border-radius: 50%;
             pointer-events: none;
+            transition: background 2s ease;
         }
         .glow-sphere-2 {
             position: absolute;
@@ -42,21 +55,23 @@
             right: -10%;
             width: 500px;
             height: 500px;
-            background: radial-gradient(circle, rgba(168, 85, 247, 0.45), transparent 70%);
+            background: radial-gradient(circle, var(--sphere-2-color), transparent 70%);
             filter: blur(90px);
             border-radius: 50%;
             pointer-events: none;
+            transition: background 2s ease;
         }
 
         /* GRADIENT BORDER UTILITY */
         .gradient-box {
             position: relative;
-            background: rgba(22, 8, 42, 0.85);
+            background: var(--box-bg);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 24px;
             padding: 1px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 123, 0, 0.2);
+            transition: background 2s ease;
         }
 
         .gradient-box::before {
@@ -65,11 +80,12 @@
             inset: 0;
             border-radius: 24px;
             padding: 2px;
-            background: linear-gradient(135deg, #ff7b00, #a855f7, #ff2a85);
+            background: var(--border-gradient);
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             pointer-events: none;
+            transition: background 2s ease;
         }
 
         /* JOIN CARD / LOGIN OVERLAY */
@@ -136,7 +152,7 @@
         .btn-primary {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #ff6000 0%, #ff9e00 50%, #9333ea 100%);
+            background: var(--btn-bg);
             border: none;
             border-radius: 12px;
             color: white;
@@ -145,7 +161,7 @@
             cursor: pointer;
             margin-top: 10px;
             box-shadow: 0 6px 20px rgba(255, 96, 0, 0.4), 0 0 15px rgba(147, 51, 234, 0.3);
-            transition: transform 0.2s ease, opacity 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s ease, opacity 0.2s, box-shadow 0.2s, background 2s ease;
         }
 
         .btn-primary:hover {
@@ -196,7 +212,7 @@
         }
 
         .room-badge {
-            background: linear-gradient(135deg, #ff6000, #a855f7);
+            background: var(--btn-bg);
             padding: 5px 14px;
             border-radius: 20px;
             font-size: 0.75rem;
@@ -204,6 +220,7 @@
             text-transform: uppercase;
             letter-spacing: 0.8px;
             box-shadow: 0 0 10px rgba(255, 96, 0, 0.4);
+            transition: background 2s ease;
         }
 
         .chat-header h3 {
@@ -248,8 +265,9 @@
             width: 7px;
         }
         .messages-box::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, #ff7b00, #a855f7);
+            background: var(--border-gradient);
             border-radius: 10px;
+            transition: background 2s ease;
         }
 
         /* DATE SEPARATOR */
@@ -322,9 +340,10 @@
         .message-row.self .sender-name {
             text-align: right;
             padding-right: 2px;
-            background: linear-gradient(90deg, #e879f9, #ff7b00);
+            background: var(--sender-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            transition: background 2s ease;
         }
 
         .bubble {
@@ -337,10 +356,11 @@
         }
 
         .message-row.self .bubble {
-            background: linear-gradient(135deg, #ff6000 0%, #c084fc 60%, #9333ea 100%);
+            background: var(--self-bubble);
             color: #ffffff;
             border-bottom-right-radius: 2px;
             box-shadow: 0 6px 18px rgba(255, 96, 0, 0.35);
+            transition: background 2s ease;
         }
 
         .message-row.other .bubble {
@@ -381,7 +401,7 @@
             color: white;
             font-size: 0.98rem;
             outline: none;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
         }
 
         .chat-input-area input[type="text"]:focus {
@@ -390,7 +410,7 @@
         }
 
         .send-btn {
-            background: linear-gradient(135deg, #ff6000 0%, #ff9e00 50%, #9333ea 100%);
+            background: var(--btn-bg);
             border: none;
             color: white;
             padding: 13px 24px;
@@ -399,7 +419,7 @@
             font-size: 0.95rem;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 96, 0, 0.4);
-            transition: all 0.2s ease;
+            transition: all 0.2s ease, background 2s ease;
         }
 
         .send-btn:hover {
@@ -491,6 +511,81 @@
         const displayRoomId = document.getElementById('displayRoomId');
         const messagesBox = document.getElementById('messagesBox');
         const messageInput = document.getElementById('messageInput');
+
+        // --- COMPREHENSIVE COLOR THEME CYCLER ---
+        const themes = [
+            {
+                bg: 'radial-gradient(circle at top right, #3c096c, #1a0033, #0d001a)',
+                s1: 'rgba(255, 123, 0, 0.4)',
+                s2: 'rgba(168, 85, 247, 0.45)',
+                border: 'linear-gradient(135deg, #ff7b00, #a855f7, #ff2a85)',
+                boxBg: 'rgba(22, 8, 42, 0.85)',
+                btnBg: 'linear-gradient(135deg, #ff6000 0%, #ff9e00 50%, #9333ea 100%)',
+                selfBubble: 'linear-gradient(135deg, #ff6000 0%, #c084fc 60%, #9333ea 100%)',
+                senderGradient: 'linear-gradient(90deg, #e879f9, #ff7b00)'
+            },
+            {
+                bg: 'radial-gradient(circle at top right, #03045e, #023e8a, #03071e)',
+                s1: 'rgba(0, 180, 216, 0.4)',
+                s2: 'rgba(72, 202, 228, 0.45)',
+                border: 'linear-gradient(135deg, #00b4d8, #90e0ef, #0077b6)',
+                boxBg: 'rgba(3, 29, 61, 0.85)',
+                btnBg: 'linear-gradient(135deg, #0077b6 0%, #00b4d8 50%, #48cae4 100%)',
+                selfBubble: 'linear-gradient(135deg, #0077b6 0%, #00b4d8 60%, #90e0ef 100%)',
+                senderGradient: 'linear-gradient(90deg, #90e0ef, #00b4d8)'
+            },
+            {
+                bg: 'radial-gradient(circle at top right, #1b4332, #081c15, #02100b)',
+                s1: 'rgba(82, 183, 136, 0.4)',
+                s2: 'rgba(149, 213, 178, 0.45)',
+                border: 'linear-gradient(135deg, #52b788, #74c69d, #2d6a4f)',
+                boxBg: 'rgba(8, 38, 26, 0.85)',
+                btnBg: 'linear-gradient(135deg, #2d6a4f 0%, #52b788 50%, #74c69d 100%)',
+                selfBubble: 'linear-gradient(135deg, #2d6a4f 0%, #52b788 60%, #95d5b2 100%)',
+                senderGradient: 'linear-gradient(90deg, #95d5b2, #52b788)'
+            },
+            {
+                bg: 'radial-gradient(circle at top right, #590d22, #2e020c, #140003)',
+                s1: 'rgba(255, 75, 110, 0.4)',
+                s2: 'rgba(255, 128, 148, 0.45)',
+                border: 'linear-gradient(135deg, #ff4b6e, #ff819c, #c9184a)',
+                boxBg: 'rgba(46, 5, 15, 0.85)',
+                btnBg: 'linear-gradient(135deg, #c9184a 0%, #ff4b6e 50%, #ff819c 100%)',
+                selfBubble: 'linear-gradient(135deg, #c9184a 0%, #ff4b6e 60%, #ff819c 100%)',
+                senderGradient: 'linear-gradient(90deg, #ff819c, #ff4b6e)'
+            },
+            {
+                bg: 'radial-gradient(circle at top right, #3a0ca3, #240046, #10002b)',
+                s1: 'rgba(76, 201, 240, 0.4)',
+                s2: 'rgba(114, 9, 183, 0.45)',
+                border: 'linear-gradient(135deg, #4cc9f0, #7209b7, #f72585)',
+                boxBg: 'rgba(28, 5, 56, 0.85)',
+                btnBg: 'linear-gradient(135deg, #7209b7 0%, #4cc9f0 50%, #f72585 100%)',
+                selfBubble: 'linear-gradient(135deg, #7209b7 0%, #4cc9f0 60%, #f72585 100%)',
+                senderGradient: 'linear-gradient(90deg, #f72585, #4cc9f0)'
+            }
+        ];
+
+        let currentThemeIndex = 0;
+
+        function applyTheme(theme) {
+            const root = document.documentElement;
+            root.style.setProperty('--bg-gradient', theme.bg);
+            root.style.setProperty('--sphere-1-color', theme.s1);
+            root.style.setProperty('--sphere-2-color', theme.s2);
+            root.style.setProperty('--border-gradient', theme.border);
+            root.style.setProperty('--box-bg', theme.boxBg);
+            root.style.setProperty('--btn-bg', theme.btnBg);
+            root.style.setProperty('--self-bubble', theme.selfBubble);
+            root.style.setProperty('--sender-gradient', theme.senderGradient);
+        }
+
+        // Change theme every 60 seconds (60000 milliseconds)
+        setInterval(() => {
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            applyTheme(themes[currentThemeIndex]);
+        }, 60000);
+        // ------------------------------------
 
         function handleJoinSubmit(e) {
             e.preventDefault();
