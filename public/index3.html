@@ -740,7 +740,7 @@
             messagesBox.appendChild(row);
         }
 
-        function sendMessage() {
+       function sendMessage() {
             const text = messageInput.value.trim();
 
             if (!text && !selectedFilePayload) return;
@@ -748,9 +748,16 @@
             const payload = {
                 message: text,
                 file: selectedFilePayload,
-                timestamp: new Date().toISOString() // Pass ISO timestamp so server & clients can sync times
+                timestamp: new Date().toISOString() 
             };
 
+            if (socket && socket.connected) {
+                socket.emit('chat-message', payload);
+            }
+
+            messageInput.value = '';
+            clearSelectedFile();
+        }
             if (socket && socket.connected) {
                 socket.emit('chat-message', payload);
             }
