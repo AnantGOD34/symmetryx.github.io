@@ -512,7 +512,7 @@
         const messagesBox = document.getElementById('messagesBox');
         const messageInput = document.getElementById('messageInput');
 
-        // --- COMPREHENSIVE COLOR THEME CYCLER ---
+        // --- COMPREHENSIVE COLOR THEME CYCLER (10 Themes) ---
         const themes = [
             // Theme 1: Original Orange & Purple
             {
@@ -525,7 +525,62 @@
                 selfBubble: 'linear-gradient(135deg, #ff6000 0%, #c084fc 60%, #9333ea 100%)',
                 senderGradient: 'linear-gradient(90deg, #e879f9, #ff7b00)'
             },
-            // Theme 2: Pink & Green
+            // Theme 2: Purple & Teal (New)
+            {
+                bg: 'radial-gradient(circle at top right, #240046, #10002b, #050014)',
+                s1: 'rgba(76, 201, 240, 0.4)',
+                s2: 'rgba(181, 23, 158, 0.45)',
+                border: 'linear-gradient(135deg, #4cc9f0, #b5179e, #7209b7)',
+                boxBg: 'rgba(20, 2, 40, 0.85)',
+                btnBg: 'linear-gradient(135deg, #7209b7 0%, #b5179e 50%, #4cc9f0 100%)',
+                selfBubble: 'linear-gradient(135deg, #7209b7 0%, #b5179e 60%, #4cc9f0 100%)',
+                senderGradient: 'linear-gradient(90deg, #4cc9f0, #b5179e)'
+            },
+            // Theme 3: Neon Red & Electric Blue (New)
+            {
+                bg: 'radial-gradient(circle at top right, #03045e, #140324, #0a010d)',
+                s1: 'rgba(255, 0, 85, 0.4)',
+                s2: 'rgba(0, 229, 255, 0.45)',
+                border: 'linear-gradient(135deg, #ff0055, #00e5ff, #7b2cbf)',
+                boxBg: 'rgba(15, 3, 30, 0.85)',
+                btnBg: 'linear-gradient(135deg, #ff0055 0%, #7b2cbf 50%, #00e5ff 100%)',
+                selfBubble: 'linear-gradient(135deg, #ff0055 0%, #9d4edd 60%, #00e5ff 100%)',
+                senderGradient: 'linear-gradient(90deg, #00e5ff, #ff0055)'
+            },
+            // Theme 4: Lime Green & Deep Violet (New)
+            {
+                bg: 'radial-gradient(circle at top right, #10002b, #1b123a, #05020a)',
+                s1: 'rgba(0, 255, 136, 0.4)',
+                s2: 'rgba(157, 78, 221, 0.45)',
+                border: 'linear-gradient(135deg, #00ff88, #9d4edd, #560bad)',
+                boxBg: 'rgba(12, 5, 25, 0.85)',
+                btnBg: 'linear-gradient(135deg, #560bad 0%, #9d4edd 50%, #00ff88 100%)',
+                selfBubble: 'linear-gradient(135deg, #560bad 0%, #9d4edd 60%, #00ff88 100%)',
+                senderGradient: 'linear-gradient(90deg, #00ff88, #c77dff)'
+            },
+            // Theme 5: Bright Yellow & Midnight Blue (New)
+            {
+                bg: 'radial-gradient(circle at top right, #000814, #001d3d, #000308)',
+                s1: 'rgba(255, 214, 10, 0.4)',
+                s2: 'rgba(0, 119, 182, 0.45)',
+                border: 'linear-gradient(135deg, #ffd60a, #0077b6, #00b4d8)',
+                boxBg: 'rgba(2, 16, 36, 0.85)',
+                btnBg: 'linear-gradient(135deg, #0077b6 0%, #00b4d8 50%, #ffd60a 100%)',
+                selfBubble: 'linear-gradient(135deg, #0077b6 0%, #00b4d8 60%, #ffd60a 100%)',
+                senderGradient: 'linear-gradient(90deg, #ffd60a, #90e0ef)'
+            },
+            // Theme 6: Pastel Coral & Pastel Mint (New)
+            {
+                bg: 'radial-gradient(circle at top right, #2a1b1b, #141118, #050407)',
+                s1: 'rgba(255, 158, 128, 0.4)',
+                s2: 'rgba(128, 222, 234, 0.45)',
+                border: 'linear-gradient(135deg, #ff9e80, #80deea, #ffab91)',
+                boxBg: 'rgba(24, 17, 22, 0.85)',
+                btnBg: 'linear-gradient(135deg, #d84315 0%, #ff8a65 50%, #00838f 100%)',
+                selfBubble: 'linear-gradient(135deg, #d84315 0%, #ff8a65 60%, #00acc1 100%)',
+                senderGradient: 'linear-gradient(90deg, #80deea, #ff9e80)'
+            },
+            // Theme 7: Pink & Green
             {
                 bg: 'radial-gradient(circle at top right, #581845, #22091e, #0d040b)',
                 s1: 'rgba(255, 105, 180, 0.4)',
@@ -536,7 +591,7 @@
                 selfBubble: 'linear-gradient(135deg, #ff69b4 0%, #ff1493 60%, #2ecc71 100%)',
                 senderGradient: 'linear-gradient(90deg, #2ecc71, #ff69b4)'
             },
-            // Theme 3: Yellow & Dark Blue
+            // Theme 8: Yellow & Dark Blue
             {
                 bg: 'radial-gradient(circle at top right, #0d1b2a, #1b263b, #000814)',
                 s1: 'rgba(255, 195, 0, 0.4)',
@@ -547,7 +602,7 @@
                 selfBubble: 'linear-gradient(135deg, #ffc300 0%, #ffd60a 60%, #1d3557 100%)',
                 senderGradient: 'linear-gradient(90deg, #ffffff, #ffc300)'
             },
-            // Theme 4: Pastel Red & Pastel Yellow
+            // Theme 9: Pastel Red & Pastel Yellow
             {
                 bg: 'radial-gradient(circle at top right, #4a2020, #261010, #0d0505)',
                 s1: 'rgba(255, 154, 154, 0.4)',
@@ -558,7 +613,7 @@
                 selfBubble: 'linear-gradient(135deg, #ff6b6b 0%, #ff9a9a 60%, #ffeaa7 100%)',
                 senderGradient: 'linear-gradient(90deg, #ffdf9a, #ff9a9a)'
             },
-            // Theme 5: Black & White
+            // Theme 10: Black & White
             {
                 bg: 'radial-gradient(circle at top right, #2b2b2b, #141414, #000000)',
                 s1: 'rgba(255, 255, 255, 0.2)',
