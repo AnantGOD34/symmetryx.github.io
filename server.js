@@ -59,14 +59,15 @@ io.on('connection', (socket) => {
     io.to(cleanRoomId).emit('chat-message', systemMessage);
   });
 
-  socket.on('chat-message', (messageText) => {
+  socket.on('chat-message', (data) => {
     const user = socket.userData;
     if (!user || !user.roomId) return;
 
-    if (messageText && messageText.trim() !== '') {
+    if (data) {
       const msgData = {
         name: user.name,
-        message: messageText.trim(),
+        message: typeof data === 'string' ? data.trim() : (data.message ? data.message.trim() : ''),
+        file: typeof data === 'object' ? data.file : null,
         isSystem: false,
         timestamp: new Date().toISOString()
       };
