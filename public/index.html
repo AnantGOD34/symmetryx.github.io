@@ -458,7 +458,7 @@
     <div class="sidebar" id="controlPanel">
         <div class="sidebar-header">
             <img src="logo.png" alt="Symmetryx Logo" class="sidebar-logo">
-            <div class="version-badge">V17</div>
+            <div class="version-badge">V17.5</div>
         </div>
         
         <div class="sidebar-scroll">
@@ -472,6 +472,30 @@
                         </div>
                         <input type="range" id="brushSize" min="2" max="50" value="6" oninput="document.getElementById('brushSizeVal').textContent=this.value">
                         <div class="description">Sets primary line thickness.</div>
+                    </div>
+
+                    <!-- Textured Brushes -->
+                    <div class="control-item">
+                        <div class="control-group-row">
+                            <label for="brushTexture">Brush Texture:</label>
+                            <select id="brushTexture" style="width: 140px;">
+                                <option value="solid">Solid</option>
+                                <option value="dashed">Dashed</option>
+                                <option value="dots">Stipple (Dots)</option>
+                                <option value="chalk">Chalk / Rough</option>
+                            </select>
+                        </div>
+                        <div class="description">Select stroke texture pattern.</div>
+                    </div>
+
+                    <!-- Opacity Levels -->
+                    <div class="control-item">
+                        <div class="control-group-row">
+                            <label for="brushOpacity">Opacity Level:</label>
+                            <span id="brushOpacityVal">100%</span>
+                        </div>
+                        <input type="range" id="brushOpacity" min="10" max="100" value="100" oninput="document.getElementById('brushOpacityVal').textContent=this.value + '%'">
+                        <div class="description">Sets stroke transparency.</div>
                     </div>
                     
                     <div class="control-item" id="primaryColorContainer">
@@ -498,10 +522,10 @@
 
                     <div class="control-item">
                         <div class="control-group-row">
-                            <label for="slices">Slices:</label>
+                            <label for="slices">Slices (Even Only):</label>
                             <span id="slicesVal">8</span>
                         </div>
-                        <input type="range" id="slices" min="2" max="100" value="8" oninput="document.getElementById('slicesVal').textContent=this.value; drawVisualizer();">
+                        <input type="range" id="slices" min="2" max="100" step="2" value="8" oninput="let v = parseInt(this.value); if(v % 2 !== 0) v++; this.value = v; document.getElementById('slicesVal').textContent=this.value; drawVisualizer();">
                     </div>
 
                     <div class="control-item">
@@ -688,6 +712,8 @@
         const sliceInput = document.getElementById('slices');
         const colorInput = document.getElementById('brushColor');
         const sizeInput = document.getElementById('brushSize');
+        const opacityInput = document.getElementById('brushOpacity');
+        const textureSelect = document.getElementById('brushTexture');
         const controlPanel = document.getElementById('controlPanel');
         const showUIBtn = document.getElementById('showUI');
         const primaryColorContainer = document.getElementById('primaryColorContainer');
@@ -908,7 +934,13 @@
             overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
             if (!showVisualizer && !isMovingCenter) return;
 
-            const slices = parseInt(sliceInput.value);
+            let slices = parseInt(sliceInput.value);
+            if (slices % 2 !== 0) {
+                slices++;
+                sliceInput.value = slices;
+                document.getElementById('slicesVal').textContent = slices;
+            }
+
             overlayCtx.save();
             overlayCtx.translate(pivotX, pivotY);
 
@@ -1246,6 +1278,25 @@
             return `rgb(${r}, ${g}, ${b})`;
         }
 
+        function applyTextureAndOpacity(targetCtx, baseAlpha) {
+            const opacityVal = (parseInt(opacityInput.value) / 100) * baseAlpha;
+            targetCtx.globalAlpha = opacityVal;
+
+            const texture = textureSelect.value;
+            if (texture === 'dashed') {
+                const w = parseInt(sizeInput.value);
+                targetCtx.setLineDash([w * 2, w * 1.5]);
+            } else if (texture === 'dots') {
+                const w = parseInt(sizeInput.value);
+                targetCtx.setLineDash([1, w * 2]);
+            } else if (texture === 'chalk') {
+                const w = parseInt(sizeInput.value);
+                targetCtx.setLineDash([w * 0.5, w * 0.5, w * 0.2, w * 0.8]);
+            } else {
+                targetCtx.setLineDash([]);
+            }
+        }
+
         function traceShapePath(targetCtx, tool, relX1, relY1, relX2, relY2, sidesVal) {
             targetCtx.beginPath();
             let pts = [];
@@ -1295,7 +1346,8 @@
         }
 
         function renderSymmetryShape(targetCtx, tool, x1, y1, x2, y2, trailAlpha = 1, sidesVal = null) {
-            const slices = parseInt(sliceInput.value);
+            let slices = parseInt(sliceInput.value);
+            if (slices % 2 !== 0) slices++;
             const baseSize = parseInt(sizeInput.value);
 
             let computedLineWidth = baseSize;
@@ -1329,43 +1381,44 @@
                     targetCtx.globalCompositeOperation = 'destination-out';
                     targetCtx.strokeStyle = 'rgba(0,0,0,1)';
                     targetCtx.lineWidth = computedLineWidth;
+                    applyTextureAndOpacity(targetCtx, trailAlpha);
                     drawShape();
                 } else if (isGlow) {
                     targetCtx.globalCompositeOperation = 'source-over';
                     let baseHex = isGradientMode ? '#00ffcc' : colorInput.value;
                     let neonColor = getNeonBleedColor(baseHex, isRainbow);
                     if (isGradientMode) neonColor = activeColor.replace('rgb', 'rgba').replace(')', ', 0.35)');
-                    if (trailAlpha < 1) neonColor = neonColor.replace(/[\d\.]+\)$/g, `${trailAlpha * 0.35})`);
 
                     targetCtx.strokeStyle = neonColor;
                     targetCtx.lineWidth = computedLineWidth * 2.2; 
                     targetCtx.shadowBlur = (computedLineWidth * 1.5 + 12);
                     targetCtx.shadowColor = targetCtx.strokeStyle;
+                    applyTextureAndOpacity(targetCtx, trailAlpha);
                     drawShape();
 
                     targetCtx.strokeStyle = activeColor;
-                    if (trailAlpha < 1) targetCtx.globalAlpha = trailAlpha;
                     targetCtx.lineWidth = computedLineWidth * 0.75; 
                     targetCtx.shadowBlur = 0; 
+                    applyTextureAndOpacity(targetCtx, trailAlpha);
                     drawShape();
-                    targetCtx.globalAlpha = 1.0;
                 } else {
                     targetCtx.globalCompositeOperation = 'source-over';
                     targetCtx.strokeStyle = activeColor;
-                    if (trailAlpha < 1) targetCtx.globalAlpha = trailAlpha;
                     targetCtx.lineWidth = computedLineWidth;
                     targetCtx.shadowBlur = 0;
+                    applyTextureAndOpacity(targetCtx, trailAlpha);
                     drawShape();
-                    targetCtx.globalAlpha = 1.0;
                 }
                 targetCtx.restore();
             }
             targetCtx.globalCompositeOperation = 'source-over';
             targetCtx.shadowBlur = 0;
+            targetCtx.globalAlpha = 1.0;
         }
 
         function renderSymmetryLines(targetCtx, x, y, pX, pY, trailAlpha = 1, forceWidth = null, trailLenOffset = null) {
-            const slices = parseInt(sliceInput.value);
+            let slices = parseInt(sliceInput.value);
+            if (slices % 2 !== 0) slices++;
             const baseSize = parseInt(sizeInput.value);
 
             let computedLineWidth = baseSize;
@@ -1407,14 +1460,13 @@
                         
                         const savedW = targetCtx.lineWidth;
                         targetCtx.lineWidth = 0.4;
-                        targetCtx.globalAlpha = 0.2 * trailAlpha;
+                        applyTextureAndOpacity(targetCtx, trailAlpha * 0.2);
                         for (let j = 0; j < pointsQueue.length; j++) {
                             targetCtx.beginPath();
                             targetCtx.moveTo(pointsQueue[j].x - pivotX, pointsQueue[j].y - pivotY);
                             targetCtx.lineTo(x - pivotX, y - pivotY);
                             targetCtx.stroke();
                         }
-                        targetCtx.globalAlpha = 1.0;
                         targetCtx.lineWidth = savedW;
                     } else {
                         if (isGradientMode && !isEraser) {
@@ -1436,46 +1488,46 @@
                     targetCtx.strokeStyle = 'rgba(0,0,0,1)';
                     targetCtx.lineWidth = computedLineWidth;
                     targetCtx.shadowBlur = 0;
+                    applyTextureAndOpacity(targetCtx, trailAlpha);
                     drawSegment();
                 } else if (isGlow) {
                     targetCtx.globalCompositeOperation = 'source-over';
                     let baseHex = isGradientMode ? '#00ffcc' : colorInput.value;
                     let neonColor = getNeonBleedColor(baseHex, isRainbow);
                     if (isGradientMode) neonColor = activeColor.replace('rgb', 'rgba').replace(')', ', 0.35)');
-                    if (trailAlpha < 1) neonColor = neonColor.replace(/[\d\.]+\)$/g, `${trailAlpha * 0.35})`);
                     
                     targetCtx.strokeStyle = neonColor;
                     targetCtx.fillStyle = targetCtx.strokeStyle;
                     targetCtx.lineWidth = computedLineWidth * 2.2; 
                     targetCtx.shadowBlur = (computedLineWidth * 1.5 + 12);
                     targetCtx.shadowColor = targetCtx.strokeStyle;
+                    applyTextureAndOpacity(targetCtx, trailAlpha);
                     drawSegment();
 
                     if (!isGradientMode) {
                         targetCtx.strokeStyle = activeColor;
                         targetCtx.fillStyle = activeColor;
                     }
-                    if (trailAlpha < 1) targetCtx.globalAlpha = trailAlpha;
                     targetCtx.lineWidth = computedLineWidth * 0.75; 
                     targetCtx.shadowBlur = 0; 
+                    applyTextureAndOpacity(targetCtx, trailAlpha);
                     drawSegment();
-                    targetCtx.globalAlpha = 1.0;
                 } else {
                     targetCtx.globalCompositeOperation = 'source-over';
                     if (!isGradientMode) {
                         targetCtx.strokeStyle = activeColor;
                         targetCtx.fillStyle = activeColor;
                     }
-                    if (trailAlpha < 1) targetCtx.globalAlpha = trailAlpha;
                     targetCtx.lineWidth = computedLineWidth;
                     targetCtx.shadowBlur = 0;
+                    applyTextureAndOpacity(targetCtx, trailAlpha);
                     drawSegment();
-                    targetCtx.globalAlpha = 1.0;
                 }
                 targetCtx.restore();
             }
             targetCtx.globalCompositeOperation = 'source-over';
             targetCtx.shadowBlur = 0;
+            targetCtx.globalAlpha = 1.0;
         }
 
         function appLoop() {
@@ -2022,3 +2074,4 @@
     </script>
 </body>
 </html>
+```[cite: 2]
