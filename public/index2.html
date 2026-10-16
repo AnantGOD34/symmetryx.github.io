@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Happy Birthday, Himadri! 💜</title>
     <!-- Google Fonts for typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --pastel-purple-card: rgba(255, 255, 255, 0.88);
+            --pastel-purple-card: rgba(255, 255, 255, 0.92);
             --pastel-purple-dark: #512da8;
+            --accent-orange: #ff8c42;
             --text-color: #3b2b4a;
         }
 
@@ -35,11 +36,13 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             position: relative;
+            padding: 20px;
         }
 
-        /* Dark subtle overlay so elements pop nicely against the image */
+        /* Dark subtle overlay with a warm orange-purple gradient feel */
         body::before {
             content: '';
             position: absolute;
@@ -47,7 +50,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(44, 27, 77, 0.35);
+            background: linear-gradient(135deg, rgba(44, 27, 77, 0.4), rgba(255, 140, 66, 0.15));
             z-index: 1;
             pointer-events: none;
         }
@@ -58,27 +61,29 @@
             z-index: 10;
             background: var(--pastel-purple-card);
             backdrop-filter: blur(10px);
-            padding: 40px;
+            padding: 35px 30px;
             border-radius: 25px;
             box-shadow: 0 20px 40px rgba(28, 10, 56, 0.4);
             text-align: center;
-            max-width: 500px;
-            width: 90%;
-            border: 2px solid rgba(255, 255, 255, 0.6);
+            max-width: 580px;
+            width: 100%;
+            border: 2px solid rgba(255, 140, 66, 0.3); /* Subtle orange border hint */
             transition: all 0.5s ease;
+            margin: auto;
         }
 
         h1 {
             font-family: 'Dancing Script', cursive;
-            font-size: 3rem;
+            font-size: 2.8rem;
             color: var(--pastel-purple-dark);
             margin-bottom: 5px;
+            text-shadow: 0 1px 2px rgba(255, 140, 66, 0.2);
         }
 
         h2 {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 600;
-            color: #7b4397;
+            color: #d35400; /* Warm orange hint for subtitle */
             margin-bottom: 20px;
             letter-spacing: 0.5px;
         }
@@ -91,36 +96,36 @@
         .countdown-timer {
             display: flex;
             justify-content: center;
-            gap: 15px;
+            gap: 12px;
             margin-top: 25px;
             margin-bottom: 10px;
         }
 
         .time-box {
-            background: rgba(81, 45, 168, 0.1);
-            padding: 10px 15px;
+            background: rgba(255, 140, 66, 0.1); /* Soft orange background tint */
+            padding: 10px 12px;
             border-radius: 12px;
-            min-width: 70px;
-            border: 1px solid rgba(81, 45, 168, 0.2);
+            min-width: 65px;
+            border: 1px solid rgba(255, 140, 66, 0.3);
         }
 
         .time-box span {
             display: block;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 600;
             color: var(--pastel-purple-dark);
         }
 
         .time-box label {
-            font-size: 0.75rem;
-            color: #6b5282;
+            font-size: 0.7rem;
+            color: #d35400;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
         .countdown-note {
-            font-size: 0.9rem;
-            color: #5a4570;
+            font-size: 0.85rem;
+            color: #7a4a28;
             margin-top: 15px;
         }
 
@@ -134,57 +139,166 @@
             animation: fadeIn 0.8s ease;
         }
 
-        /* Multi-part text styling */
-        .message-section {
+        /* Interactive Quiz Layers */
+        .interactive-layer {
             display: none;
-            font-size: 0.95rem;
-            line-height: 1.7;
-            margin-bottom: 25px;
-            color: #483858;
-            min-height: 110px;
             animation: fadeIn 0.6s ease;
         }
-
-        .message-section.active {
+        .interactive-layer.active {
             display: block;
+        }
+
+        .step-instruction {
+            font-size: 0.95rem;
+            color: #512da8;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .quiz-btn {
+            background: white;
+            border: 1.5px solid #ff8c42;
+            color: #512da8;
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .quiz-btn:hover {
+            background: #fff3ec;
+            transform: scale(1.02);
+        }
+        .quiz-feedback {
+            font-size: 0.85rem;
+            color: #d35400;
+            font-weight: 600;
+            margin-bottom: 15px;
+            min-height: 20px;
+        }
+
+        /* Crumbled & Ripped Notebook Page Styling */
+        .notebook-page {
+            display: none;
+            width: 100%;
+            max-height: 480px;
+            overflow-y: auto;
+            padding: 35px 25px 40px 55px; /* Extra left padding for red margin */
+            background-color: #fffef9;
+            /* Notebook blue lines, red side margin, and subtle warm orange sunset vignette hint */
+            background-image: 
+                radial-gradient(circle at top right, rgba(255, 140, 66, 0.08), transparent 60%),
+                linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, transparent 42px, rgba(235, 100, 100, 0.45) 42px, rgba(235, 100, 100, 0.45) 44px, transparent 44px),
+                linear-gradient(#e1e1e1 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100px, 100% 100%, 100% 30px;
+            border: 1px solid #e2d3c3;
+            box-shadow: 
+                0 12px 35px rgba(0, 0, 0, 0.25), 
+                inset 0 0 30px rgba(255, 140, 66, 0.05),
+                inset 10px 10px 20px rgba(0, 0, 0, 0.05),
+                inset -10px -10px 20px rgba(0, 0, 0, 0.05);
+            border-radius: 6px;
+            position: relative;
+            
+            /* Crumbled uneven edges / torn paper shape */
+            clip-path: polygon(
+                0% 8px, 1.5% 2px, 3% 7px, 4.5% 1px, 6% 8px, 7.5% 2px, 9% 6px, 10.5% 1px, 
+                12% 7px, 13.5% 2px, 15% 8px, 16.5% 1px, 18% 7px, 19.5% 2px, 21% 8px, 22.5% 1px,
+                24% 7px, 25.5% 2px, 27% 8px, 28.5% 1px, 30% 6px, 31.5% 1px, 33% 7px, 34.5% 2px,
+                36% 8px, 37.5% 1px, 39% 7px, 40.5% 2px, 42% 8px, 43.5% 1px, 45% 6px, 46.5% 1px,
+                48% 7px, 49.5% 2px, 51% 8px, 52.5% 1px, 54% 7px, 55.5% 2px, 57% 8px, 58.5% 1px,
+                60% 6px, 61.5% 1px, 63% 7px, 64.5% 2px, 66% 8px, 67.5% 1px, 69% 7px, 70.5% 2px,
+                72% 8px, 73.5% 1px, 75% 6px, 76.5% 1px, 78% 7px, 79.5% 2px, 81% 8px, 82.5% 1px,
+                84% 7px, 85.5% 2px, 87% 8px, 88.5% 1px, 90% 6px, 91.5% 1.5px, 93% 7px, 94.5% 2px,
+                96% 8px, 97.5% 1px, 99% 7px, 100% 5px, 100% 95%, 98.5% 100%, 97% 96%, 95.5% 100%,
+                94% 95%, 92.5% 100%, 91% 96%, 89.5% 100%, 88% 95%, 86.5% 100%, 85% 96%, 83.5% 100%,
+                82% 95%, 80.5% 100%, 79% 96%, 77.5% 100%, 76% 95%, 74.5% 100%, 73% 96%, 71.5% 100%,
+                70% 95%, 68.5% 100%, 67% 96%, 65.5% 100%, 64% 95%, 62.5% 100%, 61% 96%, 59.5% 100%,
+                58% 95%, 56.5% 100%, 55% 96%, 53.5% 100%, 52% 95%, 50.5% 100%, 49% 96%, 47.5% 100%,
+                46% 95%, 44.5% 100%, 43% 96%, 41.5% 100%, 40% 95%, 38.5% 100%, 37% 96%, 35.5% 100%,
+                34% 95%, 32.5% 100%, 31% 96%, 29.5% 100%, 28% 95%, 26.5% 100%, 25% 96%, 23.5% 100%,
+                22% 95%, 20.5% 100%, 19% 96%, 17.5% 100%, 16% 95%, 14.5% 100%, 13% 96%, 11.5% 100%,
+                10% 95%, 8.5% 100%, 7% 96%, 5.5% 100%, 4% 95%, 2.5% 100%, 1% 96%, 0% 100%
+            );
+
+            /* Left-handed boy's handwriting style */
+            font-family: 'Caveat', cursive;
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: #2c223b;
+            text-align: left;
+            line-height: 30px; /* Matches background-size line spacing */
+            white-space: pre-wrap;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            user-select: text;
+            transform: rotate(-0.8deg); /* Left-handed tilt */
+        }
+
+        .notebook-page.active {
+            display: block;
+            animation: fadeIn 0.8s ease;
+        }
+
+        /* Flawless SVG Split-Color Heart Styling (Orange & Purple with A & H) */
+        .signature-heart-container {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .svg-heart-wrapper {
+            position: relative;
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            filter: drop-shadow(0 2px 4px rgba(255, 140, 66, 0.3));
+        }
+
+        .heart-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .heart-letters-overlay {
+            position: absolute;
+            top: 52%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            gap: 6px;
+            font-family: 'Caveat', cursive;
+            font-size: 1.15rem;
+            font-weight: 700;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .letter-a {
+            color: #ffffff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+        }
+
+        .letter-h {
+            color: #ffffff;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
         }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(5px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Button group */
-        .btn-container {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .btn {
-            background-color: var(--pastel-purple-dark);
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            font-size: 0.95rem;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(81, 45, 168, 0.3);
-        }
-
-        .btn:hover {
-            background-color: #381c82;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background-color: #9c64cc;
-        }
-        .btn-secondary:hover {
-            background-color: #824bb2;
         }
     </style>
 </head>
@@ -196,7 +310,7 @@
         <!-- COUNTDOWN SCREEN (Shown before Nov 7) -->
         <div id="countdown-section">
             <h1>Almost Time...</h1>
-            <h2>Counting down to November 7th 🏔️💜</h2>
+            <h2>Counting down to November 7th 🏔️🌅</h2>
             <div class="countdown-timer">
                 <div class="time-box">
                     <span id="days">00</span>
@@ -221,27 +335,72 @@
         <!-- MAIN BIRTHDAY MESSAGE CONTAINER (Unlocked on Nov 7) -->
         <div id="main-message-container">
             <h1>Happy Birthday, Himadri!</h1>
-            <h2>The prettiest view I'll ever see 🏔️💜</h2>
+            <h2>The prettiest view I'll ever see 🏔️🌅</h2>
             
-            <!-- Part 1 -->
-            <div class="message-section active" id="part1">
-                They say Himadri means the greatest mountains out there... but honestly? You're out here effortlessly elevating my whole life just by existing. 😌✨
+            <!-- Interactive Step 1: Trivia Question 1 -->
+            <div class="interactive-layer active" id="layer1">
+                <p class="step-instruction">Mini Challenge #1: Let's test your memory! 🤔</p>
+                <div class="quiz-feedback" id="feedback1">Who lights up every single room they walk into?</div>
+                <div class="quiz-options">
+                    <button class="quiz-btn" onclick="checkQuiz(1, false)">A random stranger</button>
+                    <button class="quiz-btn" onclick="checkQuiz(1, true)">Himadri, obviously! 👑</button>
+                    <button class="quiz-btn" onclick="checkQuiz(1, false)">The ceiling lights</button>
+                </div>
             </div>
 
-            <!-- Part 2 -->
-            <div class="message-section" id="part2">
-                Not to be dramatic, but you literally look like a whole main character rendered in 4K sunset lighting. How do you manage to look this effortlessly gorgeous 24/7? 🤭
+            <!-- Interactive Step 2: Trivia Question 2 -->
+            <div class="interactive-layer" id="layer2">
+                <p class="step-instruction">Mini Challenge #2: Choose wisely! ✨</p>
+                <div class="quiz-feedback" id="feedback2">What matches the breathtaking beauty of the mountains?</div>
+                <div class="quiz-options">
+                    <button class="quiz-btn" onclick="checkQuiz(2, false)">A rocky cliff</button>
+                    <button class="quiz-btn" onclick="checkQuiz(2, true)">Your gorgeous smile 😊💜</button>
+                    <button class="quiz-btn" onclick="checkQuiz(2, false)">A snowstorm</button>
+                </div>
             </div>
 
-            <!-- Part 3 -->
-            <div class="message-section" id="part3">
-                Of all the breathtaking views in this world, having you by my side is my absolute favorite. Thank you for being my peace, my joy, and my favorite person. 
-                <br><strong>Happy Birthday, I love you infinitely! ♾️🏔️</strong>
+            <!-- Interactive Step 3: Trivia Question 3 -->
+            <div class="interactive-layer" id="layer3">
+                <p class="step-instruction">Mini Challenge #3: Final question! 🎯</p>
+                <div class="quiz-feedback" id="feedback3">How much are you appreciated today?</div>
+                <div class="quiz-options">
+                    <button class="quiz-btn" onclick="checkQuiz(3, false)">Just a little bit</button>
+                    <button class="quiz-btn" onclick="checkQuiz(3, false)">Somewhat</button>
+                    <button class="quiz-btn" onclick="checkQuiz(3, true)">Infinitely & beyond! ♾️🏔️</button>
+                </div>
             </div>
 
-            <div class="btn-container">
-                <button class="btn btn-secondary" id="prevBtn" style="display: none;">Back</button>
-                <button class="btn" id="nextBtn">Keep reading</button>
+            <!-- Whole Message on a Crumbled & Ripped Notebook Page (Revealed after quiz) -->
+            <div class="notebook-page" id="notebookMessage">They say Himadri means the greatest mountains out there... but honestly? You're out here effortlessly elevating my whole life just by existing.
+
+Not to be dramatic, but you literally look like a whole main character rendered in 4K sunset lighting. How do you manage to look this effortlessly gorgeous 24/7?
+
+Writing this out reminds me of how lucky I am to share these moments with you. Himadri, you are like the mountains; I can never resist going to you. You are so cute and lovely that I can't stop thinking about you, even when I am with you. I think, think and think about you.
+
+There is such a serene, soothing energy about you. The soft, caring way you talk and your calm, gentle nature can turn my worst days completely around. You bring a quiet comfort into my world that makes me feel safe, understood, and deeply cherished whenever I am near you.
+
+Being around you just makes everything else fade into the background. Honestly, if loving you was a job, I’d be the most hardworking person on the planet, and I still wouldn't take a single day off. You have this effortless way of making my ordinary days feel completely extraordinary. Every time you smile, my heart skips a beat, and you make it impossible for me not to fall for you all over again.
+
+I don't know what kind of magic you carry, but your loving heart makes everything brighter and better. If I could give you one gift for your birthday, it would be the ability to see yourself through my eyes—just so you could realize how insanely incredible, mesmerizing, and precious you really are to me.
+
+Of all the breathtaking views in this world, having you by my side is my absolute favorite. Thank you for being my peace, my joy, and my favorite person. 
+
+Happy birthday to my favourite person in the world! May your day be filled with endless joy, beautiful moments, and all the love you so effortlessly bring into my life.
+
+<div class="signature-heart-container">
+    <div class="svg-heart-wrapper">
+        <svg class="heart-svg" viewBox="0 0 32 32">
+            <!-- Left Half (Orange) -->
+            <path d="M16 28 C16 28, 4 19, 4 11 C4 7, 7 4, 11 4 C14 4, 16 7, 16 10 Z" fill="#ff8c42"/>
+            <!-- Right Half (Purple) -->
+            <path d="M16 28 C16 28, 28 19, 28 11 C28 7, 25 4, 21 4 C18 4, 16 7, 16 10 Z" fill="#512da8"/>
+        </svg>
+        <div class="heart-letters-overlay">
+            <span class="letter-a">A</span>
+            <span class="letter-h">H</span>
+        </div>
+    </div>
+</div>
             </div>
         </div>
 
@@ -257,10 +416,7 @@
         function getTargetDate() {
             const now = new Date();
             let year = now.getFullYear();
-            // Target is November 7th (Month index 10 is November)
-            let target = new Date(year, 10, 7, 0, 0, 0);
-            
-            // If November 7th has already passed this year, point to next year's Nov 7
+            let target = new Date(year, 10, 7, 0, 0, 0); // Nov 7
             if (now > target) {
                 target = new Date(year + 1, 10, 7, 0, 0, 0);
             }
@@ -274,7 +430,6 @@
             const difference = targetDate - now;
 
             if (difference <= 0) {
-                // Time has reached 0! Unlock the card message
                 document.getElementById('countdown-section').style.display = 'none';
                 document.getElementById('main-message-container').classList.add('active');
                 clearInterval(countdownInterval);
@@ -292,47 +447,35 @@
             document.getElementById('secs').textContent = String(secs).padStart(2, '0');
         }
 
-        // To test/preview the message immediately while building, you can uncomment this line below:
+        // Uncomment line below to test messages instantly without waiting for Nov 7:
         // document.getElementById('countdown-section').style.display = 'none'; document.getElementById('main-message-container').classList.add('active');
 
         const countdownInterval = setInterval(updateCountdown, 1000);
         updateCountdown();
 
-        // --- MULTI-PART MESSAGE LOGIC ---
-        let currentPart = 1;
-        const totalParts = 3;
-        const nextBtn = document.getElementById('nextBtn');
-        const prevBtn = document.getElementById('prevBtn');
+        // --- INTERACTIVE QUIZ & NOTEBOOK REVEAL FLOW ---
+        let currentQuizStep = 1;
 
-        function updateMessage() {
-            for (let i = 1; i <= totalParts; i++) {
-                document.getElementById(`part${i}`).classList.remove('active');
-            }
-            document.getElementById(`part${currentPart}`).classList.add('active');
-
-            if (currentPart === totalParts) {
-                nextBtn.style.display = 'none';
+        function checkQuiz(stepNum, isCorrect) {
+            const feedback = document.getElementById(`feedback${stepNum}`);
+            if (isCorrect) {
+                feedback.textContent = "Correct! ✨";
+                setTimeout(() => {
+                    document.getElementById(`layer${currentQuizStep}`).classList.remove('active');
+                    currentQuizStep++;
+                    if (currentQuizStep <= 3) {
+                        document.getElementById(`layer${currentQuizStep}`).classList.add('active');
+                    } else {
+                        // Quiz completed, reveal the full notebook page and auto-scroll smoothly!
+                        const notebook = document.getElementById('notebookMessage');
+                        notebook.classList.add('active');
+                        notebook.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }, 500);
             } else {
-                nextBtn.style.display = 'inline-block';
-                nextBtn.textContent = "Keep reading";
+                feedback.textContent = "Not quite! Try another option 😉";
             }
-
-            prevBtn.style.display = currentPart > 1 ? 'inline-block' : 'none';
         }
-
-        nextBtn.addEventListener('click', () => {
-            if (currentPart < totalParts) {
-                currentPart++;
-                updateMessage();
-            }
-        });
-
-        prevBtn.addEventListener('click', () => {
-            if (currentPart > 1) {
-                currentPart--;
-                updateMessage();
-            }
-        });
 
         // Autoplay policy bypass for strict browsers
         window.addEventListener('DOMContentLoaded', () => {
