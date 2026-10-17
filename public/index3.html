@@ -14,24 +14,14 @@
         }
 
         :root {
-            --bg-gradient: radial-gradient(circle at top right, #3c096c, #1a0033, #0d001a);
-            --sphere-1-color: rgba(255, 123, 0, 0.4);
-            --sphere-2-color: rgba(168, 85, 247, 0.45);
-            --border-gradient: linear-gradient(135deg, #ff7b00, #a855f7, #ff2a85);
-            --box-bg: rgba(22, 8, 42, 0.85);
-            --btn-bg: linear-gradient(135deg, #ff6000 0%, #ff9e00 50%, #9333ea 100%);
-            --self-bubble: linear-gradient(135deg, #ff6000 0%, #c084fc 60%, #9333ea 100%);
-            --sender-gradient: linear-gradient(90deg, #e879f9, #ff7b00);
+            --bg-gradient: radial-gradient(circle at top right, #240046, #10002b, #05000a);
+            --sphere-1-color: rgba(255, 107, 0, 0.45);
+            --sphere-2-color: rgba(147, 51, 234, 0.45);
+            --border-gradient: linear-gradient(135deg, #ff6b00, #9333ea, #ff007f);
+            --box-bg: rgba(18, 5, 32, 0.9);
+            --btn-bg: linear-gradient(135deg, #ff6b00 0%, #ff9e00 50%, #9333ea 100%);
+            --self-bubble: linear-gradient(135deg, #ff6b00 0%, #c084fc 60%, #9333ea 100%);
             --text-color: #ffffff;
-        }
-
-        body.light-mode {
-            --bg-gradient: radial-gradient(circle at top right, #f3e8ff, #e9d5ff, #f8fafc);
-            --sphere-1-color: rgba(255, 123, 0, 0.2);
-            --sphere-2-color: rgba(168, 85, 247, 0.2);
-            --border-gradient: linear-gradient(135deg, #a855f7, #ff7b00);
-            --box-bg: rgba(255, 255, 255, 0.9);
-            --text-color: #1e1b4b;
         }
 
         body {
@@ -43,17 +33,15 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            transition: background 0.5s ease, color 0.5s ease;
         }
 
         .glow-sphere-1, .glow-sphere-2 {
             position: absolute;
             width: 450px;
             height: 450px;
-            filter: blur(80px);
+            filter: blur(90px);
             border-radius: 50%;
             pointer-events: none;
-            transition: background 2s ease;
         }
         .glow-sphere-1 { top: -15%; left: -10%; background: radial-gradient(circle, var(--sphere-1-color), transparent 70%); }
         .glow-sphere-2 { bottom: -15%; right: -10%; background: radial-gradient(circle, var(--sphere-2-color), transparent 70%); }
@@ -65,8 +53,7 @@
             -webkit-backdrop-filter: blur(20px);
             border-radius: 24px;
             padding: 1px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 123, 0, 0.1);
-            transition: background 0.5s ease;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 107, 0, 0.2);
         }
 
         .gradient-box::before {
@@ -94,7 +81,7 @@
         .login-card h2 {
             font-size: 2.2rem;
             margin-bottom: 8px;
-            background: linear-gradient(135deg, #ff9e00, #ff6000, #c084fc, #e879f9);
+            background: linear-gradient(135deg, #ff9e00, #ff6b00, #c084fc, #e879f9);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 800;
@@ -102,7 +89,7 @@
 
         .login-card p {
             font-size: 0.9rem;
-            opacity: 0.8;
+            color: #d8b4fe;
             margin-bottom: 26px;
         }
 
@@ -118,19 +105,26 @@
             letter-spacing: 1.2px;
             font-weight: 800;
             margin-bottom: 6px;
-            opacity: 0.9;
+            background: linear-gradient(90deg, #ff9e00, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .input-group input {
             width: 100%;
             padding: 13px 16px;
-            background: rgba(12, 3, 26, 0.1);
+            background: rgba(12, 3, 26, 0.7);
             border: 1px solid rgba(168, 85, 247, 0.4);
             border-radius: 12px;
-            color: inherit;
+            color: #ffffff;
             font-size: 0.95rem;
             outline: none;
             transition: all 0.25s ease;
+        }
+
+        .input-group input:focus {
+            border-color: #ff6b00;
+            box-shadow: 0 0 15px rgba(255, 107, 0, 0.4);
         }
 
         .btn-primary {
@@ -144,7 +138,7 @@
             font-weight: 800;
             cursor: pointer;
             margin-top: 10px;
-            box-shadow: 0 6px 20px rgba(255, 96, 0, 0.4);
+            box-shadow: 0 6px 20px rgba(255, 107, 0, 0.4);
             transition: transform 0.2s ease, opacity 0.2s;
         }
 
@@ -182,7 +176,7 @@
             padding: 20px;
             display: flex;
             flex-direction: column;
-            background: rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, 0.2);
         }
 
         .chat-sidebar h4 {
@@ -190,7 +184,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 12px;
-            opacity: 0.7;
+            color: #d8b4fe;
         }
 
         .user-list {
@@ -222,8 +216,8 @@
         /* HEADER & SEARCH */
         .chat-header {
             padding: 16px 24px;
-            background: rgba(0, 0, 0, 0.15);
-            border-bottom: 1px solid rgba(255, 123, 0, 0.2);
+            background: rgba(15, 3, 30, 0.9);
+            border-bottom: 1px solid rgba(255, 107, 0, 0.25);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -232,15 +226,15 @@
         .search-bar {
             padding: 6px 12px;
             border-radius: 8px;
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            background: rgba(255, 255, 255, 0.05);
-            color: inherit;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            background: rgba(12, 3, 26, 0.7);
+            color: #ffffff;
             font-size: 0.85rem;
             outline: none;
             width: 180px;
             transition: width 0.3s;
         }
-        .search-bar:focus { width: 240px; }
+        .search-bar:focus { width: 240px; border-color: #ff6b00; }
 
         .header-controls {
             display: flex;
@@ -251,13 +245,14 @@
         .icon-btn {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(168, 85, 247, 0.3);
-            color: inherit;
+            color: #ffffff;
             padding: 6px 12px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.85rem;
             font-weight: 600;
         }
+        .icon-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
         /* MESSAGES AREA */
         .messages-box {
@@ -268,6 +263,7 @@
             flex-direction: column;
             gap: 14px;
             scroll-behavior: smooth;
+            background: rgba(10, 2, 20, 0.5);
         }
 
         .date-separator {
@@ -278,7 +274,7 @@
             border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 700;
-            opacity: 0.8;
+            color: #d8b4fe;
         }
 
         .message-row {
@@ -294,23 +290,29 @@
 
         .system-pill {
             background: rgba(168, 85, 247, 0.15);
-            border: 1px solid rgba(255, 157, 0, 0.3);
+            border: 1px solid rgba(255, 107, 0, 0.3);
             padding: 6px 18px;
             border-radius: 20px;
             font-size: 0.82rem;
             font-weight: 600;
+            color: #f3e8ff;
         }
 
         .sender-name {
             font-size: 0.75rem;
             font-weight: 800;
             margin-bottom: 4px;
-            background: linear-gradient(90deg, #ff9e00, #ff6000);
+            background: linear-gradient(90deg, #ff9e00, #ff6b00);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .message-row.self .sender-name { text-align: right; }
+
+        .bubble-container {
+            position: relative;
+            display: inline-block;
+        }
 
         .bubble {
             padding: 12px 16px;
@@ -325,16 +327,16 @@
             background: var(--self-bubble);
             color: #ffffff;
             border-bottom-right-radius: 2px;
-            box-shadow: 0 4px 15px rgba(255, 96, 0, 0.3);
+            box-shadow: 0 4px 15px rgba(255, 107, 0, 0.35);
         }
 
         .message-row.other .bubble {
-            background: rgba(48, 14, 82, 0.2);
-            border: 1px solid rgba(255, 123, 0, 0.25);
+            background: linear-gradient(135deg, rgba(48, 14, 82, 0.9), rgba(28, 6, 52, 0.9));
+            border: 1px solid rgba(255, 107, 0, 0.3);
             border-bottom-left-radius: 2px;
+            color: #f3e8ff;
         }
 
-        /* METADATA & STATUS */
         .msg-meta {
             display: flex;
             justify-content: flex-end;
@@ -342,7 +344,7 @@
             gap: 6px;
             margin-top: 4px;
             font-size: 0.68rem;
-            opacity: 0.8;
+            color: rgba(255, 255, 255, 0.8);
         }
 
         .read-receipt {
@@ -350,7 +352,62 @@
             color: #38bdf8;
         }
 
-        /* REACTIONS */
+        /* WHATSAPP STYLE HOVER REACTION BUTTON & FLOATING PICKER */
+        .msg-action-trigger {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(20, 5, 38, 0.8);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.85rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 5;
+        }
+
+        .message-row.self .msg-action-trigger { left: -36px; }
+        .message-row.other .msg-action-trigger { right: -36px; }
+        .message-row:hover .msg-action-trigger { opacity: 1; }
+
+        /* Floating Reaction Popup Menu */
+        .reaction-popup {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            background: #1e0b36;
+            border: 1px solid rgba(255, 107, 0, 0.4);
+            border-radius: 30px;
+            padding: 6px 12px;
+            display: none;
+            gap: 8px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            z-index: 50;
+            white-space: nowrap;
+        }
+        .message-row.self .reaction-popup { right: 0; }
+        .message-row.other .reaction-popup { left: 0; }
+        
+        .reaction-popup.active { display: flex; animation: fadeInPop 0.2s ease; }
+
+        @keyframes fadeInPop {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .reaction-popup span {
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .reaction-popup span:hover { transform: scale(1.3); }
+
+        /* Reactions Badges under bubble */
         .reactions-container {
             display: flex;
             gap: 4px;
@@ -359,25 +416,20 @@
         }
 
         .reaction-badge {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 2px 6px;
-            border-radius: 10px;
+            background: rgba(40, 10, 70, 0.8);
+            border: 1px solid rgba(255, 107, 0, 0.3);
+            padding: 2px 8px;
+            border-radius: 12px;
             font-size: 0.75rem;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
-        .add-reaction-btn {
-            opacity: 0;
-            transition: opacity 0.2s;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-        .message-row:hover .add-reaction-btn { opacity: 1; }
-
-        /* LINK PREVIEW CARDS */
+        /* LINK PREVIEWS */
         .link-preview {
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.25);
             border-radius: 10px;
             padding: 8px;
             margin-top: 8px;
@@ -396,15 +448,15 @@
             padding: 4px 24px;
             font-size: 0.75rem;
             font-style: italic;
-            opacity: 0.7;
+            color: #d8b4fe;
             min-height: 22px;
         }
 
         /* INPUT FOOTER */
         .chat-input-area {
             padding: 16px 20px;
-            background: rgba(0, 0, 0, 0.15);
-            border-top: 1px solid rgba(255, 123, 0, 0.2);
+            background: rgba(15, 3, 30, 0.9);
+            border-top: 1px solid rgba(255, 107, 0, 0.25);
             display: flex;
             gap: 10px;
             align-items: center;
@@ -414,22 +466,27 @@
         .chat-input-area input[type="text"] {
             flex: 1;
             padding: 12px 16px;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(168, 85, 247, 0.3);
+            background: rgba(12, 3, 26, 0.7);
+            border: 1px solid rgba(168, 85, 247, 0.4);
             border-radius: 12px;
-            color: inherit;
+            color: #ffffff;
             font-size: 0.95rem;
             outline: none;
+        }
+        .chat-input-area input[type="text"]:focus {
+            border-color: #ff6b00;
+            box-shadow: 0 0 10px rgba(255, 107, 0, 0.3);
         }
 
         .action-btn {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(168, 85, 247, 0.3);
-            color: inherit;
+            color: #ffffff;
             padding: 10px 12px;
             border-radius: 12px;
             cursor: pointer;
         }
+        .action-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
         .send-btn {
             background: var(--btn-bg);
@@ -439,6 +496,7 @@
             border-radius: 12px;
             font-weight: 800;
             cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 107, 0, 0.4);
         }
 
         /* EMOJI PICKER POPUP */
@@ -446,14 +504,14 @@
             position: absolute;
             bottom: 75px;
             left: 20px;
-            background: #1e1b4b;
+            background: #1e0b36;
             border: 1px solid rgba(168, 85, 247, 0.4);
             border-radius: 12px;
             padding: 10px;
             display: none;
             grid-template-columns: repeat(5, 1fr);
             gap: 6px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.7);
             z-index: 100;
         }
         .emoji-picker span {
@@ -506,11 +564,10 @@
         <div class="chat-main">
             <div class="chat-header">
                 <div>
-                    <span id="displayRoomId" style="font-weight: 800; font-size: 1.1rem;">#Room</span>
+                    <span id="displayRoomId" style="font-weight: 800; font-size: 1.1rem; color: #ff9e00;">#Room</span>
                 </div>
                 <div class="header-controls">
                     <input type="text" class="search-bar" id="searchBar" placeholder="Search messages..." oninput="filterMessages(this.value)">
-                    <button class="icon-btn" onclick="toggleTheme()">☀️ / 🌙</button>
                     <button class="icon-btn" onclick="leaveRoom()" style="border-color: #ef4444; color: #ef4444;">Leave</button>
                 </div>
             </div>
@@ -628,10 +685,6 @@
             });
         }
 
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-        }
-
         function toggleEmojiPicker() {
             emojiPicker.style.display = emojiPicker.style.display === 'grid' ? 'none' : 'grid';
         }
@@ -649,6 +702,15 @@
             typingTimeout = setTimeout(() => {
                 socket.emit('typing', { isTyping: false });
             }, 1500);
+        }
+
+        function toggleReactionPopup(btn) {
+            const popup = btn.nextElementSibling;
+            // Close any other active popups first
+            document.querySelectorAll('.reaction-popup.active').forEach(p => {
+                if (p !== popup) p.classList.remove('active');
+            });
+            popup.classList.toggle('active');
         }
 
         function renderMessage(msg) {
@@ -683,7 +745,6 @@
                 }
                 if (msg.message) {
                     contentHtml += `<div>${formatLinks(msg.message)}</div>`;
-                    // Simple URL link preview simulation for first detected URL
                     const urlMatch = msg.message.match(/(https?:\/\/[^\s]+)/);
                     if (urlMatch) {
                         contentHtml += `
@@ -706,12 +767,21 @@
 
                 row.innerHTML = `
                     <div class="sender-name">${escapeHTML(msg.name)}</div>
-                    <div class="bubble">
-                        ${contentHtml}
-                        <div class="msg-meta">
-                            <span>${timeStr}</span>
-                            ${isSelf ? '<span class="read-receipt">✓✓</span>' : ''}
-                            <span class="add-reaction-btn" onclick="addReaction('${msgId}', '❤️')">➕❤️</span>
+                    <div class="bubble-container">
+                        <div class="msg-action-trigger" onclick="toggleReactionPopup(this)">☺</div>
+                        <div class="reaction-popup">
+                            <span onclick="addReaction('${msgId}', '❤️')">❤️</span>
+                            <span onclick="addReaction('${msgId}', '👍')">👍</span>
+                            <span onclick="addReaction('${msgId}', '😂')">😂</span>
+                            <span onclick="addReaction('${msgId}', '🔥')">🔥</span>
+                            <span onclick="addReaction('${msgId}', '🎉')">🎉</span>
+                        </div>
+                        <div class="bubble">
+                            ${contentHtml}
+                            <div class="msg-meta">
+                                <span>${timeStr}</span>
+                                ${isSelf ? '<span class="read-receipt">✓✓</span>' : ''}
+                            </div>
                         </div>
                     </div>
                     <div class="reactions-container">${reactionsHtml}</div>
@@ -722,6 +792,7 @@
 
         function addReaction(messageId, emoji) {
             if (socket) socket.emit('add-reaction', { messageId, emoji });
+            document.querySelectorAll('.reaction-popup.active').forEach(p => p.classList.remove('active'));
         }
 
         function formatLinks(str) {
