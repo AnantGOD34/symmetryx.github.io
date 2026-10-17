@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -213,11 +214,11 @@
         /* MESSAGES AREA */
         .messages-box {
             flex: 1;
-            padding: 24px;
+            padding: 24px 24px 40px 24px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 18px;
             scroll-behavior: smooth;
             background: rgba(10, 2, 20, 0.5);
         }
@@ -238,6 +239,7 @@
             flex-direction: column;
             max-width: 75%;
             position: relative;
+            margin-bottom: 8px;
         }
 
         .message-row.self { align-self: flex-end; }
@@ -308,23 +310,23 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(20, 5, 38, 0.8);
-            border: 1px solid rgba(168, 85, 247, 0.4);
+            background: rgba(20, 5, 38, 0.85);
+            border: 1px solid rgba(168, 85, 247, 0.5);
             border-radius: 50%;
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             opacity: 0;
             transition: opacity 0.2s ease;
-            z-index: 5;
+            z-index: 10;
         }
 
-        .message-row.self .msg-action-trigger { left: -36px; }
-        .message-row.other .msg-action-trigger { right: -36px; }
+        .message-row.self .msg-action-trigger { left: -42px; }
+        .message-row.other .msg-action-trigger { right: -42px; }
         .message-row:hover .msg-action-trigger { opacity: 1; }
 
         /* Floating Reaction Popup Menu */
@@ -332,15 +334,15 @@
             position: absolute;
             bottom: calc(100% + 8px);
             background: #1e0b36;
-            border: 1px solid rgba(255, 107, 0, 0.4);
+            border: 1px solid rgba(255, 107, 0, 0.5);
             border-radius: 24px;
             padding: 8px 10px;
             display: none;
             flex-direction: column;
             gap: 6px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
-            z-index: 50;
-            width: 210px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            z-index: 100;
+            width: 220px;
         }
         .message-row.self .reaction-popup { right: 0; }
         .message-row.other .reaction-popup { left: 0; }
@@ -356,10 +358,10 @@
             display: flex;
             justify-content: space-around;
             padding-bottom: 4px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
         }
         .quick-emojis span {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             cursor: pointer;
             transition: transform 0.15s;
         }
@@ -369,39 +371,41 @@
             display: grid;
             grid-template-columns: repeat(6, 1fr);
             gap: 4px;
-            max-height: 120px;
+            max-height: 130px;
             overflow-y: auto;
         }
         .full-emoji-grid span {
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             text-align: center;
             cursor: pointer;
-            padding: 2px;
-            border-radius: 4px;
+            padding: 3px;
+            border-radius: 6px;
         }
-        .full-emoji-grid span:hover { background: rgba(255, 255, 255, 0.15); }
+        .full-emoji-grid span:hover { background: rgba(255, 255, 255, 0.2); }
 
-        /* Reactions Badges right below the bubble */
+        /* Reactions Badges clearly visible right below the bubble container */
         .reactions-container {
             display: flex;
-            gap: 4px;
-            margin-top: 4px;
+            gap: 6px;
+            margin-top: 6px;
             flex-wrap: wrap;
+            z-index: 2;
         }
         .message-row.self .reactions-container { justify-content: flex-end; }
         .message-row.other .reactions-container { justify-content: flex-start; }
 
         .reaction-badge {
-            background: rgba(40, 10, 70, 0.9);
-            border: 1px solid rgba(255, 107, 0, 0.4);
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
+            background: rgba(30, 8, 55, 0.95);
+            border: 1px solid rgba(255, 107, 0, 0.5);
+            padding: 3px 10px;
+            border-radius: 14px;
+            font-size: 0.8rem;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 4px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            gap: 5px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+            color: #ffffff;
         }
 
         /* LINK PREVIEWS */
@@ -578,8 +582,8 @@
         const allEmojis = [
             '❤️', '👍', '😂', '🔥', '🎉', '🚀', '😎', '😢', '😍', '👏', '🙏', '✨', '💩', '💯', '🤔', '👀', '🥳', '💪',
             '😁', '😊', '🥰', '😘', '😋', '😜', '🤩', '🥳', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏',
-            '😒', '🙄', '😬', '😮‍💨', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', 'hot', '🥶',
-            '🥴', '😵', '🤯', '🤠', '🥳', '🥸', '😎', '🤓', '🧐', '😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺', 'frowning'
+            '😒', '🙄', '😬', '😮‍💨', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥶',
+            '🥴', '😵', '🤯', '🤠', '🥸', '🤓', '🧐', '😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺'
         ];
 
         const loginCard = document.getElementById('loginCard');
@@ -614,6 +618,7 @@
                 chatWrapper.style.display = 'flex';
                 messagesBox.innerHTML = '';
                 messagesStore = [];
+                lastRenderedDateString = '';
                 if (res.history) {
                     res.history.forEach(msg => { messagesStore.push(msg); renderMessage(msg); });
                     scrollToBottom();
@@ -670,10 +675,24 @@
             popup.classList.toggle('active');
         }
 
+        function getFormattedDateLabel(dateObj) {
+            const today = new Date();
+            const yesterday = new Date();
+            yesterday.setDate(today.getDate() - 1);
+
+            if (dateObj.toDateString() === today.toDateString()) {
+                return 'Today';
+            } else if (dateObj.toDateString() === yesterday.toDateString()) {
+                return 'Yesterday';
+            } else {
+                return dateObj.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+            }
+        }
+
         function renderMessage(msg) {
             const msgDate = msg.timestamp ? new Date(msg.timestamp) : new Date();
             const timeStr = `${String(msgDate.getHours()).padStart(2, '0')}:${String(msgDate.getMinutes()).padStart(2, '0')}`;
-            const dateStr = msgDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            const dateStr = getFormattedDateLabel(msgDate);
 
             if (dateStr !== lastRenderedDateString) {
                 lastRenderedDateString = dateStr;
