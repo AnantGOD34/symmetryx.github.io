@@ -338,13 +338,14 @@
             bottom: calc(100% + 8px);
             background: #1e0b36;
             border: 1px solid rgba(255, 107, 0, 0.4);
-            border-radius: 30px;
-            padding: 6px 12px;
+            border-radius: 24px;
+            padding: 8px 10px;
             display: none;
-            gap: 8px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+            flex-direction: column;
+            gap: 6px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.7);
             z-index: 50;
-            white-space: nowrap;
+            width: 210px;
         }
         .message-row.self .reaction-popup { right: 0; }
         .message-row.other .reaction-popup { left: 0; }
@@ -356,12 +357,34 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        .reaction-popup span {
-            font-size: 1.25rem;
+        .quick-emojis {
+            display: flex;
+            justify-content: space-around;
+            padding-bottom: 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .quick-emojis span {
+            font-size: 1.2rem;
             cursor: pointer;
             transition: transform 0.15s;
         }
-        .reaction-popup span:hover { transform: scale(1.3); }
+        .quick-emojis span:hover { transform: scale(1.3); }
+
+        .full-emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        .full-emoji-grid span {
+            font-size: 1.1rem;
+            text-align: center;
+            cursor: pointer;
+            padding: 2px;
+            border-radius: 4px;
+        }
+        .full-emoji-grid span:hover { background: rgba(255, 255, 255, 0.15); }
 
         /* Reactions Badges under bubble */
         .reactions-container {
@@ -563,6 +586,8 @@
         let audioChunks = [];
         let messagesStore = [];
 
+        const allEmojis = ['❤️', '👍', '😂', '🔥', '🎉', '🚀', '😎', '😢', '😍', '👏', '🙏', '✨', '💩', '💯', '🤔', '👀', '🥳', '💪'];
+
         const loginCard = document.getElementById('loginCard');
         const chatWrapper = document.getElementById('chatWrapper');
         const loginError = document.getElementById('loginError');
@@ -700,16 +725,16 @@
                     `).join('');
                 }
 
+                let quickEmojisHtml = ['❤️', '👍', '😂', '🔥', '🎉'].map(e => `<span onclick="addReaction('${msgId}', '${e}')">${e}</span>`).join('');
+                let fullEmojisHtml = allEmojis.map(e => `<span onclick="addReaction('${msgId}', '${e}')">${e}</span>`).join('');
+
                 row.innerHTML = `
                     <div class="sender-name">${escapeHTML(msg.name)}</div>
                     <div class="bubble-container">
                         <div class="msg-action-trigger" onclick="toggleReactionPopup(this)">☺</div>
                         <div class="reaction-popup">
-                            <span onclick="addReaction('${msgId}', '❤️')">❤️</span>
-                            <span onclick="addReaction('${msgId}', '👍')">👍</span>
-                            <span onclick="addReaction('${msgId}', '😂')">😂</span>
-                            <span onclick="addReaction('${msgId}', '🔥')">🔥</span>
-                            <span onclick="addReaction('${msgId}', '🎉')">🎉</span>
+                            <div class="quick-emojis">${quickEmojisHtml}</div>
+                            <div class="full-emoji-grid">${fullEmojisHtml}</div>
                         </div>
                         <div class="bubble">
                             ${contentHtml}
