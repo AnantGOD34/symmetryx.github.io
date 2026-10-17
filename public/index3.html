@@ -154,9 +154,9 @@
         .chat-wrapper {
             display: none;
             width: 95%;
-            max-width: 1050px;
+            max-width: 900px;
             height: 90vh;
-            flex-direction: row;
+            flex-direction: column;
             overflow: hidden;
             z-index: 10;
         }
@@ -167,50 +167,6 @@
             flex-direction: column;
             height: 100%;
             overflow: hidden;
-        }
-
-        /* SIDEBAR / USERS LIST */
-        .chat-sidebar {
-            width: 240px;
-            border-right: 1px solid rgba(168, 85, 247, 0.2);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .chat-sidebar h4 {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-            color: #d8b4fe;
-        }
-
-        .user-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            overflow-y: auto;
-        }
-
-        .user-item {
-            font-size: 0.9rem;
-            padding: 6px 10px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .user-item::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            background: #22c55e;
-            border-radius: 50%;
         }
 
         /* HEADER & SEARCH */
@@ -554,13 +510,6 @@
 
     <!-- CHAT INTERFACE -->
     <div class="chat-wrapper gradient-box" id="chatWrapper">
-        <!-- Sidebar / User List -->
-        <div class="chat-sidebar">
-            <h4>Online Users (<span id="userCount">0</span>)</h4>
-            <ul class="user-list" id="userList"></ul>
-        </div>
-
-        <!-- Main Chat Area -->
         <div class="chat-main">
             <div class="chat-header">
                 <div>
@@ -620,8 +569,6 @@
         const displayRoomId = document.getElementById('displayRoomId');
         const messagesBox = document.getElementById('messagesBox');
         const messageInput = document.getElementById('messageInput');
-        const userList = document.getElementById('userList');
-        const userCount = document.getElementById('userCount');
         const typingIndicator = document.getElementById('typingIndicator');
         const emojiPicker = document.getElementById('emojiPicker');
 
@@ -655,17 +602,6 @@
                 messagesStore.push(msg);
                 renderMessage(msg);
                 scrollToBottom();
-            });
-
-            socket.on('room-users', (users) => {
-                userList.innerHTML = '';
-                userCount.textContent = users.length;
-                users.forEach(u => {
-                    const li = document.createElement('li');
-                    li.className = 'user-item';
-                    li.textContent = u;
-                    userList.appendChild(li);
-                });
             });
 
             socket.on('typing-update', (data) => {
@@ -706,7 +642,6 @@
 
         function toggleReactionPopup(btn) {
             const popup = btn.nextElementSibling;
-            // Close any other active popups first
             document.querySelectorAll('.reaction-popup.active').forEach(p => {
                 if (p !== popup) p.classList.remove('active');
             });
