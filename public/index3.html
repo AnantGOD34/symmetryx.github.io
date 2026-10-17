@@ -380,7 +380,7 @@
             color: rgba(255, 255, 255, 0.85);
         }
 
-        /* MEDIA STYLES */
+        /* MEDIA & VOICE STYLES */
         .chat-media {
             max-width: 240px;
             max-height: 240px;
@@ -398,7 +398,12 @@
             outline: none;
             display: block;
         }
-        .attach-btn {
+        .chat-audio {
+            width: 220px;
+            height: 36px;
+            margin-bottom: 4px;
+        }
+        .action-btn {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(168, 85, 247, 0.4);
             color: white;
@@ -408,8 +413,19 @@
             font-size: 1rem;
             transition: background 0.2s;
         }
-        .attach-btn:hover {
+        .action-btn:hover {
             background: rgba(255, 255, 255, 0.2);
+        }
+        .action-btn.recording {
+            background: #ef4444;
+            border-color: #f87171;
+            animation: pulseRecord 1.2s infinite;
+        }
+
+        @keyframes pulseRecord {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
         /* INPUT FOOTER AREA */
@@ -522,7 +538,8 @@
 
         <div class="chat-input-area">
             <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*" onchange="handleFileSelect(event)">
-            <button class="attach-btn" onclick="document.getElementById('fileInput').click()" title="Send Image or Video">📎</button>
+            <button class="action-btn" onclick="document.getElementById('fileInput').click()" title="Send Image or Video">📎</button>
+            <button class="action-btn" id="recordBtn" onclick="toggleVoiceRecording()" title="Record Voice Message">🎤</button>
             <input type="text" id="messageInput" placeholder="Type a message..." onkeydown="handleKeyPress(event)" autocomplete="off">
             <button class="send-btn" onclick="sendMessage()">Send</button>
         </div>
@@ -540,12 +557,18 @@
         let lastRenderedDateString = '';
         let selectedFilePayload = null;
 
+        // Voice Recorder Variables
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+
         const loginCard = document.getElementById('loginCard');
         const chatWrapper = document.getElementById('chatWrapper');
         const loginError = document.getElementById('loginError');
         const displayRoomId = document.getElementById('displayRoomId');
         const messagesBox = document.getElementById('messagesBox');
         const messageInput = document.getElementById('messageInput');
+        const recordBtn = document.getElementById('recordBtn');
 
         const themes = [
             {
@@ -669,6 +692,54 @@
             event.target.value = '';
         }
 
+        // --- VOICE RECORDING LOGIC ---
+        async function toggleVoiceRecording() {
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = event => {
+                        if (event.data.size > 0) {
+                            audioChunks.push(event.data);
+                        }
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            selectedFilePayload = {
+                                type: 'audio',
+                                dataUrl: e.target.result,
+                                fileName: 'voice-message.webm'
+                            };
+                            sendMessage();
+                        };
+                        reader.readAsDataURL(audioBlob);
+
+                        // Stop microphone tracks
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    recordBtn.classList.add('recording');
+                    recordBtn.title = "Stop Recording";
+                } catch (err) {
+                    alert("Microphone permission denied or unavailable.");
+                }
+            } else {
+                if (mediaRecorder) {
+                    mediaRecorder.stop();
+                }
+                isRecording = false;
+                recordBtn.classList.remove('recording');
+                recordBtn.title = "Record Voice Message";
+            }
+        }
+
         function parseMessageDate(msg) {
             const rawTime = msg.timestamp || msg.time || msg.createdAt || msg.date;
             if (!rawTime) return new Date();
@@ -721,6 +792,8 @@
                         contentHtml += `<img src="${msg.file.dataUrl}" class="chat-media" onclick="window.open(this.src)" alt="Attachment">`;
                     } else if (msg.file.type === 'video') {
                         contentHtml += `<video src="${msg.file.dataUrl}" class="chat-video" controls playsinline></video>`;
+                    } else if (msg.file.type === 'audio') {
+                        contentHtml += `<audio src="${msg.file.dataUrl}" class="chat-audio" controls></audio>`;
                     }
                 }
                 if (msg.message) {
