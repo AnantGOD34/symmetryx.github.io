@@ -303,11 +303,6 @@
             color: rgba(255, 255, 255, 0.8);
         }
 
-        .read-receipt {
-            font-weight: bold;
-            color: #38bdf8;
-        }
-
         /* WHATSAPP STYLE HOVER REACTION BUTTON & FLOATING PICKER */
         .msg-action-trigger {
             position: absolute;
@@ -386,17 +381,19 @@
         }
         .full-emoji-grid span:hover { background: rgba(255, 255, 255, 0.15); }
 
-        /* Reactions Badges under bubble */
+        /* Reactions Badges right below the bubble */
         .reactions-container {
             display: flex;
             gap: 4px;
             margin-top: 4px;
             flex-wrap: wrap;
         }
+        .message-row.self .reactions-container { justify-content: flex-end; }
+        .message-row.other .reactions-container { justify-content: flex-start; }
 
         .reaction-badge {
-            background: rgba(40, 10, 70, 0.8);
-            border: 1px solid rgba(255, 107, 0, 0.3);
+            background: rgba(40, 10, 70, 0.9);
+            border: 1px solid rgba(255, 107, 0, 0.4);
             padding: 2px 8px;
             border-radius: 12px;
             font-size: 0.75rem;
@@ -404,6 +401,7 @@
             display: flex;
             align-items: center;
             gap: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
         /* LINK PREVIEWS */
@@ -478,29 +476,31 @@
             box-shadow: 0 4px 15px rgba(255, 107, 0, 0.4);
         }
 
-        /* EMOJI PICKER POPUP */
+        /* FULL EMOJI PICKER POPUP (Beside attachment button) */
         .emoji-picker {
             position: absolute;
             bottom: 75px;
             left: 20px;
             background: #1e0b36;
-            border: 1px solid rgba(168, 85, 247, 0.4);
-            border-radius: 12px;
-            padding: 10px;
+            border: 1px solid rgba(255, 107, 0, 0.4);
+            border-radius: 16px;
+            padding: 12px;
             display: none;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 6px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             z-index: 100;
         }
         .emoji-picker span {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             cursor: pointer;
-            padding: 4px;
+            padding: 6px;
             text-align: center;
-            border-radius: 6px;
+            border-radius: 8px;
         }
-        .emoji-picker span:hover { background: rgba(255,255,255,0.1); }
+        .emoji-picker span:hover { background: rgba(255,255,255,0.15); }
     </style>
 </head>
 <body>
@@ -549,19 +549,8 @@
             <div class="typing-indicator" id="typingIndicator"></div>
 
             <div class="chat-input-area">
-                <!-- Emoji Picker -->
-                <div class="emoji-picker" id="emojiPicker">
-                    <span onclick="insertEmoji('😊')">😊</span>
-                    <span onclick="insertEmoji('😂')">😂</span>
-                    <span onclick="insertEmoji('❤️')">❤️</span>
-                    <span onclick="insertEmoji('🔥')">🔥</span>
-                    <span onclick="insertEmoji('👍')">👍</span>
-                    <span onclick="insertEmoji('🎉')">🎉</span>
-                    <span onclick="insertEmoji('🚀')">🚀</span>
-                    <span onclick="insertEmoji('😎')">😎</span>
-                    <span onclick="insertEmoji('💡')">💡</span>
-                    <span onclick="insertEmoji('✨')">✨</span>
-                </div>
+                <!-- Full Emoji Picker (Beside Attachment Button) -->
+                <div class="emoji-picker" id="emojiPicker"></div>
 
                 <button class="action-btn" onclick="toggleEmojiPicker()" title="Emoji Picker">😊</button>
                 <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*,audio/*" onchange="handleFileSelect(event)">
@@ -586,7 +575,12 @@
         let audioChunks = [];
         let messagesStore = [];
 
-        const allEmojis = ['❤️', '👍', '😂', '🔥', '🎉', '🚀', '😎', '😢', '😍', '👏', '🙏', '✨', '💩', '💯', '🤔', '👀', '🥳', '💪'];
+        const allEmojis = [
+            '❤️', '👍', '😂', '🔥', '🎉', '🚀', '😎', '😢', '😍', '👏', '🙏', '✨', '💩', '💯', '🤔', '👀', '🥳', '💪',
+            '😁', '😊', '🥰', '😘', '😋', '😜', '🤩', '🥳', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏',
+            '😒', '🙄', '😬', '😮‍💨', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', 'hot', '🥶',
+            '🥴', '😵', '🤯', '🤠', '🥳', '🥸', '😎', '🤓', '🧐', '😕', '😟', '🙁', '😮', '😯', '😲', '😳', '🥺', 'frowning'
+        ];
 
         const loginCard = document.getElementById('loginCard');
         const chatWrapper = document.getElementById('chatWrapper');
@@ -596,6 +590,9 @@
         const messageInput = document.getElementById('messageInput');
         const typingIndicator = document.getElementById('typingIndicator');
         const emojiPicker = document.getElementById('emojiPicker');
+
+        // Populate Emoji Picker Box
+        emojiPicker.innerHTML = allEmojis.map(e => `<span onclick="insertEmoji('${e}')">${e}</span>`).join('');
 
         function handleJoinSubmit(e) {
             e.preventDefault();
@@ -740,7 +737,6 @@
                             ${contentHtml}
                             <div class="msg-meta">
                                 <span>${timeStr}</span>
-                                ${isSelf ? '<span class="read-receipt">✓✓</span>' : ''}
                             </div>
                         </div>
                     </div>
