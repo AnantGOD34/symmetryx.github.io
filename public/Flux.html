@@ -182,6 +182,7 @@
             z-index: 10;
         }
 
+        /* WhatsApp-Style Selection Header Action Bar */
         .chat-header {
             padding: 18px 24px;
             background: linear-gradient(90deg, rgba(30, 8, 55, 0.9), rgba(18, 4, 34, 0.95));
@@ -191,6 +192,11 @@
             align-items: center;
             border-top-left-radius: 22px;
             border-top-right-radius: 22px;
+            transition: background 0.3s;
+        }
+
+        .chat-header.selection-mode {
+            background: linear-gradient(90deg, #3c096c, #5a189a);
         }
 
         .chat-header .room-title {
@@ -216,6 +222,26 @@
             font-weight: 800;
         }
 
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .header-action-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: none;
+        }
+        .header-action-btn.show { display: inline-block; }
+        .header-action-btn.delete-bulk:hover { background: #ef4444; border-color: #f87171; }
+
         .leave-btn {
             background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(255, 96, 0, 0.2));
             border: 1px solid rgba(255, 96, 0, 0.5);
@@ -238,7 +264,7 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 16px;
             scroll-behavior: smooth;
             background: rgba(14, 3, 28, 0.6);
         }
@@ -267,12 +293,9 @@
             display: flex;
             flex-direction: column;
             max-width: 75%;
-            animation: fadeInMsg 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
-        }
-
-        @keyframes fadeInMsg {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.15s;
         }
 
         .message-row.self {
@@ -287,6 +310,40 @@
             align-self: center;
             max-width: 90%;
             text-align: center;
+            cursor: default;
+        }
+
+        /* Selection Checkbox Styling */
+        .msg-checkbox {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 22px;
+            height: 22px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.4);
+            z-index: 10;
+        }
+        .message-row.selecting .msg-checkbox { display: flex; }
+        .message-row.self.selecting .msg-checkbox { left: -36px; }
+        .message-row.other.selecting .msg-checkbox { right: -36px; }
+        .message-row.selected .msg-checkbox {
+            background: #ff9e00;
+            border-color: #ffb703;
+        }
+        .message-row.selected .msg-checkbox::after {
+            content: '✓';
+            color: #000;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .message-row.selected .bubble {
+            filter: brightness(1.15);
+            box-shadow: 0 0 0 2px #ff9e00;
         }
 
         .system-pill {
@@ -340,6 +397,21 @@
             border-bottom-left-radius: 2px;
         }
 
+        .quoted-reply {
+            background: rgba(0, 0, 0, 0.25);
+            border-left: 3px solid #ff9e00;
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 0.82rem;
+            opacity: 0.9;
+        }
+        .quoted-reply-sender {
+            font-weight: bold;
+            color: #ffb703;
+            margin-bottom: 2px;
+        }
+
         .time-stamp {
             font-size: 0.68rem;
             opacity: 0.85;
@@ -352,16 +424,14 @@
         .msg-actions {
             font-size: 0.72rem;
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-top: 4px;
             justify-content: flex-end;
             opacity: 0.7;
             transition: opacity 0.2s;
         }
-
-        .message-row.self:hover .msg-actions {
-            opacity: 1;
-        }
+        .message-row.selecting .msg-actions { display: none; }
+        .message-row:hover .msg-actions { opacity: 1; }
 
         .msg-action-btn {
             cursor: pointer;
@@ -372,29 +442,97 @@
         }
         .msg-action-btn.edit:hover { background: rgba(255, 183, 3, 0.3); color: #ffb703; }
         .msg-action-btn.delete:hover { background: rgba(239, 68, 68, 0.3); color: #ef4444; }
+        .msg-action-btn.reply:hover { background: rgba(168, 85, 247, 0.3); color: #d8b4fe; }
+        .msg-action-btn.react:hover { background: rgba(52, 211, 153, 0.3); color: #34d399; }
 
-        .chat-media {
-            max-width: 240px;
-            max-height: 240px;
+        .reactions-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 4px;
+        }
+        .message-row.self .reactions-container { justify-content: flex-end; }
+        .reaction-badge {
+            background: rgba(30, 10, 50, 0.85);
+            border: 1px solid rgba(168, 85, 247, 0.3);
             border-radius: 12px;
-            margin-bottom: 6px;
-            object-fit: cover;
-            display: block;
+            padding: 2px 8px;
+            font-size: 0.78rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
             cursor: pointer;
         }
-        .chat-video {
-            width: 100%;
-            max-width: 280px;
-            border-radius: 12px;
-            margin-bottom: 6px;
-            outline: none;
-            display: block;
+        .reaction-badge.active { border-color: #ff9e00; background: rgba(255, 158, 0, 0.2); }
+
+        .emoji-picker-popover {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            background: rgba(20, 5, 40, 0.95);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            border-radius: 16px;
+            padding: 8px;
+            gap: 6px;
+            z-index: 200;
+            backdrop-filter: blur(10px);
+            max-width: 260px;
+            flex-wrap: wrap;
         }
-        .chat-audio {
-            width: 220px;
-            height: 36px;
-            margin-bottom: 4px;
+        .message-row.self .emoji-picker-popover { right: 0; }
+        .message-row.other .emoji-picker-popover { left: 0; }
+        .emoji-picker-popover.show { display: flex; }
+        .emoji-option {
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 4px;
+            border-radius: 6px;
         }
+        .emoji-option:hover { transform: scale(1.25); background: rgba(255,255,255,0.1); }
+
+        .link-preview {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            text-decoration: none;
+            color: inherit;
+        }
+        .link-preview-title { font-weight: bold; font-size: 0.9rem; color: #ffb703; }
+        .link-preview-desc { font-size: 0.78rem; opacity: 0.8; }
+        .link-preview-url { font-size: 0.7rem; opacity: 0.5; }
+
+        .typing-indicator-bar {
+            height: 22px;
+            padding: 0 24px;
+            font-size: 0.78rem;
+            color: #d8b4fe;
+            font-style: italic;
+            display: none;
+            align-items: center;
+            background: rgba(14, 3, 28, 0.6);
+        }
+        .typing-indicator-bar.show { display: flex; }
+
+        .reply-banner {
+            display: none;
+            background: rgba(30, 10, 50, 0.9);
+            border-left: 3px solid #ff9e00;
+            padding: 8px 14px;
+            font-size: 0.82rem;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 123, 0, 0.2);
+        }
+        .reply-banner.show { display: flex; }
+
+        .chat-media { max-width: 240px; max-height: 240px; border-radius: 12px; margin-bottom: 6px; object-fit: cover; display: block; cursor: pointer; }
+        .chat-video { width: 100%; max-width: 280px; border-radius: 12px; margin-bottom: 6px; outline: none; display: block; }
+        .chat-audio { width: 220px; height: 36px; margin-bottom: 4px; }
 
         .action-btn {
             background: rgba(255, 255, 255, 0.1);
@@ -404,15 +542,10 @@
             border-radius: 12px;
             cursor: pointer;
             font-size: 1rem;
-            transition: background 0.2s;
             user-select: none;
-            -webkit-user-select: none;
         }
-        .action-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
+        .action-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
-        /* Unique Custom Voice Recording Overlay/Modal style */
         #recordingOverlay {
             display: none;
             position: absolute;
@@ -428,106 +561,34 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
             z-index: 100;
             backdrop-filter: blur(10px);
-            animation: slideUpRecord 0.2s ease-out;
         }
-
-        @keyframes slideUpRecord {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .recording-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .recording-pulse-dot {
-            width: 12px;
-            height: 12px;
-            background: #ef4444;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #ef4444;
-            animation: pulseDot 1s infinite alternate;
-        }
-
-        @keyframes pulseDot {
-            from { transform: scale(0.8); opacity: 0.6; }
-            to { transform: scale(1.2); opacity: 1; }
-        }
-
-        .recording-timer {
-            font-family: monospace;
-            font-size: 1.1rem;
-            color: #ffb703;
-            font-weight: bold;
-        }
-
-        .waveform-bars {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            height: 24px;
-        }
-
-        .wave-bar {
-            width: 4px;
-            background: var(--border-gradient);
-            border-radius: 2px;
-            animation: waveBounce 0.6s infinite ease-in-out alternate;
-        }
-
-        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
-        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
-        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
-        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
-
-        @keyframes waveBounce {
-            from { height: 6px; }
-            to { height: 24px; }
-        }
+        .recording-info { display: flex; align-items: center; gap: 12px; }
+        .recording-pulse-dot { width: 12px; height: 12px; background: #ef4444; border-radius: 50%; animation: pulseDot 1s infinite alternate; }
+        @keyframes pulseDot { from { transform: scale(0.8); opacity: 0.6; } to { transform: scale(1.2); opacity: 1; } }
+        .recording-timer { font-family: monospace; font-size: 1.1rem; color: #ffb703; font-weight: bold; }
 
         .chat-input-area {
             position: relative;
-            padding: 16px 20px;
             background: linear-gradient(90deg, rgba(20, 5, 38, 0.95), rgba(12, 3, 24, 0.95));
             border-top: 1px solid rgba(255, 123, 0, 0.25);
             display: flex;
-            gap: 12px;
-            align-items: center;
+            flex-direction: column;
             border-bottom-left-radius: 22px;
             border-bottom-right-radius: 22px;
         }
-
+        .chat-input-row { padding: 16px 20px; display: flex; gap: 12px; align-items: center; }
         .chat-input-area input[type="text"] {
-            flex: 1;
-            padding: 13px 18px;
-            background: rgba(10, 2, 20, 0.8);
-            border: 1px solid rgba(168, 85, 247, 0.4);
-            border-radius: 12px;
-            color: white;
-            font-size: 0.98rem;
-            outline: none;
+            flex: 1; padding: 13px 18px; background: rgba(10, 2, 20, 0.8);
+            border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 12px; color: white; font-size: 0.98rem; outline: none;
         }
-
         .send-btn {
             background: var(--btn-bg);
-            border: none;
-            color: white;
-            padding: 13px 24px;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 0.95rem;
-            cursor: pointer;
+            border: none; color: white; padding: 13px 24px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 96, 0, 0.4);
         }
 
         @media (max-width: 600px) {
-            .chat-wrapper {
-                width: 100%;
-                height: 100vh;
-                border-radius: 0;
-            }
+            .chat-wrapper { width: 100%; height: 100vh; border-radius: 0; }
         }
     </style>
 </head>
@@ -562,38 +623,46 @@
     </div>
 
     <div class="chat-wrapper gradient-box" id="chatWrapper">
-        <div class="chat-header">
+        <!-- WhatsApp-Style Header Action Bar -->
+        <div class="chat-header" id="chatHeader">
             <div class="room-title">
-                <span class="room-badge">Flux</span>
+                <span class="room-badge" id="headerBadge">Flux</span>
                 <h3 id="displayRoomId">Room</h3>
             </div>
-            <button class="leave-btn" onclick="leaveRoom()">Leave Room</button>
+            <div class="header-actions">
+                <button class="header-action-btn delete-bulk" id="deleteBulkBtn" onclick="deleteSelectedMessages()">🗑️ Delete (<span id="selectedCount">0</span>)</button>
+                <button class="header-action-btn" id="cancelSelectionBtn" onclick="exitSelectionMode()">✕</button>
+                <button class="leave-btn" id="leaveRoomBtn" onclick="leaveRoom()">Leave Room</button>
+            </div>
         </div>
 
         <div class="messages-box" id="messagesBox"></div>
+        <div class="typing-indicator-bar" id="typingIndicatorBar"></div>
 
         <div class="chat-input-area">
-            <!-- Custom Unique Voice Recording Waveform Overlay -->
+            <div class="reply-banner" id="replyBanner">
+                <div>
+                    <span style="font-size: 0.75rem; color: #ffb703; font-weight: bold; display: block;" id="replyingToUser">Replying</span>
+                    <span style="font-size: 0.8rem; opacity: 0.8;" id="replyingToText"></span>
+                </div>
+                <button onclick="cancelReply()" style="background:none; border:none; color:#fff; cursor:pointer; font-size:1rem;">✕</button>
+            </div>
+
             <div id="recordingOverlay">
                 <div class="recording-info">
                     <div class="recording-pulse-dot"></div>
                     <span class="recording-timer" id="recordingTimer">00:00</span>
                 </div>
-                <div class="waveform-bars">
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                    <div class="wave-bar"></div>
-                </div>
                 <span style="font-size: 0.75rem; color: #d8b4fe;">Release to send</span>
             </div>
 
-            <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*" onchange="handleFileSelect(event)">
-            <button class="action-btn" onclick="document.getElementById('fileInput').click()" title="Send Image or Video">📎</button>
-            <button class="action-btn" id="recordBtn" title="Hold to Record Voice Message">🎤</button>
-            <input type="text" id="messageInput" placeholder="Type a message..." onkeydown="handleKeyPress(event)" autocomplete="off">
-            <button class="send-btn" onclick="sendMessage()">Send</button>
+            <div class="chat-input-row">
+                <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*" onchange="handleFileSelect(event)">
+                <button class="action-btn" onclick="document.getElementById('fileInput').click()" title="Send Image or Video">📎</button>
+                <button class="action-btn" id="recordBtn" title="Hold to Record Voice Message">🎤</button>
+                <input type="text" id="messageInput" placeholder="Type a message..." oninput="handleTypingInput()" onkeydown="handleKeyPress(event)" autocomplete="off">
+                <button class="send-btn" onclick="sendMessage()">Send</button>
+            </div>
         </div>
     </div>
 
@@ -607,12 +676,21 @@
         let currentRoomId = '';
         let lastRenderedDateString = '';
         let selectedFilePayload = null;
+        let activeReplyData = null;
 
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecording = false;
         let recordingTimerInterval = null;
         let recordingSeconds = 0;
+        let typingTimeout = null;
+
+        // Bulk Selection State
+        let isSelectionMode = false;
+        let selectedMessageIds = new Set();
+        let longPressTimer = null;
+
+        const emojisList = ['❤️', '👍', '🔥', '😂', '🎉', '😮', '😢', '🙏', '💯', '👏', '🚀', '⭐'];
 
         const loginCard = document.getElementById('loginCard');
         const chatWrapper = document.getElementById('chatWrapper');
@@ -623,6 +701,14 @@
         const recordBtn = document.getElementById('recordBtn');
         const recordingOverlay = document.getElementById('recordingOverlay');
         const recordingTimer = document.getElementById('recordingTimer');
+        const typingIndicatorBar = document.getElementById('typingIndicatorBar');
+        const replyBanner = document.getElementById('replyBanner');
+        const chatHeader = document.getElementById('chatHeader');
+        const deleteBulkBtn = document.getElementById('deleteBulkBtn');
+        const cancelSelectionBtn = document.getElementById('cancelSelectionBtn');
+        const leaveRoomBtn = document.getElementById('leaveRoomBtn');
+        const headerBadge = document.getElementById('headerBadge');
+        const selectedCountSpan = document.getElementById('selectedCount');
 
         function handleJoinSubmit(e) {
             e.preventDefault();
@@ -671,7 +757,7 @@
             socket.on('message-updated', ({ id, message }) => {
                 const row = document.querySelector(`[data-id="${id}"]`);
                 if (row) {
-                    const textDiv = row.querySelector('.bubble div');
+                    const textDiv = row.querySelector('.bubble-text');
                     if (textDiv) textDiv.innerHTML = formatMessageText(message);
                     const timestampSpan = row.querySelector('.time-stamp');
                     if (timestampSpan && !timestampSpan.textContent.includes('(edited)')) {
@@ -680,13 +766,112 @@
                 }
             });
 
-            socket.on('message-removed', ({ id }) => {
-                const row = document.querySelector(`[data-id="${id}"]`);
-                if (row) row.remove();
+            socket.on('messages-removed', ({ ids }) => {
+                ids.forEach(id => {
+                    const row = document.querySelector(`[data-id="${id}"]`);
+                    if (row) row.remove();
+                });
+                exitSelectionMode();
+            });
+
+            socket.on('reaction-updated', ({ messageId, reactions }) => {
+                const row = document.querySelector(`[data-id="${messageId}"]`);
+                if (row) {
+                    let container = row.querySelector('.reactions-container');
+                    if (!container) {
+                        container = document.createElement('div');
+                        container.className = 'reactions-container';
+                        row.querySelector('.bubble').appendChild(container);
+                    }
+                    container.innerHTML = renderReactionsHTML(reactions, messageId);
+                }
+            });
+
+            let typingUsers = new Set();
+            socket.on('user-typing', ({ name, isTyping }) => {
+                if (isTyping) {
+                    typingUsers.add(name);
+                } else {
+                    typingUsers.delete(name);
+                }
+
+                if (typingUsers.size > 0) {
+                    const names = Array.from(typingUsers).join(', ');
+                    typingIndicatorBar.textContent = `${names} ${typingUsers.size === 1 ? 'is' : 'are'} typing...`;
+                    typingIndicatorBar.classList.add('show');
+                } else {
+                    typingIndicatorBar.classList.remove('show');
+                }
             });
         }
 
-        // --- UNIQUE CUSTOM VOICE RECORDING WAVEFORM LOGIC ---
+        function handleTypingInput() {
+            socket.emit('typing', true);
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                socket.emit('typing', false);
+            }, 1500);
+        }
+
+        // --- WHATSAPP-STYLE BULK SELECTION & LONG PRESS ---
+        function enterSelectionMode(id, senderName) {
+            if (senderName !== currentUserName) return; // Only allow selecting own messages to delete
+            isSelectionMode = true;
+            chatHeader.classList.add('selection-mode');
+            deleteBulkBtn.classList.add('show');
+            cancelSelectionBtn.classList.add('show');
+            leaveRoomBtn.style.display = 'none';
+            headerBadge.style.display = 'none';
+
+            document.querySelectorAll('.message-row').forEach(row => {
+                if (row.dataset.sender === currentUserName) {
+                    row.classList.add('selecting');
+                }
+            });
+
+            toggleMessageSelection(id);
+        }
+
+        function toggleMessageSelection(id) {
+            const row = document.querySelector(`[data-id="${id}"]`);
+            if (!row || row.dataset.sender !== currentUserName) return;
+
+            if (selectedMessageIds.has(id)) {
+                selectedMessageIds.delete(id);
+                row.classList.remove('selected');
+            } else {
+                selectedMessageIds.add(id);
+                row.classList.add('selected');
+            }
+
+            selectedCountSpan.textContent = selectedMessageIds.size;
+            if (selectedMessageIds.size === 0) {
+                exitSelectionMode();
+            }
+        }
+
+        function exitSelectionMode() {
+            isSelectionMode = false;
+            selectedMessageIds.clear();
+            chatHeader.classList.remove('selection-mode');
+            deleteBulkBtn.classList.remove('show');
+            cancelSelectionBtn.classList.remove('show');
+            leaveRoomBtn.style.display = 'block';
+            headerBadge.style.display = 'inline-block';
+
+            document.querySelectorAll('.message-row').forEach(row => {
+                row.classList.remove('selecting', 'selected');
+            });
+        }
+
+        function deleteSelectedMessages() {
+            if (selectedMessageIds.size === 0) return;
+            if (confirm(`Are you sure you want to delete ${selectedMessageIds.size} selected message(s)?`)) {
+                socket.emit('delete-messages', { ids: Array.from(selectedMessageIds) });
+            }
+        }
+
+        // --- VOICE RECORDING LOGIC ---
         async function startVoiceRecording(e) {
             if (e) e.preventDefault();
             if (isRecording) return;
@@ -751,22 +936,64 @@
         recordBtn.addEventListener('mouseleave', stopVoiceRecording);
         recordBtn.addEventListener('touchend', stopVoiceRecording);
 
-        // --- EDIT & DELETE FUNCTIONS ---
+        // --- REPLY SYSTEM ---
+        function setReply(id, senderName, text) {
+            activeReplyData = { id, senderName, text };
+            document.getElementById('replyingToUser').textContent = `Replying to ${senderName}`;
+            document.getElementById('replyingToText').textContent = text || '[Attachment]';
+            replyBanner.classList.add('show');
+            messageInput.focus();
+        }
+
+        function cancelReply() {
+            activeReplyData = null;
+            replyBanner.classList.remove('show');
+        }
+
+        // --- REACTIONS & EMOJI PICKER ---
+        function toggleEmojiPicker(id, event) {
+            event.stopPropagation();
+            const popover = document.getElementById(`picker-${id}`);
+            document.querySelectorAll('.emoji-picker-popover').forEach(p => {
+                if (p !== popover) p.classList.remove('show');
+            });
+            popover.classList.toggle('show');
+        }
+
+        window.addEventListener('click', () => {
+            document.querySelectorAll('.emoji-picker-popover').forEach(p => p.classList.remove('show'));
+        });
+
+        function addReaction(messageId, emoji) {
+            socket.emit('toggle-reaction', { messageId, emoji });
+            document.getElementById(`picker-${messageId}`).classList.remove('show');
+        }
+
+        function renderReactionsHTML(reactions, messageId) {
+            if (!reactions || Object.keys(reactions).length === 0) return '';
+            let html = '';
+            for (const [emoji, users] of Object.entries(reactions)) {
+                const hasReacted = users.includes(currentUserName);
+                html += `
+                    <div class="reaction-badge ${hasReacted ? 'active' : ''}" onclick="addReaction('${messageId}', '${emoji}')" title="${users.join(', ')}">
+                        <span>${emoji}</span>
+                        <span style="font-size: 0.7rem; font-weight: bold;">${users.length}</span>
+                    </div>
+                `;
+            }
+            return html;
+        }
+
+        // --- EDIT FUNCTIONS ---
         function editMessage(id) {
             const row = document.querySelector(`[data-id="${id}"]`);
             if (!row) return;
-            const textDiv = row.querySelector('.bubble div');
+            const textDiv = row.querySelector('.bubble-text');
             const currentText = textDiv ? textDiv.textContent : '';
 
             const newText = prompt("Edit your message:", currentText);
             if (newText !== null && newText.trim() !== '' && newText.trim() !== currentText) {
                 socket.emit('edit-message', { id, newText: newText.trim() });
-            }
-        }
-
-        function deleteMessage(id) {
-            if (confirm("Are you sure you want to delete this message?")) {
-                socket.emit('delete-message', { id });
             }
         }
 
@@ -803,6 +1030,12 @@
             return `${dd}-${mm}-${yy} ${hh}-${min}`;
         }
 
+        function extractFirstUrl(text) {
+            if (!text) return null;
+            const match = text.match(/(https?:\/\/[^\s]+|www\.[^\s]+)/);
+            return match ? match[0] : null;
+        }
+
         function renderMessage(msg) {
             const msgDate = parseMessageDate(msg);
             const formattedTimestamp = formatCustomTimestamp(msgDate);
@@ -821,6 +1054,7 @@
 
             const row = document.createElement('div');
             row.setAttribute('data-id', msg.id);
+            row.setAttribute('data-sender', msg.name);
 
             if (msg.isSystem) {
                 row.className = 'message-row system';
@@ -834,6 +1068,38 @@
                 const isSelf = msg.name === currentUserName;
                 row.className = `message-row ${isSelf ? 'self' : 'other'}`;
 
+                // Click / Long-press handling for WhatsApp-style bulk selection
+                row.addEventListener('click', (e) => {
+                    if (isSelectionMode) {
+                        e.stopPropagation();
+                        if (isSelf) toggleMessageSelection(msg.id);
+                    }
+                });
+
+                // Long press support for touch / desktop
+                row.addEventListener('mousedown', () => {
+                    if (!isSelectionMode && isSelf) {
+                        longPressTimer = setTimeout(() => enterSelectionMode(msg.id, msg.name), 600);
+                    }
+                });
+                row.addEventListener('mouseup', () => clearTimeout(longPressTimer));
+                row.addEventListener('touchstart', () => {
+                    if (!isSelectionMode && isSelf) {
+                        longPressTimer = setTimeout(() => enterSelectionMode(msg.id, msg.name), 600);
+                    }
+                });
+                row.addEventListener('touchend', () => clearTimeout(longPressTimer));
+
+                let replyHtml = '';
+                if (msg.replyTo) {
+                    replyHtml = `
+                        <div class="quoted-reply">
+                            <div class="quoted-reply-sender">${escapeHTML(msg.replyTo.senderName)}</div>
+                            <div style="font-size: 0.78rem; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">${escapeHTML(msg.replyTo.text || '[Attachment]')}</div>
+                        </div>
+                    `;
+                }
+
                 let contentHtml = '';
                 if (msg.file) {
                     if (msg.file.type === 'image') {
@@ -844,25 +1110,54 @@
                         contentHtml += `<audio src="${msg.file.dataUrl}" class="chat-audio" controls></audio>`;
                     }
                 }
+
                 if (msg.message) {
-                    contentHtml += `<div>${formatMessageText(msg.message)}</div>`;
+                    contentHtml += `<div class="bubble-text">${formatMessageText(msg.message)}</div>`;
+                    
+                    const foundUrl = extractFirstUrl(msg.message);
+                    if (foundUrl) {
+                        const cleanUrl = foundUrl.startsWith('www.') ? `http://${foundUrl}` : foundUrl;
+                        try {
+                            const domain = new URL(cleanUrl).hostname;
+                            contentHtml += `
+                                <a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="link-preview">
+                                    <span class="link-preview-title">🔗 Web Link Preview</span>
+                                    <span class="link-preview-desc">Click to visit external website and view contents.</span>
+                                    <span class="link-preview-url">${domain}</span>
+                                </a>
+                            `;
+                        } catch(e) {}
+                    }
                 }
 
-                let actionsHtml = '';
-                if (isSelf) {
-                    actionsHtml = `
-                        <div class="msg-actions">
+                let emojiPickerHtml = `<div class="emoji-picker-popover" id="picker-${msg.id}">`;
+                emojisList.forEach(em => {
+                    emojiPickerHtml += `<span class="emoji-option" onclick="addReaction('${msg.id}', '${em}')">${em}</span>`;
+                });
+                emojiPickerHtml += `</div>`;
+
+                let reactionsHtml = `<div class="reactions-container">${renderReactionsHTML(msg.reactions, msg.id)}</div>`;
+
+                let actionsHtml = `
+                    <div class="msg-actions">
+                        <span class="msg-action-btn react" onclick="toggleEmojiPicker('${msg.id}', event)">😊 React</span>
+                        <span class="msg-action-btn reply" onclick="setReply('${msg.id}', '${escapeHTML(msg.name)}', '${escapeHTML(msg.message || 'Attachment')}')">↩️ Reply</span>
+                        ${isSelf ? `
                             <span class="msg-action-btn edit" onclick="editMessage('${msg.id}')">Edit</span>
-                            <span class="msg-action-btn delete" onclick="deleteMessage('${msg.id}')">Delete</span>
-                        </div>
-                    `;
-                }
+                            <span class="msg-action-btn delete" onclick="enterSelectionMode('${msg.id}', '${escapeHTML(msg.name)}')">Select / Delete</span>
+                        ` : ''}
+                    </div>
+                `;
 
                 row.innerHTML = `
+                    <div class="msg-checkbox"></div>
                     <div class="sender-name">${escapeHTML(msg.name)}</div>
                     <div class="bubble">
+                        ${replyHtml}
                         ${contentHtml}
                         <span class="time-stamp">${formattedTimestamp} ${msg.edited ? '(edited)' : ''}</span>
+                        ${reactionsHtml}
+                        ${emojiPickerHtml}
                     </div>
                     ${actionsHtml}
                 `;
@@ -878,12 +1173,15 @@
             if (socket && socket.connected) {
                 socket.emit('chat-message', {
                     message: text,
-                    file: selectedFilePayload
+                    file: selectedFilePayload,
+                    replyTo: activeReplyData
                 });
             }
 
             messageInput.value = '';
             selectedFilePayload = null;
+            cancelReply();
+            socket.emit('typing', false);
         }
 
         function handleKeyPress(e) {
