@@ -182,7 +182,6 @@
             z-index: 10;
         }
 
-        /* WhatsApp-Style Selection Header Action Bar */
         .chat-header {
             padding: 18px 24px;
             background: linear-gradient(90deg, rgba(30, 8, 55, 0.9), rgba(18, 4, 34, 0.95));
@@ -295,25 +294,12 @@
             max-width: 75%;
             position: relative;
             cursor: pointer;
-            transition: transform 0.15s;
         }
 
-        .message-row.self {
-            align-self: flex-end;
-        }
+        .message-row.self { align-self: flex-end; }
+        .message-row.other { align-self: flex-start; }
+        .message-row.system { align-self: center; max-width: 90%; text-align: center; cursor: default; }
 
-        .message-row.other {
-            align-self: flex-start;
-        }
-
-        .message-row.system {
-            align-self: center;
-            max-width: 90%;
-            text-align: center;
-            cursor: default;
-        }
-
-        /* Selection Checkbox Styling */
         .msg-checkbox {
             position: absolute;
             top: 50%;
@@ -331,20 +317,9 @@
         .message-row.selecting .msg-checkbox { display: flex; }
         .message-row.self.selecting .msg-checkbox { left: -36px; }
         .message-row.other.selecting .msg-checkbox { right: -36px; }
-        .message-row.selected .msg-checkbox {
-            background: #ff9e00;
-            border-color: #ffb703;
-        }
-        .message-row.selected .msg-checkbox::after {
-            content: '✓';
-            color: #000;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        .message-row.selected .bubble {
-            filter: brightness(1.15);
-            box-shadow: 0 0 0 2px #ff9e00;
-        }
+        .message-row.selected .msg-checkbox { background: #ff9e00; border-color: #ffb703; }
+        .message-row.selected .msg-checkbox::after { content: '✓'; color: #000; font-size: 13px; font-weight: bold; }
+        .message-row.selected .bubble { filter: brightness(1.15); box-shadow: 0 0 0 2px #ff9e00; }
 
         .system-pill {
             background: linear-gradient(135deg, rgba(255, 123, 0, 0.15), rgba(168, 85, 247, 0.2));
@@ -406,11 +381,7 @@
             font-size: 0.82rem;
             opacity: 0.9;
         }
-        .quoted-reply-sender {
-            font-weight: bold;
-            color: #ffb703;
-            margin-bottom: 2px;
-        }
+        .quoted-reply-sender { font-weight: bold; color: #ffb703; margin-bottom: 2px; }
 
         .time-stamp {
             font-size: 0.68rem;
@@ -445,88 +416,40 @@
         .msg-action-btn.reply:hover { background: rgba(168, 85, 247, 0.3); color: #d8b4fe; }
         .msg-action-btn.react:hover { background: rgba(52, 211, 153, 0.3); color: #34d399; }
 
-        .reactions-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-top: 4px;
-        }
+        .reactions-container { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
         .message-row.self .reactions-container { justify-content: flex-end; }
         .reaction-badge {
             background: rgba(30, 10, 50, 0.85);
             border: 1px solid rgba(168, 85, 247, 0.3);
-            border-radius: 12px;
-            padding: 2px 8px;
-            font-size: 0.78rem;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
+            border-radius: 12px; padding: 2px 8px; font-size: 0.78rem; display: flex; align-items: center; gap: 4px; cursor: pointer;
         }
         .reaction-badge.active { border-color: #ff9e00; background: rgba(255, 158, 0, 0.2); }
 
         .emoji-picker-popover {
-            display: none;
-            position: absolute;
-            bottom: 100%;
-            background: rgba(20, 5, 40, 0.95);
-            border: 1px solid rgba(168, 85, 247, 0.5);
-            border-radius: 16px;
-            padding: 8px;
-            gap: 6px;
-            z-index: 200;
-            backdrop-filter: blur(10px);
-            max-width: 260px;
-            flex-wrap: wrap;
+            display: none; position: absolute; bottom: 100%; background: rgba(20, 5, 40, 0.95);
+            border: 1px solid rgba(168, 85, 247, 0.5); border-radius: 16px; padding: 8px; gap: 6px; z-index: 200; backdrop-filter: blur(10px); max-width: 260px; flex-wrap: wrap;
         }
         .message-row.self .emoji-picker-popover { right: 0; }
         .message-row.other .emoji-picker-popover { left: 0; }
         .emoji-picker-popover.show { display: flex; }
-        .emoji-option {
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 4px;
-            border-radius: 6px;
-        }
+        .emoji-option { cursor: pointer; font-size: 1.2rem; padding: 4px; border-radius: 6px; }
         .emoji-option:hover { transform: scale(1.25); background: rgba(255,255,255,0.1); }
 
         .link-preview {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            padding: 10px;
-            margin-top: 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            text-decoration: none;
-            color: inherit;
+            background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px; padding: 10px; margin-top: 8px; display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: inherit;
         }
         .link-preview-title { font-weight: bold; font-size: 0.9rem; color: #ffb703; }
         .link-preview-desc { font-size: 0.78rem; opacity: 0.8; }
         .link-preview-url { font-size: 0.7rem; opacity: 0.5; }
 
         .typing-indicator-bar {
-            height: 22px;
-            padding: 0 24px;
-            font-size: 0.78rem;
-            color: #d8b4fe;
-            font-style: italic;
-            display: none;
-            align-items: center;
-            background: rgba(14, 3, 28, 0.6);
+            height: 22px; padding: 0 24px; font-size: 0.78rem; color: #d8b4fe; font-style: italic; display: none; align-items: center; background: rgba(14, 3, 28, 0.6);
         }
         .typing-indicator-bar.show { display: flex; }
 
         .reply-banner {
-            display: none;
-            background: rgba(30, 10, 50, 0.9);
-            border-left: 3px solid #ff9e00;
-            padding: 8px 14px;
-            font-size: 0.82rem;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid rgba(255, 123, 0, 0.2);
+            display: none; background: rgba(30, 10, 50, 0.9); border-left: 3px solid #ff9e00; padding: 8px 14px; font-size: 0.82rem; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255, 123, 0, 0.2);
         }
         .reply-banner.show { display: flex; }
 
@@ -535,32 +458,13 @@
         .chat-audio { width: 220px; height: 36px; margin-bottom: 4px; }
 
         .action-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(168, 85, 247, 0.4);
-            color: white;
-            padding: 10px 14px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 1rem;
-            user-select: none;
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(168, 85, 247, 0.4); color: white; padding: 10px 14px; border-radius: 12px; cursor: pointer; font-size: 1rem; user-select: none;
         }
         .action-btn:hover { background: rgba(255, 255, 255, 0.2); }
 
         #recordingOverlay {
-            display: none;
-            position: absolute;
-            bottom: 85px;
-            left: 20px;
-            right: 20px;
-            background: rgba(18, 4, 38, 0.95);
-            border: 1px solid rgba(255, 123, 0, 0.5);
-            border-radius: 16px;
-            padding: 14px 20px;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-            z-index: 100;
-            backdrop-filter: blur(10px);
+            display: none; position: absolute; bottom: 85px; left: 20px; right: 20px; background: rgba(18, 4, 38, 0.95);
+            border: 1px solid rgba(255, 123, 0, 0.5); border-radius: 16px; padding: 14px 20px; align-items: center; justify-content: space-between; box-shadow: 0 10px 30px rgba(0,0,0,0.6); z-index: 100; backdrop-filter: blur(10px);
         }
         .recording-info { display: flex; align-items: center; gap: 12px; }
         .recording-pulse-dot { width: 12px; height: 12px; background: #ef4444; border-radius: 50%; animation: pulseDot 1s infinite alternate; }
@@ -568,13 +472,8 @@
         .recording-timer { font-family: monospace; font-size: 1.1rem; color: #ffb703; font-weight: bold; }
 
         .chat-input-area {
-            position: relative;
-            background: linear-gradient(90deg, rgba(20, 5, 38, 0.95), rgba(12, 3, 24, 0.95));
-            border-top: 1px solid rgba(255, 123, 0, 0.25);
-            display: flex;
-            flex-direction: column;
-            border-bottom-left-radius: 22px;
-            border-bottom-right-radius: 22px;
+            position: relative; background: linear-gradient(90deg, rgba(20, 5, 38, 0.95), rgba(12, 3, 24, 0.95));
+            border-top: 1px solid rgba(255, 123, 0, 0.25); display: flex; flex-direction: column; border-bottom-left-radius: 22px; border-bottom-right-radius: 22px;
         }
         .chat-input-row { padding: 16px 20px; display: flex; gap: 12px; align-items: center; }
         .chat-input-area input[type="text"] {
@@ -582,8 +481,7 @@
             border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 12px; color: white; font-size: 0.98rem; outline: none;
         }
         .send-btn {
-            background: var(--btn-bg);
-            border: none; color: white; padding: 13px 24px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer;
+            background: var(--btn-bg); border: none; color: white; padding: 13px 24px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 96, 0, 0.4);
         }
 
@@ -623,7 +521,6 @@
     </div>
 
     <div class="chat-wrapper gradient-box" id="chatWrapper">
-        <!-- WhatsApp-Style Header Action Bar -->
         <div class="chat-header" id="chatHeader">
             <div class="room-title">
                 <span class="room-badge" id="headerBadge">Flux</span>
@@ -685,7 +582,6 @@
         let recordingSeconds = 0;
         let typingTimeout = null;
 
-        // Bulk Selection State
         let isSelectionMode = false;
         let selectedMessageIds = new Set();
         let longPressTimer = null;
@@ -813,9 +709,8 @@
             }, 1500);
         }
 
-        // --- WHATSAPP-STYLE BULK SELECTION & LONG PRESS ---
         function enterSelectionMode(id, senderName) {
-            if (senderName !== currentUserName) return; // Only allow selecting own messages to delete
+            if (senderName !== currentUserName) return;
             isSelectionMode = true;
             chatHeader.classList.add('selection-mode');
             deleteBulkBtn.classList.add('show');
@@ -871,7 +766,6 @@
             }
         }
 
-        // --- VOICE RECORDING LOGIC ---
         async function startVoiceRecording(e) {
             if (e) e.preventDefault();
             if (isRecording) return;
@@ -936,7 +830,6 @@
         recordBtn.addEventListener('mouseleave', stopVoiceRecording);
         recordBtn.addEventListener('touchend', stopVoiceRecording);
 
-        // --- REPLY SYSTEM ---
         function setReply(id, senderName, text) {
             activeReplyData = { id, senderName, text };
             document.getElementById('replyingToUser').textContent = `Replying to ${senderName}`;
@@ -950,7 +843,6 @@
             replyBanner.classList.remove('show');
         }
 
-        // --- REACTIONS & EMOJI PICKER ---
         function toggleEmojiPicker(id, event) {
             event.stopPropagation();
             const popover = document.getElementById(`picker-${id}`);
@@ -984,7 +876,6 @@
             return html;
         }
 
-        // --- EDIT FUNCTIONS ---
         function editMessage(id) {
             const row = document.querySelector(`[data-id="${id}"]`);
             if (!row) return;
@@ -1068,7 +959,6 @@
                 const isSelf = msg.name === currentUserName;
                 row.className = `message-row ${isSelf ? 'self' : 'other'}`;
 
-                // Click / Long-press handling for WhatsApp-style bulk selection
                 row.addEventListener('click', (e) => {
                     if (isSelectionMode) {
                         e.stopPropagation();
@@ -1076,7 +966,6 @@
                     }
                 });
 
-                // Long press support for touch / desktop
                 row.addEventListener('mousedown', () => {
                     if (!isSelectionMode && isSelf) {
                         longPressTimer = setTimeout(() => enterSelectionMode(msg.id, msg.name), 600);
@@ -1192,6 +1081,10 @@
         }
 
         function leaveRoom() {
+            if (socket) {
+                socket.disconnect();
+                socket.connect();
+            }
             location.reload();
         }
 
