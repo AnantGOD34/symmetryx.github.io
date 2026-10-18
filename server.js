@@ -103,7 +103,6 @@ io.on('connection', (socket) => {
     if (!user || !user.roomId || !Array.isArray(ids)) return;
     const history = roomHistory[user.roomId];
     if (history) {
-      // Filter out only messages belonging to this user
       const validIdsToDelete = [];
       ids.forEach(id => {
         const index = history.findIndex(m => m.id === id && m.name === user.name);
