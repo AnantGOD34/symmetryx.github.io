@@ -46,6 +46,7 @@ io.on('connection', (socket) => {
     });
 
     const systemMessage = {
+      id: Math.random().toString(36).substring(2, 9),
       name: 'System',
       message: `${name} joined the room.`,
       isSystem: true,
@@ -65,6 +66,7 @@ io.on('connection', (socket) => {
 
     if (data) {
       const msgData = {
+        id: Math.random().toString(36).substring(2, 9),
         name: user.name,
         message: typeof data === 'string' ? data.trim() : (data.message ? data.message.trim() : ''),
         file: typeof data === 'object' ? data.file : null,
@@ -80,11 +82,39 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('edit-message', ({ id, newText }) => {
+    const user = socket.userData;
+    if (!user || !user.roomId) return;
+    const history = roomHistory[user.roomId];
+    if (history) {
+      const msg = history.find(m => m.id === id);
+      if (msg && msg.name === user.name) {
+        msg.message = newText.trim();
+        msg.edited = true;
+        io.to(user.roomId).emit('message-updated', { id, message: msg.message, edited: true });
+      }
+    }
+  });
+
+  socket.on('delete-message', ({ id }) => {
+    const user = socket.userData;
+    if (!user || !user.roomId) return;
+    const history = roomHistory[user.roomId];
+    if (history) {
+      const index = history.findIndex(m => m.id === id);
+      if (index !== -1 && history[index].name === user.name) {
+        history.splice(index, 1);
+        io.to(user.roomId).emit('message-removed', { id });
+      }
+    }
+  });
+
   socket.on('disconnect', () => {
     if (socket.userData) {
       const { name, roomId } = socket.userData;
 
       const disconnectMessage = {
+        id: Math.random().toString(36).substring(2, 9),
         name: 'System',
         message: `${name} left the room.`,
         isSystem: true,
