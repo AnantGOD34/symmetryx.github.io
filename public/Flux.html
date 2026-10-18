@@ -36,7 +36,6 @@
             transition: background 2s ease;
         }
 
-        /* Ambient Glow Spheres */
         .glow-sphere-1 {
             position: absolute;
             top: -15%;
@@ -62,7 +61,6 @@
             transition: background 2s ease;
         }
 
-        /* GRADIENT BORDER UTILITY */
         .gradient-box {
             position: relative;
             background: var(--box-bg);
@@ -88,14 +86,12 @@
             transition: background 2s ease;
         }
 
-        /* JOIN CARD / LOGIN OVERLAY */
         .login-card {
             width: 90%;
             max-width: 420px;
             padding: 40px 32px;
             text-align: center;
             z-index: 10;
-            transition: all 0.3s ease;
         }
 
         .login-card h2 {
@@ -105,7 +101,6 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 800;
-            letter-spacing: -0.5px;
         }
 
         .login-card p {
@@ -160,18 +155,13 @@
             font-weight: 800;
             cursor: pointer;
             margin-top: 10px;
-            box-shadow: 0 6px 20px rgba(255, 96, 0, 0.4), 0 0 15px rgba(147, 51, 234, 0.3);
-            transition: transform 0.2s ease, opacity 0.2s, box-shadow 0.2s, background 2s ease;
+            box-shadow: 0 6px 20px rgba(255, 96, 0, 0.4);
+            transition: transform 0.2s ease, opacity 0.2s;
         }
 
         .btn-primary:hover {
             opacity: 0.95;
-            box-shadow: 0 8px 25px rgba(255, 96, 0, 0.6), 0 0 20px rgba(147, 51, 234, 0.5);
             transform: translateY(-1px);
-        }
-
-        .btn-primary:active {
-            transform: scale(0.98);
         }
 
         .error-msg {
@@ -182,7 +172,6 @@
             font-weight: 600;
         }
 
-        /* MAIN CHAT CONTAINER */
         .chat-wrapper {
             display: none;
             width: 95%;
@@ -193,7 +182,6 @@
             z-index: 10;
         }
 
-        /* CHAT HEADER */
         .chat-header {
             padding: 18px 24px;
             background: linear-gradient(90deg, rgba(30, 8, 55, 0.9), rgba(18, 4, 34, 0.95));
@@ -218,9 +206,6 @@
             font-size: 0.75rem;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
-            box-shadow: 0 0 10px rgba(255, 96, 0, 0.4);
-            transition: background 2s ease;
         }
 
         .chat-header h3 {
@@ -240,16 +225,13 @@
             font-size: 0.85rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
         }
 
         .leave-btn:hover {
             background: linear-gradient(135deg, #ef4444, #ff6000);
             color: white;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
         }
 
-        /* MESSAGES AREA */
         .messages-box {
             flex: 1;
             padding: 24px;
@@ -267,10 +249,8 @@
         .messages-box::-webkit-scrollbar-thumb {
             background: var(--border-gradient);
             border-radius: 10px;
-            transition: background 2s ease;
         }
 
-        /* DATE SEPARATOR */
         .date-separator {
             align-self: center;
             margin: 12px 0;
@@ -281,11 +261,8 @@
             font-size: 0.75rem;
             font-weight: 700;
             color: #d8b4fe;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
-        /* MESSAGE BUBBLES */
         .message-row {
             display: flex;
             flex-direction: column;
@@ -320,11 +297,6 @@
             border-radius: 20px;
             font-size: 0.82rem;
             font-weight: 600;
-            box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            align-items: center;
         }
 
         .sender-name {
@@ -343,7 +315,6 @@
             background: var(--sender-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            transition: background 2s ease;
         }
 
         .bubble {
@@ -360,7 +331,6 @@
             color: #ffffff;
             border-bottom-right-radius: 2px;
             box-shadow: 0 6px 18px rgba(255, 96, 0, 0.35);
-            transition: background 2s ease;
         }
 
         .message-row.other .bubble {
@@ -368,7 +338,6 @@
             border: 1px solid rgba(255, 123, 0, 0.35);
             color: #f3e8ff;
             border-bottom-left-radius: 2px;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
         }
 
         .time-stamp {
@@ -380,7 +349,30 @@
             color: rgba(255, 255, 255, 0.85);
         }
 
-        /* MEDIA & VOICE STYLES */
+        .msg-actions {
+            font-size: 0.72rem;
+            display: flex;
+            gap: 10px;
+            margin-top: 4px;
+            justify-content: flex-end;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .message-row.self:hover .msg-actions {
+            opacity: 1;
+        }
+
+        .msg-action-btn {
+            cursor: pointer;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+        .msg-action-btn.edit:hover { background: rgba(255, 183, 3, 0.3); color: #ffb703; }
+        .msg-action-btn.delete:hover { background: rgba(239, 68, 68, 0.3); color: #ef4444; }
+
         .chat-media {
             max-width: 240px;
             max-height: 240px;
@@ -403,6 +395,7 @@
             height: 36px;
             margin-bottom: 4px;
         }
+
         .action-btn {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(168, 85, 247, 0.4);
@@ -412,24 +405,90 @@
             cursor: pointer;
             font-size: 1rem;
             transition: background 0.2s;
+            user-select: none;
+            -webkit-user-select: none;
         }
         .action-btn:hover {
             background: rgba(255, 255, 255, 0.2);
         }
-        .action-btn.recording {
+
+        /* Unique Custom Voice Recording Overlay/Modal style */
+        #recordingOverlay {
+            display: none;
+            position: absolute;
+            bottom: 85px;
+            left: 20px;
+            right: 20px;
+            background: rgba(18, 4, 38, 0.95);
+            border: 1px solid rgba(255, 123, 0, 0.5);
+            border-radius: 16px;
+            padding: 14px 20px;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            animation: slideUpRecord 0.2s ease-out;
+        }
+
+        @keyframes slideUpRecord {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .recording-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .recording-pulse-dot {
+            width: 12px;
+            height: 12px;
             background: #ef4444;
-            border-color: #f87171;
-            animation: pulseRecord 1.2s infinite;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ef4444;
+            animation: pulseDot 1s infinite alternate;
         }
 
-        @keyframes pulseRecord {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        @keyframes pulseDot {
+            from { transform: scale(0.8); opacity: 0.6; }
+            to { transform: scale(1.2); opacity: 1; }
         }
 
-        /* INPUT FOOTER AREA */
+        .recording-timer {
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: #ffb703;
+            font-weight: bold;
+        }
+
+        .waveform-bars {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            height: 24px;
+        }
+
+        .wave-bar {
+            width: 4px;
+            background: var(--border-gradient);
+            border-radius: 2px;
+            animation: waveBounce 0.6s infinite ease-in-out alternate;
+        }
+
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes waveBounce {
+            from { height: 6px; }
+            to { height: 24px; }
+        }
+
         .chat-input-area {
+            position: relative;
             padding: 16px 20px;
             background: linear-gradient(90deg, rgba(20, 5, 38, 0.95), rgba(12, 3, 24, 0.95));
             border-top: 1px solid rgba(255, 123, 0, 0.25);
@@ -449,12 +508,6 @@
             color: white;
             font-size: 0.98rem;
             outline: none;
-            transition: all 0.25s ease;
-        }
-
-        .chat-input-area input[type="text"]:focus {
-            border-color: transparent;
-            box-shadow: 0 0 0 2px #ff7b00, 0 0 15px rgba(255, 123, 0, 0.4);
         }
 
         .send-btn {
@@ -467,29 +520,12 @@
             font-size: 0.95rem;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 96, 0, 0.4);
-            transition: all 0.2s ease, background 2s ease;
-        }
-
-        .send-btn:hover {
-            opacity: 0.95;
-            box-shadow: 0 6px 20px rgba(255, 96, 0, 0.6);
-            transform: translateY(-1px);
-        }
-
-        .send-btn:active {
-            transform: scale(0.96);
         }
 
         @media (max-width: 600px) {
             .chat-wrapper {
                 width: 100%;
                 height: 100vh;
-                border-radius: 0;
-            }
-            .chat-wrapper.gradient-box::before {
-                border-radius: 0;
-            }
-            .chat-header, .chat-input-area {
                 border-radius: 0;
             }
         }
@@ -537,9 +573,25 @@
         <div class="messages-box" id="messagesBox"></div>
 
         <div class="chat-input-area">
+            <!-- Custom Unique Voice Recording Waveform Overlay -->
+            <div id="recordingOverlay">
+                <div class="recording-info">
+                    <div class="recording-pulse-dot"></div>
+                    <span class="recording-timer" id="recordingTimer">00:00</span>
+                </div>
+                <div class="waveform-bars">
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                </div>
+                <span style="font-size: 0.75rem; color: #d8b4fe;">Release to send</span>
+            </div>
+
             <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*" onchange="handleFileSelect(event)">
             <button class="action-btn" onclick="document.getElementById('fileInput').click()" title="Send Image or Video">📎</button>
-            <button class="action-btn" id="recordBtn" onclick="toggleVoiceRecording()" title="Record Voice Message">🎤</button>
+            <button class="action-btn" id="recordBtn" title="Hold to Record Voice Message">🎤</button>
             <input type="text" id="messageInput" placeholder="Type a message..." onkeydown="handleKeyPress(event)" autocomplete="off">
             <button class="send-btn" onclick="sendMessage()">Send</button>
         </div>
@@ -547,7 +599,6 @@
 
     <script>
         let socket = null;
-
         if (typeof io !== 'undefined') {
             socket = io();
         }
@@ -557,10 +608,11 @@
         let lastRenderedDateString = '';
         let selectedFilePayload = null;
 
-        // Voice Recorder Variables
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecording = false;
+        let recordingTimerInterval = null;
+        let recordingSeconds = 0;
 
         const loginCard = document.getElementById('loginCard');
         const chatWrapper = document.getElementById('chatWrapper');
@@ -569,65 +621,11 @@
         const messagesBox = document.getElementById('messagesBox');
         const messageInput = document.getElementById('messageInput');
         const recordBtn = document.getElementById('recordBtn');
-
-        const themes = [
-            {
-                bg: 'radial-gradient(circle at top right, #3c096c, #1a0033, #0d001a)',
-                s1: 'rgba(255, 123, 0, 0.4)',
-                s2: 'rgba(168, 85, 247, 0.45)',
-                border: 'linear-gradient(135deg, #ff7b00, #a855f7, #ff2a85)',
-                boxBg: 'rgba(22, 8, 42, 0.85)',
-                btnBg: 'linear-gradient(135deg, #ff6000 0%, #ff9e00 50%, #9333ea 100%)',
-                selfBubble: 'linear-gradient(135deg, #ff6000 0%, #c084fc 60%, #9333ea 100%)',
-                senderGradient: 'linear-gradient(90deg, #e879f9, #ff7b00)'
-            },
-            {
-                bg: 'radial-gradient(circle at top right, #240046, #10002b, #050014)',
-                s1: 'rgba(76, 201, 240, 0.4)',
-                s2: 'rgba(181, 23, 158, 0.45)',
-                border: 'linear-gradient(135deg, #4cc9f0, #b5179e, #7209b7)',
-                boxBg: 'rgba(20, 2, 40, 0.85)',
-                btnBg: 'linear-gradient(135deg, #7209b7 0%, #b5179e 50%, #4cc9f0 100%)',
-                selfBubble: 'linear-gradient(135deg, #7209b7 0%, #b5179e 60%, #4cc9f0 100%)',
-                senderGradient: 'linear-gradient(90deg, #4cc9f0, #b5179e)'
-            },
-            {
-                bg: 'radial-gradient(circle at top right, #03045e, #140324, #0a010d)',
-                s1: 'rgba(255, 0, 85, 0.4)',
-                s2: 'rgba(0, 229, 255, 0.45)',
-                border: 'linear-gradient(135deg, #ff0055, #00e5ff, #7b2cbf)',
-                boxBg: 'rgba(15, 3, 30, 0.85)',
-                btnBg: 'linear-gradient(135deg, #ff0055 0%, #7b2cbf 50%, #00e5ff 100%)',
-                selfBubble: 'linear-gradient(135deg, #ff0055 0%, #9d4edd 60%, #00e5ff 100%)',
-                senderGradient: 'linear-gradient(90deg, #00e5ff, #ff0055)'
-            }
-        ];
-
-        let currentThemeIndex = 0;
-
-        function applyTheme(theme) {
-            const root = document.documentElement;
-            root.style.setProperty('--bg-gradient', theme.bg);
-            root.style.setProperty('--sphere-1-color', theme.s1);
-            root.style.setProperty('--sphere-2-color', theme.s2);
-            root.style.setProperty('--border-gradient', theme.border);
-            root.style.setProperty('--box-bg', theme.boxBg);
-            root.style.setProperty('--btn-bg', theme.btnBg);
-            root.style.setProperty('--self-bubble', theme.selfBubble);
-            root.style.setProperty('--sender-gradient', theme.senderGradient);
-        }
-
-        setInterval(() => {
-            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-            applyTheme(themes[currentThemeIndex]);
-        }, 60000);
+        const recordingOverlay = document.getElementById('recordingOverlay');
+        const recordingTimer = document.getElementById('recordingTimer');
 
         function handleJoinSubmit(e) {
             e.preventDefault();
-            joinRoom();
-        }
-
-        function joinRoom() {
             const name = document.getElementById('userName').value.trim();
             const roomId = document.getElementById('roomId').value.trim();
             const roomPass = document.getElementById('roomPass').value.trim();
@@ -638,11 +636,8 @@
             }
 
             loginError.style.display = 'none';
-
             if (socket) {
                 socket.emit('join-room', { name, roomId, roomPass });
-            } else {
-                showError('Could not connect to the server.');
             }
         }
 
@@ -672,6 +667,107 @@
                 renderMessage(msgData);
                 scrollToBottom();
             });
+
+            socket.on('message-updated', ({ id, message }) => {
+                const row = document.querySelector(`[data-id="${id}"]`);
+                if (row) {
+                    const textDiv = row.querySelector('.bubble div');
+                    if (textDiv) textDiv.innerHTML = formatMessageText(message);
+                    const timestampSpan = row.querySelector('.time-stamp');
+                    if (timestampSpan && !timestampSpan.textContent.includes('(edited)')) {
+                        timestampSpan.textContent += ' (edited)';
+                    }
+                }
+            });
+
+            socket.on('message-removed', ({ id }) => {
+                const row = document.querySelector(`[data-id="${id}"]`);
+                if (row) row.remove();
+            });
+        }
+
+        // --- UNIQUE CUSTOM VOICE RECORDING WAVEFORM LOGIC ---
+        async function startVoiceRecording(e) {
+            if (e) e.preventDefault();
+            if (isRecording) return;
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data.size > 0) audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        selectedFilePayload = {
+                            type: 'audio',
+                            dataUrl: e.target.result,
+                            fileName: 'voice-message.webm'
+                        };
+                        sendMessage();
+                    };
+                    reader.readAsDataURL(audioBlob);
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                recordingOverlay.style.display = 'flex';
+                recordingSeconds = 0;
+                recordingTimer.textContent = "00:00";
+                
+                recordingTimerInterval = setInterval(() => {
+                    recordingSeconds++;
+                    const mins = String(Math.floor(recordingSeconds / 60)).padStart(2, '0');
+                    const secs = String(recordingSeconds % 60).padStart(2, '0');
+                    recordingTimer.textContent = `${mins}:${secs}`;
+                }, 1000);
+
+            } catch (err) {
+                alert("Microphone permission denied or unavailable.");
+            }
+        }
+
+        function stopVoiceRecording(e) {
+            if (e) e.preventDefault();
+            if (!isRecording) return;
+
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            isRecording = false;
+            recordingOverlay.style.display = 'none';
+            clearInterval(recordingTimerInterval);
+        }
+
+        recordBtn.addEventListener('mousedown', startVoiceRecording);
+        recordBtn.addEventListener('touchstart', startVoiceRecording);
+        recordBtn.addEventListener('mouseup', stopVoiceRecording);
+        recordBtn.addEventListener('mouseleave', stopVoiceRecording);
+        recordBtn.addEventListener('touchend', stopVoiceRecording);
+
+        // --- EDIT & DELETE FUNCTIONS ---
+        function editMessage(id) {
+            const row = document.querySelector(`[data-id="${id}"]`);
+            if (!row) return;
+            const textDiv = row.querySelector('.bubble div');
+            const currentText = textDiv ? textDiv.textContent : '';
+
+            const newText = prompt("Edit your message:", currentText);
+            if (newText !== null && newText.trim() !== '' && newText.trim() !== currentText) {
+                socket.emit('edit-message', { id, newText: newText.trim() });
+            }
+        }
+
+        function deleteMessage(id) {
+            if (confirm("Are you sure you want to delete this message?")) {
+                socket.emit('delete-message', { id });
+            }
         }
 
         function handleFileSelect(event) {
@@ -692,57 +788,8 @@
             event.target.value = '';
         }
 
-        // --- VOICE RECORDING LOGIC ---
-        async function toggleVoiceRecording() {
-            if (!isRecording) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
-                    audioChunks = [];
-
-                    mediaRecorder.ondataavailable = event => {
-                        if (event.data.size > 0) {
-                            audioChunks.push(event.data);
-                        }
-                    };
-
-                    mediaRecorder.onstop = () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            selectedFilePayload = {
-                                type: 'audio',
-                                dataUrl: e.target.result,
-                                fileName: 'voice-message.webm'
-                            };
-                            sendMessage();
-                        };
-                        reader.readAsDataURL(audioBlob);
-
-                        // Stop microphone tracks
-                        stream.getTracks().forEach(track => track.stop());
-                    };
-
-                    mediaRecorder.start();
-                    isRecording = true;
-                    recordBtn.classList.add('recording');
-                    recordBtn.title = "Stop Recording";
-                } catch (err) {
-                    alert("Microphone permission denied or unavailable.");
-                }
-            } else {
-                if (mediaRecorder) {
-                    mediaRecorder.stop();
-                }
-                isRecording = false;
-                recordBtn.classList.remove('recording');
-                recordBtn.title = "Record Voice Message";
-            }
-        }
-
         function parseMessageDate(msg) {
-            const rawTime = msg.timestamp || msg.time || msg.createdAt || msg.date;
-            if (!rawTime) return new Date();
+            const rawTime = msg.timestamp || new Date();
             const parsed = new Date(rawTime);
             return isNaN(parsed.getTime()) ? new Date() : parsed;
         }
@@ -773,6 +820,7 @@
             }
 
             const row = document.createElement('div');
+            row.setAttribute('data-id', msg.id);
 
             if (msg.isSystem) {
                 row.className = 'message-row system';
@@ -800,12 +848,23 @@
                     contentHtml += `<div>${formatMessageText(msg.message)}</div>`;
                 }
 
+                let actionsHtml = '';
+                if (isSelf) {
+                    actionsHtml = `
+                        <div class="msg-actions">
+                            <span class="msg-action-btn edit" onclick="editMessage('${msg.id}')">Edit</span>
+                            <span class="msg-action-btn delete" onclick="deleteMessage('${msg.id}')">Delete</span>
+                        </div>
+                    `;
+                }
+
                 row.innerHTML = `
                     <div class="sender-name">${escapeHTML(msg.name)}</div>
                     <div class="bubble">
                         ${contentHtml}
-                        <span class="time-stamp">${formattedTimestamp}</span>
+                        <span class="time-stamp">${formattedTimestamp} ${msg.edited ? '(edited)' : ''}</span>
                     </div>
+                    ${actionsHtml}
                 `;
             }
 
