@@ -425,7 +425,6 @@
         }
         .reaction-badge.active { border-color: #ff9e00; background: rgba(255, 158, 0, 0.2); }
 
-        /* Full Emoji Picker Popover */
         .emoji-picker-popover {
             display: none;
             position: absolute;
@@ -493,7 +492,7 @@
         .reply-banner.show { display: flex; }
 
         .chat-media { max-width: 240px; max-height: 240px; border-radius: 12px; margin-bottom: 6px; object-fit: cover; display: block; cursor: pointer; }
-        .chat-video { width: 100%; max-width: 280px; border-radius: 12px; margin-bottom: 6px; outline: none; display: block; }
+        .chat-video { width: 100%; max-width: 280px; max-height: 240px; border-radius: 12px; margin-bottom: 6px; outline: none; display: block; }
         .chat-audio { width: 220px; height: 36px; margin-bottom: 4px; }
 
         .action-btn {
@@ -602,6 +601,19 @@
         </div>
     </div>
 
+    <!-- WhatsApp-Style Media Preview Modal -->
+    <div id="mediaPreviewModal" style="display: none; position: fixed; inset: 0; background: rgba(10, 2, 24, 0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+        <div style="max-width: 90%; max-height: 65vh; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+            <img id="previewImageElement" style="max-width: 100%; max-height: 65vh; border-radius: 12px; display: none; object-fit: contain;">
+            <video id="previewVideoElement" style="max-width: 100%; max-height: 65vh; border-radius: 12px; display: none;" controls playsinline></video>
+        </div>
+        <div style="width: 90%; max-width: 500px; display: flex; gap: 10px;">
+            <input type="text" id="mediaCaptionInput" placeholder="Add a caption..." style="flex: 1; padding: 12px 16px; background: rgba(20, 6, 40, 0.9); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 12px; color: white; outline: none;" onkeydown="if(event.key==='Enter') confirmSendMedia()">
+            <button onclick="confirmSendMedia()" style="padding: 12px 24px; background: var(--btn-bg); border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer;">Send</button>
+            <button onclick="closeMediaPreview()" style="padding: 12px 16px; background: rgba(255,255,255,0.1); border: none; border-radius: 12px; color: white; cursor: pointer;">✕</button>
+        </div>
+    </div>
+
     <script>
         let socket = null;
         if (typeof io !== 'undefined') {
@@ -612,6 +624,7 @@
         let currentRoomId = '';
         let lastRenderedDateString = '';
         let selectedFilePayload = null;
+        let pendingFilePayload = null;
         let activeReplyData = null;
 
         let mediaRecorder = null;
@@ -625,13 +638,12 @@
         let selectedMessageIds = new Set();
         let longPressTimer = null;
 
-        // Comprehensive Emoji Categories
         const emojiCategories = {
-            "Smileys & Emotion": ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😴', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '🥷', '😎', '🤓', '😕', '😟', '🙁', '😧', '😨', '😰', '😞', '😖', '😫', '🥱', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '🫩', '🥱', '😤', '😡', '😠', '🤬', '😈', '👿', '💀', '💩', '🤡'],
-            "People & Gestures": ['👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🫰', '🫶', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪', '🦾', '🦿', '🦵', '🦶', '👂', '👃', '🧠', '👀', '👅', '👄', '👶', '🧒', '👦', '👧', '🧑', '👨', '👩', '🧓', '🧔', '👱', '👮', '🕵️', '💂', '👷', '🤴', '👸', '🤵', '👰', '🤰', '🤱', '👼', '🎅', '🤶', '🦸', '🦹', '🧙', '🧚', '🧛', '🧜', '🧝', '🧞', '🧟', '💆', '💇', '🚶', '🏃', '💃', '🧑‍🤝‍🧑'],
+            "Smileys & Emotion": ['😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😴', '🤤', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '🥵', '🥶', '🥴', '😵', '🤯', '🤠', '🥳', '😎', '🤓', '😕', '😟', '🙁', '😧', '😨', '😰', '😞', '😖', '😫', '🥱', '😢', '😭', '😱', '😤', '😡', '😠', '🤬', '😈', '👿', '💀', '💩', '🤡'],
+            "People & Gestures": ['👋', '🤚', '🖐️', '✋', '🖖', '👌', '🤌', '🤏', '✌️', '🤞', '🫰', '🫶', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪', '🦾', '🦿', '🦵', '🦶', '👂', '👃', '🧠', '👀', '👅', '👄', '👶', '🧒', '👦', '👧', '🧑', '👨', '👩', '🧓', '🧔', '👱', '👮', '🕵️', '💂', '👷', '🤴', '👸', '🤵', '👰', '🤰', '🤱', '👼', '🎅', '🤶', '🦸', '🦹', '🧙', '🧚', '🧛', '🧜', '🧝', '🧞', '🧟', '💆', '💇', '🚶', '🏃', '💃'],
             "Animals & Nature": ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦆', '🦅', '🦉', '🦇', '🐺', '🐗', '🐴', '🦄', '🐝', '🐛', '🦋', '🐌', '🐞', '🐜', '🦟', '🦗', '🕷️', '🦂', '🐢', '🐍', '🦎', '🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐟', '🐠', '🐡', '🦈', '🐋', '🐬', '🦭', '💐', '🌸', '💮', '🏵️', '🌹', '🌺', '🌻', '🌼', '🌷', '🌱', '🪴', '🌲', '🌳', '🌴', '🌵', '🌾', '🌿', '☘️', '🍀', '🍁', '🍂', '🍄'],
-            "Food & Drink": ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥒', '🫑', '🥕', '🌽', '🌶️', '🥔', '🍠', '🥐', '🍞', '🥖', '🥨', '🥯', '🥞', '🧇', '🧀', '🥩', '🍗', '🍖', '🥓', '🍔', '🍟', '🍕', '🌭', '🥪', '🌮', '🌯', '🫔', '🥙', '🧆', '🥚', '🍳', '🍲', '🫕', '🥣', '🥗', '🍿', '🧈', '🧂', '🥫', '🍱', '🍘', '🍙', '🍚', '🍛', '🍢', '🍡', '🥟', '🥠', '🥡', '🦀', '🦞', '🦑', '🦪', '🍣', '🍤', '🍥', '🥮', '🍡', '🥟', '🥠', '🥡', '🍦', '🍧', '🍨', '🍩', '🍪', '🎂', '🍰', '🧁', '🥧', '🍫', '🍬', '🍭', '🍮', '🍯', '🍼', '🥛', '☕', '🍵', '🫖', '🍶', '🍺', '🍻', '🍷', '🥃', '🍸', '🍹', '🍾', '🥂', '🧊', '🥢', '🍽️', '🥄', '🔪', '🏺'],
-            "Activities & Objects": ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🏓', '🏸', '🏸', '🏒', '🏑', '🥍', '🏏', '🥅', '⛳', '🎳', '🏹', '🎣', '🤿', '🥊', '🥋', '🛹', '🛼', '🛷', '⛸️', '🥌', '🎿', '🏂', '🪂', '🤸', '🤺', '🏀', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '🎟️', '🎫', '🎭', '🎨', '🎬', '🎤', '🎧', '🎷', '🪗', '🎸', '🎹', '🎺', '🎻', '🪕', '🥁', '🪘', '📱', '💻', '🖥️', '🖨️', '🖱️', '🖲️', '🕹️', '🗜️', '💽', '💾', '💿', '📀', '🧮', '📷', '📹', '📽️', '🎞️', '📞', '📟', '📠', '📺', '📻', '🎙️', '🎚️', '🎛️', '⏱️', '⏲️', '⏰', '⏱️', '⏳', '🛰️', '🔋', '🔌', '💡', '🔦', '🕯️', '🪔', '📄', '📃', '📑', '📊', '📈', '📉', '📋', '📌', '📍', '📎', '🔗', '📏', '📐', '✂️', '🗃️', '🗄️', '🗑️', '🔒', '🔓', '🔏', '🔑', '🗝️', '🔨', '🪓', '⛏️', '⚒️', '🛠️', '🗡️', '⚔️', '🔫', '🏹', '🛡️', '🔧', '🔩', '⚙️', '🗜️', '⚖️', '🦯', '🔗', '⛓️', '🪝', '🧰', '🧲', '🪜']
+            "Food & Drink": ['🍏', '🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🫐', '🍈', '🍒', '🍑', '🥭', '🍍', '🥥', '🥝', '🍅', '🍆', '🥑', '🥦', '🥒', '🫑', '🥕', '🌽', '🌶️', '🥔', '🍠', '🥐', '🍞', '🥖', '🥨', '🥯', '🥞', '🧇', '🧀', '🥩', '🍗', '🍖', '🥓', '🍔', '🍟', '🍕', '🌭', '🥪', '🌮', '🌯', '🥙', '🍳', '🍲', '🥣', '🥗', '🍿', '🧈', '🧂', '🍱', '🍙', '🍚', '🍛', '🍣', '🍤', '🍥', '🍦', '🍧', '🍨', '🍩', '🍪', '🎂', '🍰', '🧁', '🥧', '🍫', '🍬', '🍭', '🍮', '🍯', '🍼', '🥛', '☕', '🍵', '🍺', '🍻', '🍷', '🥃', '🍸', '🍹', '🍾', '🥂'],
+            "Activities & Objects": ['⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🏓', '🏸', '🏒', '🏑', '🥍', '🏏', '🥅', '⛳', '🎳', '🏹', '🎣', '🤿', '🥊', '🥋', '🛹', '🛼', '🛷', '⛸️', '⛷️', '🏂', '🪂', '🏆', '🥇', '🥈', '🥉', '🏅', '🎖️', '🎟️', '🎫', '🎭', '🎨', '🎬', '🎤', '🎧', '🎷', '🎸', '🎹', '🎺', '🎻', '🥁', '📱', '💻', '🖥️', '🖱️', '🕹️', '📷', '📹', '📺', '📻', '⏰', '⏳', '🔋', '🔌', '💡', '🔦', '🕯️', '🧮', '📚', '📌', '📎', '🔗', '📏', '✂️', '🔒', '🔓', '🔑', '🔨', '🛠️', '🧰', '🧲']
         };
 
         const loginCard = document.getElementById('loginCard');
@@ -934,6 +946,7 @@
             }
         }
 
+        // WhatsApp-Style File Selection & Preview
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -941,15 +954,50 @@
             const reader = new FileReader();
             reader.onload = function (e) {
                 const fileType = file.type.startsWith('video') ? 'video' : 'image';
-                selectedFilePayload = {
+                pendingFilePayload = {
                     type: fileType,
                     dataUrl: e.target.result,
                     fileName: file.name
                 };
-                sendMessage();
+
+                const modal = document.getElementById('mediaPreviewModal');
+                const imgEl = document.getElementById('previewImageElement');
+                const videoEl = document.getElementById('previewVideoElement');
+                const captionInput = document.getElementById('mediaCaptionInput');
+                captionInput.value = '';
+
+                if (fileType === 'image') {
+                    imgEl.src = e.target.result;
+                    imgEl.style.display = 'block';
+                    videoEl.style.display = 'none';
+                } else {
+                    videoEl.src = e.target.result;
+                    videoEl.style.display = 'block';
+                    imgEl.style.display = 'none';
+                }
+
+                modal.style.display = 'flex';
             };
             reader.readAsDataURL(file);
             event.target.value = '';
+        }
+
+        function closeMediaPreview() {
+            document.getElementById('mediaPreviewModal').style.display = 'none';
+            pendingFilePayload = null;
+            const videoEl = document.getElementById('previewVideoElement');
+            videoEl.pause();
+        }
+
+        function confirmSendMedia() {
+            if (!pendingFilePayload) return;
+            const caption = document.getElementById('mediaCaptionInput').value.trim();
+
+            selectedFilePayload = pendingFilePayload;
+            messageInput.value = caption;
+
+            sendMessage();
+            closeMediaPreview();
         }
 
         function parseMessageDate(msg) {
@@ -1065,7 +1113,6 @@
                     }
                 }
 
-                // Render Categorized Full Emoji Picker HTML
                 let emojiPickerHtml = `<div class="emoji-picker-popover" id="picker-${msg.id}" onclick="event.stopPropagation()">`;
                 for (const [category, emojis] of Object.entries(emojiCategories)) {
                     emojiPickerHtml += `<div class="emoji-category-title">${category}</div><div class="emoji-grid">`;
