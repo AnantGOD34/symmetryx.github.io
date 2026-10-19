@@ -2,10 +2,16 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const mongoose = require('mongoose');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+
+// Set max buffer size to 500 MB to support large files/videos
+const io = new Server(server, { 
+  cors: { origin: '*' },
+  maxHttpBufferSize: 500 * 1024 * 1024 
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -13,54 +19,72 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const roomPasswords = {};
-const roomHistory = {};
+// Connect to MongoDB Atlas (Falls back to local MongoDB if URI isn't set)
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/flux-chat';
+mongoose.connect(MONGO_URI)
+  .then(() => console.log('Connected to MongoDB Atlas successfully!'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// Define Database Schema for Rooms & Messages
+const roomSchema = new mongoose.Schema({
+  roomId: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  history: { type: Array, default: [] }
+});
+const Room = mongoose.model('Room', roomSchema);
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
-  socket.on('join-room', ({ name, roomId, roomPass }) => {
+  socket.on('join-room', async ({ name, roomId, roomPass }) => {
     if (!name || !roomId || !roomPass) {
       return socket.emit('join-response', { success: false, message: 'All fields are required.' });
     }
 
     const cleanRoomId = roomId.trim().toUpperCase();
 
-    if (roomPasswords[cleanRoomId]) {
-      if (roomPasswords[cleanRoomId] !== roomPass) {
-        return socket.emit('join-response', { success: false, message: 'Incorrect password for this room.' });
+    try {
+      let room = await Room.findOne({ roomId: cleanRoomId });
+
+      if (room) {
+        if (room.password !== roomPass) {
+          return socket.emit('join-response', { success: false, message: 'Incorrect password for this room.' });
+        }
+      } else {
+        room = new Room({ roomId: cleanRoomId, password: roomPass, history: [] });
+        await room.save();
       }
-    } else {
-      roomPasswords[cleanRoomId] = roomPass;
-      roomHistory[cleanRoomId] = [];
+
+      socket.join(cleanRoomId);
+      socket.userData = { name, roomId: cleanRoomId };
+
+      socket.emit('join-response', { 
+        success: true, 
+        name: name,
+        roomId: cleanRoomId, 
+        history: room.history 
+      });
+
+      const systemMessage = {
+        id: Math.random().toString(36).substring(2, 9),
+        name: 'System',
+        message: `${name} joined the room.`,
+        isSystem: true,
+        timestamp: new Date().toISOString()
+      };
+
+      room.history.push(systemMessage);
+      room.markModified('history');
+      await room.save();
+
+      io.to(cleanRoomId).emit('chat-message', systemMessage);
+    } catch (err) {
+      console.error('Error joining room:', err);
+      socket.emit('join-response', { success: false, message: 'Database error.' });
     }
-
-    socket.join(cleanRoomId);
-    socket.userData = { name, roomId: cleanRoomId };
-
-    socket.emit('join-response', { 
-      success: true, 
-      name: name,
-      roomId: cleanRoomId, 
-      history: roomHistory[cleanRoomId] || [] 
-    });
-
-    const systemMessage = {
-      id: Math.random().toString(36).substring(2, 9),
-      name: 'System',
-      message: `${name} joined the room.`,
-      isSystem: true,
-      timestamp: new Date().toISOString()
-    };
-
-    if (roomHistory[cleanRoomId]) {
-      roomHistory[cleanRoomId].push(systemMessage);
-    }
-
-    io.to(cleanRoomId).emit('chat-message', systemMessage);
   });
 
-  socket.on('chat-message', (data) => {
+  socket.on('chat-message', async (data) => {
     const user = socket.userData;
     if (!user || !user.roomId) return;
 
@@ -76,70 +100,97 @@ io.on('connection', (socket) => {
         timestamp: new Date().toISOString()
       };
 
-      if (roomHistory[user.roomId]) {
-        roomHistory[user.roomId].push(msgData);
+      try {
+        const room = await Room.findOne({ roomId: user.roomId });
+        if (room) {
+          room.history.push(msgData);
+          room.markModified('history');
+          await room.save();
+          io.to(user.roomId).emit('chat-message', msgData);
+        }
+      } catch (err) {
+        console.error('Error saving chat message:', err);
       }
-
-      io.to(user.roomId).emit('chat-message', msgData);
     }
   });
 
-  socket.on('edit-message', ({ id, newText }) => {
+  socket.on('edit-message', async ({ id, newText }) => {
     const user = socket.userData;
     if (!user || !user.roomId) return;
-    const history = roomHistory[user.roomId];
-    if (history) {
-      const msg = history.find(m => m.id === id);
-      if (msg && msg.name === user.name) {
-        msg.message = newText.trim();
-        msg.edited = true;
-        io.to(user.roomId).emit('message-updated', { id, message: msg.message, edited: true });
+    
+    try {
+      const room = await Room.findOne({ roomId: user.roomId });
+      if (room) {
+        const msg = room.history.find(m => m.id === id);
+        if (msg && msg.name === user.name) {
+          msg.message = newText.trim();
+          msg.edited = true;
+          room.markModified('history');
+          await room.save();
+          io.to(user.roomId).emit('message-updated', { id, message: msg.message, edited: true });
+        }
       }
+    } catch (err) {
+      console.error('Error editing message:', err);
     }
   });
 
-  socket.on('delete-messages', ({ ids }) => {
+  socket.on('delete-messages', async ({ ids }) => {
     const user = socket.userData;
     if (!user || !user.roomId || !Array.isArray(ids)) return;
-    const history = roomHistory[user.roomId];
-    if (history) {
-      const validIdsToDelete = [];
-      ids.forEach(id => {
-        const index = history.findIndex(m => m.id === id && m.name === user.name);
-        if (index !== -1) {
-          history.splice(index, 1);
-          validIdsToDelete.push(id);
-        }
-      });
 
-      if (validIdsToDelete.length > 0) {
-        io.to(user.roomId).emit('messages-removed', { ids: validIdsToDelete });
+    try {
+      const room = await Room.findOne({ roomId: user.roomId });
+      if (room) {
+        const validIdsToDelete = [];
+        ids.forEach(id => {
+          const index = room.history.findIndex(m => m.id === id && m.name === user.name);
+          if (index !== -1) {
+            room.history.splice(index, 1);
+            validIdsToDelete.push(id);
+          }
+        });
+
+        if (validIdsToDelete.length > 0) {
+          room.markModified('history');
+          await room.save();
+          io.to(user.roomId).emit('messages-removed', { ids: validIdsToDelete });
+        }
       }
+    } catch (err) {
+      console.error('Error deleting messages:', err);
     }
   });
 
-  socket.on('toggle-reaction', ({ messageId, emoji }) => {
+  socket.on('toggle-reaction', async ({ messageId, emoji }) => {
     const user = socket.userData;
     if (!user || !user.roomId) return;
-    const history = roomHistory[user.roomId];
-    if (history) {
-      const msg = history.find(m => m.id === messageId);
-      if (msg) {
-        if (!msg.reactions) msg.reactions = {};
-        if (!msg.reactions[emoji]) {
-          msg.reactions[emoji] = [];
-        }
-        const userIndex = msg.reactions[emoji].indexOf(user.name);
-        if (userIndex > -1) {
-          msg.reactions[emoji].splice(userIndex, 1);
-          if (msg.reactions[emoji].length === 0) {
-            delete msg.reactions[emoji];
+
+    try {
+      const room = await Room.findOne({ roomId: user.roomId });
+      if (room) {
+        const msg = room.history.find(m => m.id === messageId);
+        if (msg) {
+          if (!msg.reactions) msg.reactions = {};
+          if (!msg.reactions[emoji]) {
+            msg.reactions[emoji] = [];
           }
-        } else {
-          msg.reactions[emoji].push(user.name);
+          const userIndex = msg.reactions[emoji].indexOf(user.name);
+          if (userIndex > -1) {
+            msg.reactions[emoji].splice(userIndex, 1);
+            if (msg.reactions[emoji].length === 0) {
+              delete msg.reactions[emoji];
+            }
+          } else {
+            msg.reactions[emoji].push(user.name);
+          }
+          room.markModified('history');
+          await room.save();
+          io.to(user.roomId).emit('reaction-updated', { messageId, reactions: msg.reactions });
         }
-        io.to(user.roomId).emit('reaction-updated', { messageId, reactions: msg.reactions });
       }
+    } catch (err) {
+      console.error('Error toggling reaction:', err);
     }
   });
 
@@ -149,7 +200,7 @@ io.on('connection', (socket) => {
     socket.to(user.roomId).emit('user-typing', { name: user.name, isTyping });
   });
 
-  socket.on('disconnect', () => {
+  socket.on('disconnect', async () => {
     if (socket.userData) {
       const { name, roomId } = socket.userData;
       socket.to(roomId).emit('user-typing', { name, isTyping: false });
@@ -162,11 +213,17 @@ io.on('connection', (socket) => {
         timestamp: new Date().toISOString()
       };
 
-      if (roomHistory[roomId]) {
-        roomHistory[roomId].push(disconnectMessage);
+      try {
+        const room = await Room.findOne({ roomId });
+        if (room) {
+          room.history.push(disconnectMessage);
+          room.markModified('history');
+          await room.save();
+          io.to(roomId).emit('chat-message', disconnectMessage);
+        }
+      } catch (err) {
+        console.error('Error saving disconnect message:', err);
       }
-
-      io.to(roomId).emit('chat-message', disconnectMessage);
     }
     console.log('User disconnected:', socket.id);
   });
