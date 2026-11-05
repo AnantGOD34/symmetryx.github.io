@@ -3,491 +3,829 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Happy Birthday, Himadri! 💜</title>
-    <!-- Google Fonts for typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Happy Birthday, Himadri! ✨</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
     
-    <style>
-        :root {
-            --pastel-purple-card: rgba(255, 255, 255, 0.92);
-            --pastel-purple-dark: #512da8;
-            --accent-orange: #ff8c42;
-            --text-color: #3b2b4a;
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        lavender: '#E6E6FA',
+                        softpurple: '#9370DB',
+                        vibrantorange: '#FF7F50',
+                        deepviolet: '#4B0082'
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                        cursive: ['"Dancing Script"', 'cursive'],
+                    },
+                    boxShadow: {
+                        'soft-glow': '0 10px 30px -5px rgba(147, 112, 219, 0.25)',
+                        'orange-glow': '0 10px 30px -5px rgba(255, 127, 80, 0.3)',
+                    }
+                }
+            }
         }
-
+    </script>
+    <style>
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         body {
-            /* High-definition crisp background image */
-            background-image: url('mountains.png');
-            background-position: center center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            background-size: cover;
-            image-rendering: -webkit-optimize-contrast;
-            
-            font-family: 'Poppins', sans-serif;
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background-color: #FFFFFF;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             overflow-x: hidden;
-            overflow-y: auto;
-            position: relative;
-            padding: 20px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* Dark subtle overlay with a warm orange-purple gradient feel */
-        body::before {
+        /* Custom Gradients */
+        .gradient-orange-purple {
+            background: linear-gradient(135deg, #FF7F50 0%, #9370DB 100%);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #FF7F50 0%, #9370DB 60%, #4B0082 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gradient-border-card {
+            position: relative;
+            background: #FFFFFF;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 30px -5px rgba(147, 112, 219, 0.15);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .gradient-border-card::before {
             content: '';
             position: absolute;
+            inset: -2px;
+            border-radius: 1.6rem;
+            background: linear-gradient(135deg, #FF7F50, #9370DB, #E6E6FA);
+            z-index: -1;
+        }
+        .gradient-border-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px -5px rgba(255, 127, 80, 0.25);
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(230, 230, 250, 0.8);
+        }
+
+        /* Candle Flame Animation */
+        .flame {
+            width: 18px;
+            height: 28px;
+            background: linear-gradient(to top, #FF7F50, #FFD700, #FFFFFF);
+            border-radius: 50% 50% 20% 20%;
+            box-shadow: 0 0 15px #FF7F50, 0 0 25px #FFD700;
+            animation: flicker 0.6s infinite alternate ease-in-out;
+            transform-origin: center bottom;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        @keyframes flicker {
+            0% { transform: scale(1) rotate(-2deg); opacity: 0.95; }
+            100% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+        }
+        .flame.out {
+            opacity: 0;
+            transform: scale(0.2);
+            pointer-events: none;
+        }
+
+        /* Smoke effect when flame blows out */
+        .smoke {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 24px;
+            background: rgba(180, 180, 180, 0.7);
+            border-radius: 50%;
+            filter: blur(4px);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 30;
+        }
+        .smoke.active {
+            animation: riseSmoke 1.4s ease-out forwards;
+        }
+        @keyframes riseSmoke {
+            0% { opacity: 0.9; transform: translate(-50%, 0) scale(1); }
+            50% { opacity: 0.5; transform: translate(-70%, -30px) scale(2); }
+            100% { opacity: 0; transform: translate(-30%, -60px) scale(3.5); }
+        }
+
+        /* Candle Flame Animation */
+        .flame {
+            width: 18px;
+            height: 30px;
+            background: radial-gradient(ellipse at bottom, #FFFFFF 0%, #FFD700 35%, #FF7F50 70%, rgba(255,127,80,0) 100%);
+            border-radius: 50% 50% 20% 20%;
+            box-shadow: 0 0 15px #FF7F50, 0 0 30px #FFD700, 0 -5px 10px #FF4500;
+            animation: flicker 0.6s infinite alternate ease-in-out;
+            transform-origin: center bottom;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 25;
+        }
+        @keyframes flicker {
+            0% { transform: translateX(-50%) scale(1) rotate(-2deg); opacity: 0.95; }
+            100% { transform: translateX(-50%) scale(1.1) rotate(2deg); opacity: 1; }
+        }
+        .flame.out {
+            opacity: 0 !important;
+            transform: translateX(-50%) scale(0) !important;
+            pointer-events: none;
+        }
+
+        /* Burnt Wick styling */
+        .burnt-wick {
+            width: 4px;
+            height: 12px;
+            background: linear-gradient(to top, #111111, #444444);
+            border-radius: 2px 2px 0 0;
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 20;
+        }
+
+        /* Gift Lid 3D Unbox Animation */
+        .gift-lid {
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-origin: top center;
+        }
+        .gift-opened .gift-lid {
+            transform: translateY(-40px) rotate(-15deg);
+        }
+
+        /* Floating Background Hearts Canvas */
+        #hearts-canvas, #confetti-canvas {
+            position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(44, 27, 77, 0.4), rgba(255, 140, 66, 0.15));
-            z-index: 1;
+            width: 100vw;
+            height: 100vh;
             pointer-events: none;
         }
-
-        /* Main Card Container */
-        .card {
-            position: relative;
-            z-index: 10;
-            background: var(--pastel-purple-card);
-            backdrop-filter: blur(10px);
-            padding: 35px 30px;
-            border-radius: 25px;
-            box-shadow: 0 20px 40px rgba(28, 10, 56, 0.4);
-            text-align: center;
-            max-width: 580px;
-            width: 100%;
-            border: 2px solid rgba(255, 140, 66, 0.3); /* Subtle orange border hint */
-            transition: all 0.5s ease;
-            margin: auto;
-        }
-
-        h1 {
-            font-family: 'Dancing Script', cursive;
-            font-size: 2.8rem;
-            color: var(--pastel-purple-dark);
-            margin-bottom: 5px;
-            text-shadow: 0 1px 2px rgba(255, 140, 66, 0.2);
-        }
-
-        h2 {
-            font-size: 1.05rem;
-            font-weight: 600;
-            color: #d35400; /* Warm orange hint for subtitle */
-            margin-bottom: 20px;
-            letter-spacing: 0.5px;
-        }
-
-        /* Countdown styling */
-        #countdown-section {
-            display: block;
-        }
-
-        .countdown-timer {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 25px;
-            margin-bottom: 10px;
-        }
-
-        .time-box {
-            background: rgba(255, 140, 66, 0.1); /* Soft orange background tint */
-            padding: 10px 12px;
-            border-radius: 12px;
-            min-width: 65px;
-            border: 1px solid rgba(255, 140, 66, 0.3);
-        }
-
-        .time-box span {
-            display: block;
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: var(--pastel-purple-dark);
-        }
-
-        .time-box label {
-            font-size: 0.7rem;
-            color: #d35400;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .countdown-note {
-            font-size: 0.85rem;
-            color: #7a4a28;
-            margin-top: 15px;
-        }
-
-        /* Hidden main message wrapper initially */
-        #main-message-container {
-            display: none;
-        }
-
-        #main-message-container.active {
-            display: block;
-            animation: fadeIn 0.8s ease;
-        }
-
-        /* Interactive Quiz Layers */
-        .interactive-layer {
-            display: none;
-            animation: fadeIn 0.6s ease;
-        }
-        .interactive-layer.active {
-            display: block;
-        }
-
-        .step-instruction {
-            font-size: 0.95rem;
-            color: #512da8;
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-
-        .quiz-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .quiz-btn {
-            background: white;
-            border: 1.5px solid #ff8c42;
-            color: #512da8;
-            padding: 10px 15px;
-            border-radius: 12px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .quiz-btn:hover {
-            background: #fff3ec;
-            transform: scale(1.02);
-        }
-        .quiz-feedback {
-            font-size: 0.85rem;
-            color: #d35400;
-            font-weight: 600;
-            margin-bottom: 15px;
-            min-height: 20px;
-        }
-
-        /* Crumbled & Ripped Notebook Page Styling */
-        .notebook-page {
-            display: none;
-            width: 100%;
-            max-height: 480px;
-            overflow-y: auto;
-            padding: 35px 25px 40px 55px; /* Extra left padding for red margin */
-            background-color: #fffef9;
-            /* Notebook blue lines, red side margin, and subtle warm orange sunset vignette hint */
-            background-image: 
-                radial-gradient(circle at top right, rgba(255, 140, 66, 0.08), transparent 60%),
-                linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, transparent 42px, rgba(235, 100, 100, 0.45) 42px, rgba(235, 100, 100, 0.45) 44px, transparent 44px),
-                linear-gradient(#e1e1e1 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100px, 100% 100%, 100% 30px;
-            border: 1px solid #e2d3c3;
-            box-shadow: 
-                0 12px 35px rgba(0, 0, 0, 0.25), 
-                inset 0 0 30px rgba(255, 140, 66, 0.05),
-                inset 10px 10px 20px rgba(0, 0, 0, 0.05),
-                inset -10px -10px 20px rgba(0, 0, 0, 0.05);
-            border-radius: 6px;
-            position: relative;
-            
-            /* Crumbled uneven edges / torn paper shape */
-            clip-path: polygon(
-                0% 8px, 1.5% 2px, 3% 7px, 4.5% 1px, 6% 8px, 7.5% 2px, 9% 6px, 10.5% 1px, 
-                12% 7px, 13.5% 2px, 15% 8px, 16.5% 1px, 18% 7px, 19.5% 2px, 21% 8px, 22.5% 1px,
-                24% 7px, 25.5% 2px, 27% 8px, 28.5% 1px, 30% 6px, 31.5% 1px, 33% 7px, 34.5% 2px,
-                36% 8px, 37.5% 1px, 39% 7px, 40.5% 2px, 42% 8px, 43.5% 1px, 45% 6px, 46.5% 1px,
-                48% 7px, 49.5% 2px, 51% 8px, 52.5% 1px, 54% 7px, 55.5% 2px, 57% 8px, 58.5% 1px,
-                60% 6px, 61.5% 1px, 63% 7px, 64.5% 2px, 66% 8px, 67.5% 1px, 69% 7px, 70.5% 2px,
-                72% 8px, 73.5% 1px, 75% 6px, 76.5% 1px, 78% 7px, 79.5% 2px, 81% 8px, 82.5% 1px,
-                84% 7px, 85.5% 2px, 87% 8px, 88.5% 1px, 90% 6px, 91.5% 1.5px, 93% 7px, 94.5% 2px,
-                96% 8px, 97.5% 1px, 99% 7px, 100% 5px, 100% 95%, 98.5% 100%, 97% 96%, 95.5% 100%,
-                94% 95%, 92.5% 100%, 91% 96%, 89.5% 100%, 88% 95%, 86.5% 100%, 85% 96%, 83.5% 100%,
-                82% 95%, 80.5% 100%, 79% 96%, 77.5% 100%, 76% 95%, 74.5% 100%, 73% 96%, 71.5% 100%,
-                70% 95%, 68.5% 100%, 67% 96%, 65.5% 100%, 64% 95%, 62.5% 100%, 61% 96%, 59.5% 100%,
-                58% 95%, 56.5% 100%, 55% 96%, 53.5% 100%, 52% 95%, 50.5% 100%, 49% 96%, 47.5% 100%,
-                46% 95%, 44.5% 100%, 43% 96%, 41.5% 100%, 40% 95%, 38.5% 100%, 37% 96%, 35.5% 100%,
-                34% 95%, 32.5% 100%, 31% 96%, 29.5% 100%, 28% 95%, 26.5% 100%, 25% 96%, 23.5% 100%,
-                22% 95%, 20.5% 100%, 19% 96%, 17.5% 100%, 16% 95%, 14.5% 100%, 13% 96%, 11.5% 100%,
-                10% 95%, 8.5% 100%, 7% 96%, 5.5% 100%, 4% 95%, 2.5% 100%, 1% 96%, 0% 100%
-            );
-
-            /* Left-handed boy's handwriting style */
-            font-family: 'Caveat', cursive;
-            font-size: 1.4rem;
-            font-weight: 500;
-            color: #2c223b;
-            text-align: left;
-            line-height: 30px; /* Matches background-size line spacing */
-            white-space: pre-wrap;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            user-select: text;
-            transform: rotate(-0.8deg); /* Left-handed tilt */
-        }
-
-        .notebook-page.active {
-            display: block;
-            animation: fadeIn 0.8s ease;
-        }
-
-        /* Flawless SVG Split-Color Heart Styling (Orange & Purple with A & H) */
-        .signature-heart-container {
-            margin-top: 30px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .svg-heart-wrapper {
-            position: relative;
-            width: 55px;
-            height: 55px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            filter: drop-shadow(0 2px 4px rgba(255, 140, 66, 0.3));
-        }
-
-        .heart-svg {
-            width: 100%;
-            height: 100%;
-        }
-
-        .heart-letters-overlay {
-            position: absolute;
-            top: 52%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            gap: 6px;
-            font-family: 'Caveat', cursive;
-            font-size: 1.15rem;
-            font-weight: 700;
-            z-index: 5;
-            pointer-events: none;
-        }
-
-        .letter-a {
-            color: #ffffff;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
-        }
-
-        .letter-h {
-            color: #ffffff;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        #hearts-canvas { z-index: 1; }
+        #confetti-canvas { z-index: 99; }
     </style>
 </head>
-<body>
+<body class="text-slate-800 min-h-screen relative flex flex-col justify-between">
 
-    <!-- Celebration Card -->
-    <div class="card" id="cardBox">
+    <!-- Canvas Layer for Particles & Confetti -->
+    <canvas id="hearts-canvas"></canvas>
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Background Decorative Glow Blobs -->
+    <div class="fixed -top-20 -left-20 w-80 h-80 rounded-full bg-vibrantorange/10 blur-3xl pointer-events-none"></div>
+    <div class="fixed top-1/3 -right-20 w-96 h-96 rounded-full bg-softpurple/15 blur-3xl pointer-events-none"></div>
+    <div class="fixed -bottom-20 left-1/3 w-96 h-96 rounded-full bg-lavender/60 blur-3xl pointer-events-none"></div>
+
+    <!-- Background Audio Element -->
+    <audio id="bg-music" loop preload="auto">
+        <source src="music.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Sleek Top Gradient Line -->
+    <div class="w-full h-2 gradient-orange-purple relative"></div>
+
+    <!-- Floating Music Bar / Player Control (Bottom Right) -->
+    <div class="fixed bottom-6 right-6 z-50 flex items-center space-x-3 bg-white/90 backdrop-blur-md p-2 px-4 rounded-full border border-lavender shadow-lg">
+        <button id="music-toggle-btn" class="w-10 h-10 rounded-full gradient-orange-purple text-white flex items-center justify-center shadow-md hover:scale-105 transition-all">
+            <i id="music-icon" class="fa-solid fa-play"></i>
+        </button>
+        <div class="flex flex-col pr-2">
+            <span class="text-[11px] font-bold text-slate-800">Birthday Song</span>
+            <span id="music-status" class="text-[9px] text-slate-500 uppercase tracking-wider font-medium">Click to Play</span>
+        </div>
+    </div>
+
+    <!-- Header / Navigation Bar (Static, non-sticky so it stays at the top when scrolling) -->
+    <header class="w-full py-5 px-6 sm:px-12 flex justify-between items-center relative z-20 border-b border-lavender/60 glass-panel">
+        <div class="flex items-center space-x-2">
+            <span class="w-3 h-3 rounded-full bg-vibrantorange"></span>
+            <span class="w-3 h-3 rounded-full bg-softpurple"></span>
+            <span class="text-xl font-bold font-serif text-slate-900 tracking-tight ml-2">For Himadri ✨</span>
+        </div>
         
-        <!-- COUNTDOWN SCREEN (Shown before Nov 7) -->
-        <div id="countdown-section">
-            <h1>Almost Time...</h1>
-            <h2>Counting down to November 7th 🏔️🌅</h2>
-            <div class="countdown-timer">
-                <div class="time-box">
-                    <span id="days">00</span>
-                    <label>Days</label>
-                </div>
-                <div class="time-box">
-                    <span id="hours">00</span>
-                    <label>Hours</label>
-                </div>
-                <div class="time-box">
-                    <span id="mins">00</span>
-                    <label>Mins</label>
-                </div>
-                <div class="time-box">
-                    <span id="secs">00</span>
-                    <label>Secs</label>
-                </div>
-            </div>
-            <p class="countdown-note">Something special is waiting for you when it hits zero! ✨</p>
+        <!-- Interactive Lock/Unlock Preview Switch -->
+        <div class="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-full border border-slate-200">
+            <span class="text-xs font-semibold text-slate-600 pl-3">Preview Mode:</span>
+            <button id="toggle-preview-btn" class="px-3.5 py-1 rounded-full text-xs font-bold transition-all duration-300 bg-vibrantorange text-white shadow-sm hover:opacity-90">
+                UNLOCKED
+            </button>
         </div>
+    </header>
 
-        <!-- MAIN BIRTHDAY MESSAGE CONTAINER (Unlocked on Nov 7) -->
-        <div id="main-message-container">
-            <h1>Happy Birthday, Himadri!</h1>
-            <h2>The prettiest view I'll ever see 🏔️🌅</h2>
+    <!-- Main Content Container -->
+    <main class="w-full max-w-5xl mx-auto px-4 sm:px-6 py-10 relative z-10 flex-grow flex flex-col justify-center items-center">
+
+        <!-- ================= COUNTDOWN SECTION (LOCKED) ================= -->
+        <section id="countdown-section" class="w-full max-w-3xl text-center py-8 transition-all duration-500">
             
-            <!-- Interactive Step 1: Trivia Question 1 -->
-            <div class="interactive-layer active" id="layer1">
-                <p class="step-instruction">Mini Challenge #1: Let's test your memory! 🤔</p>
-                <div class="quiz-feedback" id="feedback1">Who lights up every single room they walk into?</div>
-                <div class="quiz-options">
-                    <button class="quiz-btn" onclick="checkQuiz(1, false)">A random stranger</button>
-                    <button class="quiz-btn" onclick="checkQuiz(1, true)">Himadri, obviously! 👑</button>
-                    <button class="quiz-btn" onclick="checkQuiz(1, false)">The ceiling lights</button>
+            <div class="inline-block px-6 py-2.5 rounded-full bg-gradient-to-r from-softpurple/10 via-lavender to-vibrantorange/10 border border-softpurple/20 text-slate-800 mb-8 shadow-sm">
+                <p class="text-sm sm:text-base font-semibold flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-gift text-vibrantorange"></i>
+                    Something special is waiting for you, Himadri! Unlocking on Nov 7th ✨
+                </p>
+            </div>
+
+            <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight mb-4 text-slate-900">
+                Counting Down to <span class="gradient-text">Your Special Day</span> 💖
+            </h1>
+            <p class="text-slate-600 text-base sm:text-lg mb-10 max-w-lg mx-auto">
+                Every tick of the clock brings us closer to celebrating the most amazing person!
+            </p>
+
+            <!-- Countdown Timer Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto mb-10">
+                <div class="gradient-border-card p-6 text-center">
+                    <span id="timer-days" class="block text-4xl sm:text-5xl font-black gradient-text">00</span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-slate-500 mt-2 block">Days</span>
+                </div>
+                <div class="gradient-border-card p-6 text-center">
+                    <span id="timer-hours" class="block text-4xl sm:text-5xl font-black gradient-text">00</span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-slate-500 mt-2 block">Hours</span>
+                </div>
+                <div class="gradient-border-card p-6 text-center">
+                    <span id="timer-minutes" class="block text-4xl sm:text-5xl font-black gradient-text">00</span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-slate-500 mt-2 block">Minutes</span>
+                </div>
+                <div class="gradient-border-card p-6 text-center">
+                    <span id="timer-seconds" class="block text-4xl sm:text-5xl font-black gradient-text">00</span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-slate-500 mt-2 block">Seconds</span>
                 </div>
             </div>
 
-            <!-- Interactive Step 2: Trivia Question 2 -->
-            <div class="interactive-layer" id="layer2">
-                <p class="step-instruction">Mini Challenge #2: Choose wisely! ✨</p>
-                <div class="quiz-feedback" id="feedback2">What matches the breathtaking beauty of the mountains?</div>
-                <div class="quiz-options">
-                    <button class="quiz-btn" onclick="checkQuiz(2, false)">A rocky cliff</button>
-                    <button class="quiz-btn" onclick="checkQuiz(2, true)">Your gorgeous smile 😊💜</button>
-                    <button class="quiz-btn" onclick="checkQuiz(2, false)">A snowstorm</button>
+            <div class="p-8 rounded-3xl glass-panel max-w-md mx-auto text-center border border-lavender">
+                <div class="w-14 h-14 mx-auto mb-3 rounded-2xl gradient-orange-purple flex items-center justify-center text-white text-xl shadow-md">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h3 class="font-bold text-slate-800 text-lg mb-1">Content Currently Locked</h3>
+                <p class="text-xs text-slate-500">Check back at midnight on Nov 7th to unlock your interactive surprises!</p>
+            </div>
+        </section>
+
+        <!-- ================= UNLOCKED CONTENT SECTION ================= -->
+        <section id="unlocked-section" class="w-full transition-all duration-700 hidden">
+            
+            <!-- Hero Banner -->
+            <div class="text-center py-6 mb-12">
+                <div class="inline-block mb-3 px-4 py-1.5 rounded-full bg-vibrantorange/10 text-vibrantorange font-semibold text-xs tracking-widest uppercase">
+                    🎉 Happy Birthday Himadri! 🎉
+                </div>
+                <h1 class="text-4xl sm:text-7xl font-black tracking-tight mb-4 text-slate-900 leading-tight">
+                    <span class="gradient-text font-serif italic">Happy Birthday, my love</span> ❤️
+                </h1>
+                <p class="text-slate-600 text-base sm:text-xl max-w-xl mx-auto font-light">
+                    Every second with you is a gift. Tap anywhere on the screen for heart sparkles and explore your birthday surprises below!
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                
+                <!-- FEATURE 1: Interactive Cake Blow Out -->
+                <div class="gradient-border-card p-6 sm:p-8 text-center flex flex-col justify-between">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-vibrantorange mb-1 block">Realistic Interactive Cake</span>
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Blow Out the Candle 🕯️</h2>
+                        <p class="text-slate-500 text-xs sm:text-sm mb-4">Click or tap the flame to blow it out and make your wish!</p>
+                    </div>
+
+                    <!-- Realistic SVG Cake & Candle Graphic -->
+                    <div id="cake-container" class="relative w-64 h-64 mx-auto flex flex-col items-center justify-center cursor-pointer group my-2">
+                        
+                        <!-- Candle & Flame Structure -->
+                        <div class="absolute top-[35px] left-1/2 -translate-x-1/2 z-30 flex flex-col items-center cursor-pointer">
+                            <!-- Smoke Effect Container -->
+                            <div id="smoke-effect" class="smoke"></div>
+                            
+                            <!-- Glowing Flame -->
+                            <div id="candle-flame" class="flame group-hover:scale-125"></div>
+                            
+                            <!-- Burnt Dark Wick -->
+                            <div class="burnt-wick"></div>
+                            
+                            <!-- Realistic Wax Candle Stick -->
+                            <div class="w-4 h-16 bg-gradient-to-r from-pink-200 via-white to-lavender rounded-t-sm shadow-md relative border-t border-slate-300">
+                                <div class="w-full h-full bg-[linear-gradient(45deg,transparent_45%,#9370DB_45%,#9370DB_55%,transparent_55%)] bg-[length:10px_10px] opacity-40"></div>
+                                <!-- Wax Melt Drips -->
+                                <div class="absolute -bottom-1 -left-1 w-2 h-3 bg-white rounded-full"></div>
+                                <div class="absolute top-2 -right-1 w-1.5 h-3 bg-white rounded-full"></div>
+                            </div>
+                        </div>
+
+                        <!-- 3D Layered Realistic Cake SVG -->
+                        <svg viewBox="0 0 300 240" class="w-full h-full drop-shadow-2xl">
+                            <defs>
+                                <linearGradient id="cakeBase" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#E6E6FA" />
+                                    <stop offset="50%" stop-color="#FFFFFF" />
+                                    <stop offset="100%" stop-color="#9370DB" />
+                                </linearGradient>
+                                <linearGradient id="cakeMiddle" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#FF7F50" />
+                                    <stop offset="50%" stop-color="#FFD700" />
+                                    <stop offset="100%" stop-color="#FF7F50" />
+                                </linearGradient>
+                                <linearGradient id="frostingTop" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#FFFFFF" />
+                                    <stop offset="100%" stop-color="#F3E8FF" />
+                                </linearGradient>
+                                <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+                                    <feDropShadow dx="0" dy="6" stdDeviation="4" flood-opacity="0.15"/>
+                                </filter>
+                            </defs>
+
+                            <!-- Cake Stand Plate -->
+                            <ellipse cx="150" cy="215" rx="130" ry="18" fill="#E2E8F0" />
+                            <ellipse cx="150" cy="212" rx="124" ry="15" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2" />
+                            <path d="M130,215 L170,215 L165,232 L135,232 Z" fill="#CBD5E1" />
+                            <ellipse cx="150" cy="232" rx="18" ry="4" fill="#94A3B8" />
+
+                            <!-- Bottom Cake Tier -->
+                            <path d="M50,140 L50,190 C50,205 250,205 250,190 L250,140 Z" fill="url(#cakeBase)" />
+                            <ellipse cx="150" cy="140" rx="100" ry="15" fill="#F1F5F9" />
+
+                            <!-- Bottom Tier Frosting Drips -->
+                            <path d="M50,140 Q62,165 75,140 Q88,160 100,140 Q112,170 125,140 Q138,155 150,140 Q162,165 175,140 Q188,160 200,140 Q212,170 225,140 Q238,155 250,140 L250,135 C250,120 50,120 50,135 Z" fill="url(#frostingTop)" filter="url(#softShadow)" />
+
+                            <!-- Decorative Strawberries / Cream Swirls on Bottom Tier -->
+                            <circle cx="70" cy="138" r="6" fill="#FF7F50" />
+                            <circle cx="110" cy="144" r="6" fill="#9370DB" />
+                            <circle cx="150" cy="146" r="6" fill="#FF7F50" />
+                            <circle cx="190" cy="144" r="6" fill="#9370DB" />
+                            <circle cx="230" cy="138" r="6" fill="#FF7F50" />
+
+                            <!-- Top Cake Tier -->
+                            <path d="M80,85 L80,130 C80,142 220,142 220,130 L220,85 Z" fill="url(#cakeMiddle)" />
+                            <ellipse cx="150" cy="85" rx="70" ry="12" fill="#FFE4E6" />
+
+                            <!-- Top Tier Cream Drips & Swirls -->
+                            <path d="M80,85 Q92,105 105,85 Q118,110 130,85 Q143,102 150,85 Q158,108 170,85 Q182,102 195,85 Q208,105 220,85 L220,80 C220,68 80,68 80,80 Z" fill="url(#frostingTop)" filter="url(#softShadow)" />
+
+                            <!-- Top Cream Border Swirls -->
+                            <ellipse cx="150" cy="80" rx="70" ry="12" fill="url(#frostingTop)" />
+                            <circle cx="95" cy="80" r="5" fill="#FFFFFF" />
+                            <circle cx="120" cy="84" r="5" fill="#FFFFFF" />
+                            <circle cx="150" cy="86" r="5.5" fill="#FFFFFF" />
+                            <circle cx="180" cy="84" r="5" fill="#FFFFFF" />
+                            <circle cx="205" cy="80" r="5" fill="#FFFFFF" />
+
+                            <!-- Colorful Sprinkles on Top -->
+                            <rect x="110" y="76" width="4" height="1.5" rx="1" fill="#FF7F50" transform="rotate(25, 110, 76)" />
+                            <rect x="135" y="80" width="4" height="1.5" rx="1" fill="#9370DB" transform="rotate(-15, 135, 80)" />
+                            <rect x="165" y="78" width="4" height="1.5" rx="1" fill="#FF7F50" transform="rotate(40, 165, 78)" />
+                            <rect x="185" y="76" width="4" height="1.5" rx="1" fill="#9370DB" transform="rotate(-30, 185, 76)" />
+                        </svg>
+                    </div>
+
+                    <p id="cake-status" class="mt-4 font-semibold text-slate-700 text-xs sm:text-sm">
+                        ✨ Candle is glowing! Tap the flame to blow it out.
+                    </p>
+                </div>
+
+                <!-- FEATURE 2: Interactive Gift Box Unboxing -->
+                <div class="gradient-border-card p-6 sm:p-8 text-center flex flex-col justify-between">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-softpurple mb-1 block">Surprise Present</span>
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Unwrap Your Gift 🎁</h2>
+                        <p class="text-slate-500 text-xs sm:text-sm mb-6">Tap the gift box below to open your virtual present!</p>
+                    </div>
+
+                    <!-- Gift Box Graphic -->
+                    <div id="gift-box" class="w-36 h-36 mx-auto relative cursor-pointer my-4">
+                        <!-- Gift Box Lid -->
+                        <div class="gift-lid w-40 h-10 -ml-2 bg-vibrantorange rounded-t-lg shadow-md border-b-2 border-orange-600 relative z-10 flex items-center justify-center">
+                            <div class="w-6 h-full bg-white/40"></div>
+                        </div>
+                        <!-- Gift Box Body -->
+                        <div class="w-36 h-24 bg-gradient-to-tr from-softpurple to-vibrantorange rounded-b-xl shadow-orange-glow relative overflow-hidden flex items-center justify-center">
+                            <div class="w-6 h-full bg-white/30"></div>
+                            <i class="fa-solid fa-heart text-white text-3xl absolute z-10 drop-shadow"></i>
+                        </div>
+                    </div>
+
+                    <div id="gift-reveal" class="hidden p-3.5 rounded-xl bg-lavender/50 border border-softpurple/30 text-slate-800 text-xs sm:text-sm font-semibold">
+                        🎁 <span class="text-vibrantorange font-bold">Surprise Unlocked:</span> Infinite happiness, endless laughs & all my love forever! ❤️
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- FEATURE 3: Reasons Why I Love You Interactive Deck -->
+            <div class="gradient-border-card p-6 sm:p-8 max-w-2xl mx-auto mb-12 text-center">
+                <span class="text-xs font-bold uppercase tracking-widest text-vibrantorange mb-1 block">Special Card Deck</span>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">Reasons Why I Love You 💌</h2>
+                <p class="text-slate-500 text-xs sm:text-sm mb-6">Tap the button to reveal another reason why you mean the world to me!</p>
+
+                <div class="p-6 rounded-2xl bg-gradient-to-br from-lavender/40 to-orange-50 border border-softpurple/30 mb-6 min-h-[120px] flex items-center justify-center">
+                    <p id="love-reason-text" class="text-base sm:text-lg font-serif italic text-slate-800">
+                        "Your smile instantly brightens up even my darkest days."
+                    </p>
+                </div>
+
+                <button id="next-reason-btn" class="px-6 py-3 rounded-full gradient-orange-purple text-white font-bold text-xs uppercase tracking-wider shadow-md hover:opacity-90 transition-all flex items-center justify-center space-x-2 mx-auto">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                    <span>Tap For Another Reason 💕</span>
+                </button>
+            </div>
+
+            <!-- FEATURE 4: Expanded Unfolded Love Letter from Anant -->
+            <div class="gradient-border-card p-6 sm:p-10 max-w-2xl mx-auto mb-8">
+                <div class="flex items-center space-x-4 mb-6 pb-4 border-b border-lavender">
+                    <div class="w-12 h-12 rounded-2xl bg-softpurple/15 flex items-center justify-center text-softpurple text-xl">
+                        <i class="fa-solid fa-envelope-open-text"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">My Letter To You</h2>
+                        <p class="text-xs text-slate-500">From Anant, with all my love</p>
+                    </div>
+                </div>
+
+                <div class="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-lavender/30 via-white to-orange-50 border border-lavender/60 text-slate-700 leading-relaxed font-serif text-sm sm:text-base space-y-4">
+                    <p class="italic text-softpurple font-sans text-xs font-extrabold uppercase tracking-wider">
+                        My Dearest Himadri,
+                    </p>
+                    <p>
+                        Happy Birthday, my love! As another year begins for you, I just wanted to pause and remind you how extraordinarily special you are to me.
+                    </p>
+                    <p>
+                        From the moment you came into my life, everything became warmer, brighter, and infinitely more meaningful. You possess this quiet grace and infectious kindness that makes everyone around you feel cherished—especially me. Your laughter is genuinely my favorite sound in the world, and seeing you happy is all I ever want.
+                    </p>
+                    <p>
+                        Thank you for being my anchor, my favorite conversation, and my best friend. As you blow out your candles today, know that I am right here cheering for you, believing in all your dreams, and loving you more with every passing day.
+                    </p>
+                    <p>
+                        May this year bring you all the love, magic, and boundless joy that you give so effortlessly to everyone else.
+                    </p>
+                    <div class="pt-4 flex flex-col items-end font-cursive text-3xl text-vibrantorange font-bold space-y-1">
+                        <span>Forever & Always,</span>
+                        <span class="text-softpurple text-4xl">Anant ❤️</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Interactive Step 3: Trivia Question 3 -->
-            <div class="interactive-layer" id="layer3">
-                <p class="step-instruction">Mini Challenge #3: Final question! 🎯</p>
-                <div class="quiz-feedback" id="feedback3">How much are you appreciated today?</div>
-                <div class="quiz-options">
-                    <button class="quiz-btn" onclick="checkQuiz(3, false)">Just a little bit</button>
-                    <button class="quiz-btn" onclick="checkQuiz(3, false)">Somewhat</button>
-                    <button class="quiz-btn" onclick="checkQuiz(3, true)">Infinitely & beyond! ♾️🏔️</button>
-                </div>
-            </div>
+        </section>
 
-            <!-- Whole Message on a Crumbled & Ripped Notebook Page (Revealed after quiz) -->
-            <div class="notebook-page" id="notebookMessage">They say Himadri means the greatest mountains out there... but honestly? You're out here effortlessly elevating my whole life just by existing.
+    </main>
 
-Not to be dramatic, but you literally look like a whole main character rendered in 4K sunset lighting. How do you manage to look this effortlessly gorgeous 24/7?
+    <!-- Footer -->
+    <footer class="w-full py-6 text-center text-xs text-slate-400 border-t border-slate-100 relative z-10">
+        <p>Made with ❤️ for Himadri by Anant • November 7th</p>
+    </footer>
 
-Writing this out reminds me of how lucky I am to share these moments with you. Himadri, you are like the mountains; I can never resist going to you. You are so cute and lovely that I can't stop thinking about you, even when I am with you. I think, think and think about you.
-
-There is such a serene, soothing energy about you. The soft, caring way you talk and your calm, gentle nature can turn my worst days completely around. You bring a quiet comfort into my world that makes me feel safe, understood, and deeply cherished whenever I am near you.
-
-Being around you just makes everything else fade into the background. Honestly, if loving you was a job, I’d be the most hardworking person on the planet, and I still wouldn't take a single day off. You have this effortless way of making my ordinary days feel completely extraordinary. Every time you smile, my heart skips a beat, and you make it impossible for me not to fall for you all over again.
-
-I don't know what kind of magic you carry, but your loving heart makes everything brighter and better. If I could give you one gift for your birthday, it would be the ability to see yourself through my eyes—just so you could realize how insanely incredible, mesmerizing, and precious you really are to me.
-
-Of all the breathtaking views in this world, having you by my side is my absolute favorite. Thank you for being my peace, my joy, and my favorite person. 
-
-Happy birthday to my favourite person in the world! May your day be filled with endless joy, beautiful moments, and all the love you so effortlessly bring into my life.
-
-<div class="signature-heart-container">
-    <div class="svg-heart-wrapper">
-        <svg class="heart-svg" viewBox="0 0 32 32">
-            <!-- Left Half (Orange) -->
-            <path d="M16 28 C16 28, 4 19, 4 11 C4 7, 7 4, 11 4 C14 4, 16 7, 16 10 Z" fill="#ff8c42"/>
-            <!-- Right Half (Purple) -->
-            <path d="M16 28 C16 28, 28 19, 28 11 C28 7, 25 4, 21 4 C18 4, 16 7, 16 10 Z" fill="#512da8"/>
-        </svg>
-        <div class="heart-letters-overlay">
-            <span class="letter-a">A</span>
-            <span class="letter-h">H</span>
-        </div>
-    </div>
-</div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Audio Element with autoplay -->
-    <audio id="bgMusic" src="music.mp3" autoplay loop></audio>
-
+    <!-- Embedded Pure Vanilla JS Engine -->
     <script>
-        const audio = document.getElementById('bgMusic');
+        /**
+         * State & Configuration
+         */
+        let previewMode = true; // Enabled by default to test content immediately
 
-        // --- COUNTDOWN LOGIC (Target: November 7) ---
-        function getTargetDate() {
-            const now = new Date();
-            let year = now.getFullYear();
-            let target = new Date(year, 10, 7, 0, 0, 0); // Nov 7
-            if (now > target) {
-                target = new Date(year + 1, 10, 7, 0, 0, 0);
-            }
-            return target;
+        // Countdown Target: Nov 7th 00:00:00
+        const now = new Date();
+        let targetYear = now.getFullYear();
+        let targetDate = new Date(targetYear, 10, 7, 0, 0, 0);
+
+        if (now > targetDate && (now.getMonth() !== 10 || now.getDate() > 7)) {
+            targetDate = new Date(targetYear + 1, 10, 7, 0, 0, 0);
         }
 
-        const targetDate = getTargetDate();
+        // DOM Elements
+        const countdownSection = document.getElementById('countdown-section');
+        const unlockedSection = document.getElementById('unlocked-section');
+        const togglePreviewBtn = document.getElementById('toggle-preview-btn');
 
-        function updateCountdown() {
-            const now = new Date();
-            const difference = targetDate - now;
+        const daysEl = document.getElementById('timer-days');
+        const hoursEl = document.getElementById('timer-hours');
+        const minutesEl = document.getElementById('timer-minutes');
+        const secondsEl = document.getElementById('timer-seconds');
 
-            if (difference <= 0) {
-                document.getElementById('countdown-section').style.display = 'none';
-                document.getElementById('main-message-container').classList.add('active');
-                clearInterval(countdownInterval);
-                return;
+        const bgMusic = document.getElementById('bg-music');
+        const musicToggleBtn = document.getElementById('music-toggle-btn');
+        const musicIcon = document.getElementById('music-icon');
+        const musicStatus = document.getElementById('music-status');
+
+        let isAudioPlaying = false;
+        let confettiFired = false;
+
+        /**
+         * Pure Standalone Confetti Engine
+         */
+        const confettiCanvas = document.getElementById('confetti-canvas');
+        const confettiCtx = confettiCanvas.getContext('2d');
+        let confettiParticles = [];
+
+        function resizeConfettiCanvas() {
+            confettiCanvas.width = window.innerWidth;
+            confettiCanvas.height = window.innerHeight;
+        }
+        resizeConfettiCanvas();
+        window.addEventListener('resize', resizeConfettiCanvas);
+
+        function fireConfetti() {
+            const colors = ['#FF7F50', '#9370DB', '#E6E6FA', '#FFD700', '#FF69B4'];
+            for (let i = 0; i < 70; i++) {
+                confettiParticles.push({
+                    x: window.innerWidth / 2,
+                    y: window.innerHeight / 2,
+                    vx: (Math.random() - 0.5) * 14,
+                    vy: (Math.random() - 0.7) * 14,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * 360,
+                    rotationSpeed: (Math.random() - 0.5) * 10,
+                    opacity: 1
+                });
             }
-
-            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const mins = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-            const secs = Math.floor((difference % (1000 * 60)) / 1000);
-
-            document.getElementById('days').textContent = String(days).padStart(2, '0');
-            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-            document.getElementById('mins').textContent = String(mins).padStart(2, '0');
-            document.getElementById('secs').textContent = String(secs).padStart(2, '0');
         }
 
-        // Uncomment line below to test messages instantly without waiting for Nov 7:
-        // document.getElementById('countdown-section').style.display = 'none'; document.getElementById('main-message-container').classList.add('active');
+        function updateConfetti() {
+            confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            for (let i = confettiParticles.length - 1; i >= 0; i--) {
+                const p = confettiParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.25;
+                p.rotation += p.rotationSpeed;
+                p.opacity -= 0.012;
 
-        const countdownInterval = setInterval(updateCountdown, 1000);
-        updateCountdown();
+                if (p.opacity <= 0) {
+                    confettiParticles.splice(i, 1);
+                    continue;
+                }
 
-        // --- INTERACTIVE QUIZ & NOTEBOOK REVEAL FLOW ---
-        let currentQuizStep = 1;
+                confettiCtx.save();
+                confettiCtx.globalAlpha = p.opacity;
+                confettiCtx.translate(p.x, p.y);
+                confettiCtx.rotate((p.rotation * Math.PI) / 180);
+                confettiCtx.fillStyle = p.color;
+                confettiCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                confettiCtx.restore();
+            }
+            requestAnimationFrame(updateConfetti);
+        }
+        updateConfetti();
 
-        function checkQuiz(stepNum, isCorrect) {
-            const feedback = document.getElementById(`feedback${stepNum}`);
-            if (isCorrect) {
-                feedback.textContent = "Correct! ✨";
-                setTimeout(() => {
-                    document.getElementById(`layer${currentQuizStep}`).classList.remove('active');
-                    currentQuizStep++;
-                    if (currentQuizStep <= 3) {
-                        document.getElementById(`layer${currentQuizStep}`).classList.add('active');
-                    } else {
-                        // Quiz completed, reveal the full notebook page and auto-scroll smoothly!
-                        const notebook = document.getElementById('notebookMessage');
-                        notebook.classList.add('active');
-                        notebook.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    }
-                }, 500);
+        /**
+         * Global Heart Particles Generator on Touch / Click
+         */
+        window.addEventListener('pointerdown', (e) => {
+            // Avoid triggering heart effect when clicking controls
+            if (e.target.closest('#music-toggle-btn') || e.target.closest('#toggle-preview-btn')) return;
+
+            const heart = document.createElement('div');
+            heart.innerHTML = '💖';
+            heart.style.position = 'fixed';
+            heart.style.left = `${e.clientX - 10}px`;
+            heart.style.top = `${e.clientY - 10}px`;
+            heart.style.fontSize = '18px';
+            heart.style.pointerEvents = 'none';
+            heart.style.zIndex = '9999';
+            heart.style.transition = 'all 0.8s ease-out';
+            document.body.appendChild(heart);
+
+            setTimeout(() => {
+                heart.style.transform = `translate(${(Math.random() - 0.5) * 50}px, -60px) scale(1.3)`;
+                heart.style.opacity = '0';
+            }, 20);
+
+            setTimeout(() => {
+                heart.remove();
+            }, 850);
+        });
+
+        /**
+         * Music Toggle Button Handler
+         */
+        function toggleAudio() {
+            if (!bgMusic) return;
+            if (isAudioPlaying) {
+                bgMusic.pause();
+                isAudioPlaying = false;
+                musicIcon.className = "fa-solid fa-play";
+                musicStatus.innerText = "Click to Play";
             } else {
-                feedback.textContent = "Not quite! Try another option 😉";
+                bgMusic.play().then(() => {
+                    isAudioPlaying = true;
+                    musicIcon.className = "fa-solid fa-pause";
+                    musicStatus.innerText = "Playing ♪";
+                }).catch(() => {});
             }
         }
 
-        // Autoplay policy bypass for strict browsers
-        window.addEventListener('DOMContentLoaded', () => {
-            audio.play().catch(() => {
-                const triggerPlay = () => {
-                    audio.play();
-                    window.removeEventListener('click', triggerPlay);
-                    window.removeEventListener('touchstart', triggerPlay);
-                };
-                window.addEventListener('click', triggerPlay);
-                window.addEventListener('touchstart', triggerPlay);
+        if (musicToggleBtn) {
+            musicToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleAudio();
             });
+        }
+
+        /**
+         * Countdown Engine
+         */
+        function updateCountdown() {
+            const currentTime = new Date().getTime();
+            const distance = targetDate.getTime() - currentTime;
+
+            if (distance <= 0 || previewMode) {
+                daysEl.innerText = "00";
+                hoursEl.innerText = "00";
+                minutesEl.innerText = "00";
+                secondsEl.innerText = "00";
+                showUnlockedSection();
+                return;
+            } else {
+                showCountdownSection();
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            daysEl.innerText = String(days).padStart(2, '0');
+            hoursEl.innerText = String(hours).padStart(2, '0');
+            minutesEl.innerText = String(minutes).padStart(2, '0');
+            secondsEl.innerText = String(seconds).padStart(2, '0');
+        }
+
+        function showUnlockedSection() {
+            if (!countdownSection.classList.contains('hidden')) {
+                countdownSection.classList.add('hidden');
+                unlockedSection.classList.remove('hidden');
+                if (!confettiFired) {
+                    fireConfetti();
+                    confettiFired = true;
+                }
+            }
+        }
+
+        function showCountdownSection() {
+            if (!unlockedSection.classList.contains('hidden')) {
+                unlockedSection.classList.add('hidden');
+                countdownSection.classList.remove('hidden');
+                confettiFired = false;
+            }
+        }
+
+        /**
+         * Feature 1: Candle Blow Out Foolproof Handler
+         */
+        const cakeContainer = document.getElementById('cake-container');
+        const candleFlame = document.getElementById('candle-flame');
+        const smokeEffect = document.getElementById('smoke-effect');
+        const cakeStatus = document.getElementById('cake-status');
+
+        if (cakeContainer) {
+            cakeContainer.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!candleFlame.classList.contains('out')) {
+                    candleFlame.classList.add('out');
+                    smokeEffect.classList.add('active');
+                    cakeStatus.innerHTML = "🎉 <span class='text-vibrantorange font-bold'>Wish Made!</span> Flame blown out! 🎉";
+                    fireConfetti();
+                    setTimeout(() => {
+                        smokeEffect.classList.remove('active');
+                    }, 1200);
+                } else {
+                    candleFlame.classList.remove('out');
+                    cakeStatus.innerHTML = "✨ Candle relit! Tap the candle anytime to blow it out again.";
+                }
+            });
+        }
+
+        /**
+         * Feature 2: Gift Box Unboxing
+         */
+        const giftBox = document.getElementById('gift-box');
+        const giftReveal = document.getElementById('gift-reveal');
+        let giftOpened = false;
+
+        if (giftBox) {
+            giftBox.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (!giftOpened) {
+                    giftBox.classList.add('gift-opened');
+                    if (giftReveal) giftReveal.classList.remove('hidden');
+                    giftOpened = true;
+                    fireConfetti();
+                }
+            });
+        }
+
+        /**
+         * Feature 3: Reasons Why I Love You Interactive Deck
+         */
+        const loveReasons = [
+            "Your smile instantly brightens up even my darkest days.",
+            "The gentle way you care for everyone around you.",
+            "How your laugh is genuinely my absolute favorite sound.",
+            "The way you make every simple moment feel like an adventure.",
+            "Your strength, intelligence, and beautiful heart.",
+            "How comfortable and safe I feel whenever I'm with you.",
+            "Simply because you are you—uniquely, wonderfully Himadri."
+        ];
+        let reasonIndex = 0;
+        const loveReasonText = document.getElementById('love-reason-text');
+        const nextReasonBtn = document.getElementById('next-reason-btn');
+
+        if (nextReasonBtn) {
+            nextReasonBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                reasonIndex = (reasonIndex + 1) % loveReasons.length;
+                loveReasonText.innerText = `"${loveReasons[reasonIndex]}"`;
+                fireConfetti();
+            });
+        }
+
+        /**
+         * Background Floating Hearts Animation
+         */
+        function initBackgroundHearts() {
+            const canvas = document.getElementById('hearts-canvas');
+            const ctx = canvas.getContext('2d');
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            const hearts = [];
+            for (let i = 0; i < 20; i++) {
+                hearts.push({
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight,
+                    size: Math.random() * 10 + 6,
+                    speedY: Math.random() * 0.8 + 0.3,
+                    opacity: Math.random() * 0.5 + 0.2
+                });
+            }
+
+            function drawHearts() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                hearts.forEach(h => {
+                    h.y -= h.speedY;
+                    if (h.y < -20) h.y = canvas.height + 20;
+
+                    ctx.save();
+                    ctx.globalAlpha = h.opacity;
+                    ctx.fillStyle = '#9370DB';
+                    ctx.beginPath();
+                    ctx.arc(h.x, h.y, h.size / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                });
+                requestAnimationFrame(drawHearts);
+            }
+            drawHearts();
+        }
+
+        /**
+         * Initialization & Event Listeners
+         */
+        window.addEventListener('DOMContentLoaded', () => {
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+            initBackgroundHearts();
+
+            // Preview Mode Toggle Button Handler
+            if (togglePreviewBtn) {
+                togglePreviewBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    previewMode = !previewMode;
+                    togglePreviewBtn.innerText = previewMode ? "UNLOCKED" : "LOCKED";
+                    togglePreviewBtn.classList.toggle('bg-vibrantorange');
+                    togglePreviewBtn.classList.toggle('bg-slate-700');
+                    updateCountdown();
+                });
+            }
         });
     </script>
 </body>
