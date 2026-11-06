@@ -88,27 +88,6 @@
             border: 1px solid rgba(230, 230, 250, 0.8);
         }
 
-        /* Candle Flame Animation */
-        .flame {
-            width: 18px;
-            height: 28px;
-            background: linear-gradient(to top, #FF7F50, #FFD700, #FFFFFF);
-            border-radius: 50% 50% 20% 20%;
-            box-shadow: 0 0 15px #FF7F50, 0 0 25px #FFD700;
-            animation: flicker 0.6s infinite alternate ease-in-out;
-            transform-origin: center bottom;
-            transition: opacity 0.4s ease, transform 0.4s ease;
-        }
-        @keyframes flicker {
-            0% { transform: scale(1) rotate(-2deg); opacity: 0.95; }
-            100% { transform: scale(1.1) rotate(2deg); opacity: 1; }
-        }
-        .flame.out {
-            opacity: 0;
-            transform: scale(0.2);
-            pointer-events: none;
-        }
-
         /* Smoke effect when flame blows out */
         .smoke {
             position: absolute;
@@ -205,24 +184,13 @@
     <div class="fixed top-1/3 -right-20 w-96 h-96 rounded-full bg-softpurple/15 blur-3xl pointer-events-none"></div>
     <div class="fixed -bottom-20 left-1/3 w-96 h-96 rounded-full bg-lavender/60 blur-3xl pointer-events-none"></div>
 
-    <!-- Background Audio Element -->
-    <audio id="bg-music" loop preload="auto">
+    <!-- Background Audio Element (Autoplay) -->
+    <audio id="bg-music" loop preload="auto" autoplay>
         <source src="music.mp3" type="audio/mpeg">
     </audio>
 
     <!-- Sleek Top Gradient Line -->
     <div class="w-full h-2 gradient-orange-purple relative"></div>
-
-    <!-- Floating Music Bar / Player Control (Bottom Right) -->
-    <div class="fixed bottom-6 right-6 z-50 flex items-center space-x-3 bg-white/90 backdrop-blur-md p-2 px-4 rounded-full border border-lavender shadow-lg">
-        <button id="music-toggle-btn" class="w-10 h-10 rounded-full gradient-orange-purple text-white flex items-center justify-center shadow-md hover:scale-105 transition-all">
-            <i id="music-icon" class="fa-solid fa-play"></i>
-        </button>
-        <div class="flex flex-col pr-2">
-            <span class="text-[11px] font-bold text-slate-800">Birthday Song</span>
-            <span id="music-status" class="text-[9px] text-slate-500 uppercase tracking-wider font-medium">Click to Play</span>
-        </div>
-    </div>
 
     <!-- Header / Navigation Bar (Static, non-sticky so it stays at the top when scrolling) -->
     <header class="w-full py-5 px-6 sm:px-12 flex justify-between items-center relative z-20 border-b border-lavender/60 glass-panel">
@@ -230,14 +198,6 @@
             <span class="w-3 h-3 rounded-full bg-vibrantorange"></span>
             <span class="w-3 h-3 rounded-full bg-softpurple"></span>
             <span class="text-xl font-bold font-serif text-slate-900 tracking-tight ml-2">For Himadri ✨</span>
-        </div>
-        
-        <!-- Interactive Lock/Unlock Preview Switch -->
-        <div class="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-full border border-slate-200">
-            <span class="text-xs font-semibold text-slate-600 pl-3">Preview Mode:</span>
-            <button id="toggle-preview-btn" class="px-3.5 py-1 rounded-full text-xs font-bold transition-all duration-300 bg-vibrantorange text-white shadow-sm hover:opacity-90">
-                UNLOCKED
-            </button>
         </div>
     </header>
 
@@ -504,8 +464,6 @@
         /**
          * State & Configuration
          */
-        let previewMode = true; // Enabled by default to test content immediately
-
         // Countdown Target: Nov 7th 00:00:00
         const now = new Date();
         let targetYear = now.getFullYear();
@@ -518,7 +476,6 @@
         // DOM Elements
         const countdownSection = document.getElementById('countdown-section');
         const unlockedSection = document.getElementById('unlocked-section');
-        const togglePreviewBtn = document.getElementById('toggle-preview-btn');
 
         const daysEl = document.getElementById('timer-days');
         const hoursEl = document.getElementById('timer-hours');
@@ -526,11 +483,6 @@
         const secondsEl = document.getElementById('timer-seconds');
 
         const bgMusic = document.getElementById('bg-music');
-        const musicToggleBtn = document.getElementById('music-toggle-btn');
-        const musicIcon = document.getElementById('music-icon');
-        const musicStatus = document.getElementById('music-status');
-
-        let isAudioPlaying = false;
         let confettiFired = false;
 
         /**
@@ -595,9 +547,6 @@
          * Global Heart Particles Generator on Touch / Click
          */
         window.addEventListener('pointerdown', (e) => {
-            // Avoid triggering heart effect when clicking controls
-            if (e.target.closest('#music-toggle-btn') || e.target.closest('#toggle-preview-btn')) return;
-
             const heart = document.createElement('div');
             heart.innerHTML = '💖';
             heart.style.position = 'fixed';
@@ -620,39 +569,13 @@
         });
 
         /**
-         * Music Toggle Button Handler
-         */
-        function toggleAudio() {
-            if (!bgMusic) return;
-            if (isAudioPlaying) {
-                bgMusic.pause();
-                isAudioPlaying = false;
-                musicIcon.className = "fa-solid fa-play";
-                musicStatus.innerText = "Click to Play";
-            } else {
-                bgMusic.play().then(() => {
-                    isAudioPlaying = true;
-                    musicIcon.className = "fa-solid fa-pause";
-                    musicStatus.innerText = "Playing ♪";
-                }).catch(() => {});
-            }
-        }
-
-        if (musicToggleBtn) {
-            musicToggleBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleAudio();
-            });
-        }
-
-        /**
          * Countdown Engine
          */
         function updateCountdown() {
             const currentTime = new Date().getTime();
             const distance = targetDate.getTime() - currentTime;
 
-            if (distance <= 0 || previewMode) {
+            if (distance <= 0) {
                 daysEl.innerText = "00";
                 hoursEl.innerText = "00";
                 minutesEl.innerText = "00";
@@ -815,15 +738,14 @@
             setInterval(updateCountdown, 1000);
             initBackgroundHearts();
 
-            // Preview Mode Toggle Button Handler
-            if (togglePreviewBtn) {
-                togglePreviewBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    previewMode = !previewMode;
-                    togglePreviewBtn.innerText = previewMode ? "UNLOCKED" : "LOCKED";
-                    togglePreviewBtn.classList.toggle('bg-vibrantorange');
-                    togglePreviewBtn.classList.toggle('bg-slate-700');
-                    updateCountdown();
+            // Attempt autoplay with browser policy fallback
+            if (bgMusic) {
+                bgMusic.play().catch(() => {
+                    const startAudio = () => {
+                        bgMusic.play().catch(() => {});
+                        window.removeEventListener('pointerdown', startAudio);
+                    };
+                    window.addEventListener('pointerdown', startAudio);
                 });
             }
         });
