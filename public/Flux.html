@@ -46,7 +46,6 @@
             filter: blur(80px);
             border-radius: 50%;
             pointer-events: none;
-            transition: background 2s ease;
         }
         .glow-sphere-2 {
             position: absolute;
@@ -58,7 +57,6 @@
             filter: blur(90px);
             border-radius: 50%;
             pointer-events: none;
-            transition: background 2s ease;
         }
 
         .gradient-box {
@@ -69,7 +67,6 @@
             border-radius: 24px;
             padding: 1px;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 123, 0, 0.2);
-            transition: background 2s ease;
         }
 
         .gradient-box::before {
@@ -83,7 +80,6 @@
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             pointer-events: none;
-            transition: background 2s ease;
         }
 
         .login-card {
@@ -601,7 +597,7 @@
         </div>
     </div>
 
-    <!-- WhatsApp-Style Media Preview Modal -->
+    <!-- Media Preview Modal -->
     <div id="mediaPreviewModal" style="display: none; position: fixed; inset: 0; background: rgba(10, 2, 24, 0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
         <div style="max-width: 90%; max-height: 65vh; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
             <img id="previewImageElement" style="max-width: 100%; max-height: 65vh; border-radius: 12px; display: none; object-fit: contain;">
@@ -760,10 +756,10 @@
         }
 
         function handleTypingInput() {
-            socket.emit('typing', true);
+            if (socket) socket.emit('typing', true);
             clearTimeout(typingTimeout);
             typingTimeout = setTimeout(() => {
-                socket.emit('typing', false);
+                if (socket) socket.emit('typing', false);
             }, 1500);
         }
 
@@ -820,7 +816,7 @@
         function deleteSelectedMessages() {
             if (selectedMessageIds.size === 0) return;
             if (confirm(`Are you sure you want to delete ${selectedMessageIds.size} selected message(s)?`)) {
-                socket.emit('delete-messages', { ids: Array.from(selectedMessageIds) });
+                if (socket) socket.emit('delete-messages', { ids: Array.from(selectedMessageIds) });
             }
         }
 
@@ -882,11 +878,13 @@
             clearInterval(recordingTimerInterval);
         }
 
-        recordBtn.addEventListener('mousedown', startVoiceRecording);
-        recordBtn.addEventListener('touchstart', startVoiceRecording);
-        recordBtn.addEventListener('mouseup', stopVoiceRecording);
-        recordBtn.addEventListener('mouseleave', stopVoiceRecording);
-        recordBtn.addEventListener('touchend', stopVoiceRecording);
+        if (recordBtn) {
+            recordBtn.addEventListener('mousedown', startVoiceRecording);
+            recordBtn.addEventListener('touchstart', startVoiceRecording);
+            recordBtn.addEventListener('mouseup', stopVoiceRecording);
+            recordBtn.addEventListener('mouseleave', stopVoiceRecording);
+            recordBtn.addEventListener('touchend', stopVoiceRecording);
+        }
 
         function setReply(id, senderName, text) {
             activeReplyData = { id, senderName, text };
@@ -907,7 +905,7 @@
             document.querySelectorAll('.emoji-picker-popover').forEach(p => {
                 if (p !== popover) p.classList.remove('show');
             });
-            popover.classList.toggle('show');
+            if (popover) popover.classList.toggle('show');
         }
 
         window.addEventListener('click', () => {
@@ -915,8 +913,9 @@
         });
 
         function addReaction(messageId, emoji) {
-            socket.emit('toggle-reaction', { messageId, emoji });
-            document.getElementById(`picker-${messageId}`).classList.remove('show');
+            if (socket) socket.emit('toggle-reaction', { messageId, emoji });
+            const picker = document.getElementById(`picker-${messageId}`);
+            if (picker) picker.classList.remove('show');
         }
 
         function renderReactionsHTML(reactions, messageId) {
@@ -942,11 +941,10 @@
 
             const newText = prompt("Edit your message:", currentText);
             if (newText !== null && newText.trim() !== '' && newText.trim() !== currentText) {
-                socket.emit('edit-message', { id, newText: newText.trim() });
+                if (socket) socket.emit('edit-message', { id, newText: newText.trim() });
             }
         }
 
-        // WhatsApp-Style File Selection & Preview
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1168,7 +1166,7 @@
             messageInput.value = '';
             selectedFilePayload = null;
             cancelReply();
-            socket.emit('typing', false);
+            if (socket) socket.emit('typing', false);
         }
 
         function handleKeyPress(e) {
