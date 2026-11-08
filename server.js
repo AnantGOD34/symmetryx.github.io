@@ -7,10 +7,10 @@ const mongoose = require('mongoose');
 const app = express();
 const server = http.createServer(app);
 
-// Set max buffer size to 500 MB to support large files/videos
-const io = new Server(server, { 
+// Safe buffer size (10 MB) to prevent server lag / memory exhaustion
+const io = new Server(server, {  
   cors: { origin: '*' },
-  maxHttpBufferSize: 500 * 1024 * 1024 
+  maxHttpBufferSize: 10 * 1024 * 1024  
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -22,7 +22,7 @@ app.get('/', (req, res) => {
 // Connect to MongoDB Atlas (Falls back to local MongoDB if URI isn't set)
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/flux-chat';
 mongoose.connect(MONGO_URI)
-  .then(() => console.log('Connected to MongoDB Atlas successfully!'))
+  .then(() => console.log('Connected to MongoDB successfully!'))
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Define Database Schema for Rooms & Messages
@@ -58,11 +58,11 @@ io.on('connection', (socket) => {
       socket.join(cleanRoomId);
       socket.userData = { name, roomId: cleanRoomId };
 
-      socket.emit('join-response', { 
-        success: true, 
+      socket.emit('join-response', {  
+        success: true,  
         name: name,
-        roomId: cleanRoomId, 
-        history: room.history 
+        roomId: cleanRoomId,  
+        history: room.history  
       });
 
       const systemMessage = {
@@ -73,9 +73,11 @@ io.on('connection', (socket) => {
         timestamp: new Date().toISOString()
       };
 
-      room.history.push(systemMessage);
-      room.markModified('history');
-      await room.save();
+      // Atomically push and cap history to last 200 messages
+      await Room.updateOne(
+        { roomId: cleanRoomId },
+        { $push: { history: { $each: [systemMessage], $slice: -200 } } }
+      );
 
       io.to(cleanRoomId).emit('chat-message', systemMessage);
     } catch (err) {
@@ -101,13 +103,11 @@ io.on('connection', (socket) => {
       };
 
       try {
-        const room = await Room.findOne({ roomId: user.roomId });
-        if (room) {
-          room.history.push(msgData);
-          room.markModified('history');
-          await room.save();
-          io.to(user.roomId).emit('chat-message', msgData);
-        }
+        await Room.updateOne(
+          { roomId: user.roomId },
+          { $push: { history: { $each: [msgData], $slice: -200 } } }
+        );
+        io.to(user.roomId).emit('chat-message', msgData);
       } catch (err) {
         console.error('Error saving chat message:', err);
       }
@@ -214,13 +214,11 @@ io.on('connection', (socket) => {
       };
 
       try {
-        const room = await Room.findOne({ roomId });
-        if (room) {
-          room.history.push(disconnectMessage);
-          room.markModified('history');
-          await room.save();
-          io.to(roomId).emit('chat-message', disconnectMessage);
-        }
+        await Room.updateOne(
+          { roomId },
+          { $push: { history: { $each: [disconnectMessage], $slice: -200 } } }
+        );
+        io.to(roomId).emit('chat-message', disconnectMessage);
       } catch (err) {
         console.error('Error saving disconnect message:', err);
       }
