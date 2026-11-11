@@ -7,10 +7,10 @@ const mongoose = require('mongoose');
 const app = express();
 const server = http.createServer(app);
 
-// Safe buffer size (10 MB) to prevent server lag / memory exhaustion
+// Increased buffer size to 50 MB to allow sending video files without dropping payloads
 const io = new Server(server, {  
   cors: { origin: '*' },
-  maxHttpBufferSize: 10 * 1024 * 1024  
+  maxHttpBufferSize: 50 * 1024 * 1024  
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
