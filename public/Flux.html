@@ -486,8 +486,26 @@
         }
         .reply-banner.show { display: flex; }
 
-        .chat-media { max-width: 240px; max-height: 240px; border-radius: 12px; margin-bottom: 6px; object-fit: cover; display: block; cursor: pointer; }
-        .chat-video { width: 100%; max-width: 280px; max-height: 240px; border-radius: 12px; margin-bottom: 6px; outline: none; display: block; }
+        /* Media sizing updated to scale naturally inside bubbles */
+        .chat-media { 
+            width: 100%; 
+            max-width: 100%; 
+            height: auto; 
+            border-radius: 12px; 
+            margin-bottom: 6px; 
+            object-fit: cover; 
+            display: block; 
+            cursor: pointer; 
+        }
+        .chat-video { 
+            width: 100%; 
+            max-width: 100%; 
+            height: auto; 
+            border-radius: 12px; 
+            margin-bottom: 6px; 
+            outline: none; 
+            display: block; 
+        }
         .chat-audio { width: 220px; height: 36px; margin-bottom: 4px; }
 
         .action-btn {
@@ -885,6 +903,14 @@
             recordBtn.addEventListener('touchend', stopVoiceRecording);
         }
 
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                if (isRecording) {
+                    stopVoiceRecording();
+                }
+            }
+        });
+
         function setReply(id, senderName, text) {
             activeReplyData = { id, senderName, text };
             document.getElementById('replyingToUser').textContent = `Replying to ${senderName}`;
@@ -1154,18 +1180,22 @@
             const text = messageInput.value.trim();
             if (!text && !selectedFilePayload) return;
 
-            if (socket && socket.connected) {
-                socket.emit('chat-message', {
-                    message: text,
-                    file: selectedFilePayload,
-                    replyTo: activeReplyData
-                });
+            if (!socket || !socket.connected) {
+                alert("Connection lost. Trying to reconnect...");
+                if (socket) socket.connect();
+                return;
             }
+
+            socket.emit('chat-message', {
+                message: text,
+                file: selectedFilePayload,
+                replyTo: activeReplyData
+            });
 
             messageInput.value = '';
             selectedFilePayload = null;
             cancelReply();
-            if (socket) socket.emit('typing', false);
+            socket.emit('typing', false);
         }
 
         function handleKeyPress(e) {
@@ -1195,7 +1225,7 @@
         function escapeHTML(str) {
             if (!str) return '';
             return str.replace(/[&<>'"]/g, 
-                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+                tag => ({ '&': '&', '<': '<', '>': '>', "'": ''', '"': '"' }[tag] || tag)
             );
         }
 
