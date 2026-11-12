@@ -216,6 +216,17 @@
             font-weight: 800;
         }
 
+        .connection-status {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+        .connection-status.connected { background: rgba(52, 211, 153, 0.2); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); }
+        .connection-status.disconnected { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); }
+
         .header-actions {
             display: flex;
             gap: 10px;
@@ -551,9 +562,8 @@
             <button type="submit" class="btn-primary" id="joinBtn">Join Flux Room</button>
             <div class="error-msg" id="loginError"></div>
         </form>
-    </div>
-
-    <div class="chat-wrapper gradient-box" id="chatWrapper">
+            </div>
+      <div class="chat-wrapper gradient-box" id="chatWrapper">
         <div class="chat-header" id="chatHeader">
             <div class="room-title">
                 <span class="room-badge" id="headerBadge">Flux</span>
@@ -669,7 +679,6 @@
                 showError('Please fill in all fields!');
                 return;
             }
-
             loginError.style.display = 'none';
             if (socket) {
                 socket.emit('join-room', { name, roomId, roomPass });
@@ -818,7 +827,6 @@
                 if (socket) socket.emit('delete-messages', { ids: Array.from(selectedMessageIds) });
             }
         }
-
         async function startVoiceRecording(e) {
             if (e) e.preventDefault();
             if (isRecording) return;
@@ -956,8 +964,7 @@
                     dataUrl: e.target.result,
                     fileName: file.name
                 };
-
-                const modal = document.getElementById('mediaPreviewModal');
+            const modal = document.getElementById('mediaPreviewModal');
                 const imgEl = document.getElementById('previewImageElement');
                 const videoEl = document.getElementById('previewVideoElement');
                 const captionInput = document.getElementById('mediaCaptionInput');
