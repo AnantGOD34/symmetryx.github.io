@@ -404,6 +404,11 @@
     </style>
 </head>
 <body>
+    <div id="install-banner" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #222; color: #fff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1000; text-align: center; font-family: sans-serif;">
+  <p style="margin: 0 0 10px 0; font-size: 14px;">Install SymmetryX for a better experience!</p>
+  <button id="install-btn" style="background: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-right: 10px;">Install App</button>
+  <button id="close-banner" style="background: transparent; color: #aaa; border: none; cursor: pointer; font-size: 14px;">Later</button>
+</div>
 
     <!-- Notification Container -->
     <div id="hint-notification">
@@ -2072,5 +2077,47 @@
             }
         });
     </script>
+    <script>
+  let deferredPrompt;
+  const installBanner = document.getElementById('install-banner');
+  const installBtn = document.getElementById('install-btn');
+  const closeBtn = document.getElementById('close-banner');
+
+  // Check if the app is already running as an installed PWA
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+  if (!isInstalled) {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBanner.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        }
+        deferredPrompt = null;
+        installBanner.style.display = 'none';
+      }
+    });
+
+    closeBtn.addEventListener('click', () => {
+      installBanner.style.display = 'none';
+    });
+  }
+
+  // Register Service Worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then((reg) => console.log('Service Worker registered!', reg))
+        .catch((err) => console.log('Service Worker registration failed:', err));
+    });
+  }
+</script>
 </body>
 </html>
